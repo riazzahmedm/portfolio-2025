@@ -1,26 +1,310 @@
 @import "tailwindcss";
 
+/* ─── Lenis smooth scroll ─────────────────────────────────────────── */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+/* ─── Design tokens ───────────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #050505;
+  --red: #e02020;
+  --red-dim: rgba(220, 30, 30, 0.35);
+  --red-glow: rgba(200, 20, 20, 0.18);
+  --lime: #82ff1f;
+  --lime-dim: rgba(130, 255, 31, 0.2);
+  --lavender: #b8a0ff;
+  --lavender-dim: rgba(184, 160, 255, 0.2);
+  --dot-color: rgba(255, 255, 255, 0.07);
+  --dot-size: 32px;
+
+  /* Font vars — next/font class on <html> sets the real values; --ff-* avoids Tailwind's --font-* namespace */
+  --ff-display: Syne, sans-serif;
+  --ff-body: 'Space Grotesk', sans-serif;
+  --ff-mono: 'Space Mono', monospace;
+
+  /* Theme tokens — dark defaults */
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-muted: rgba(255, 255, 255, 0.38);
+  --text-dim: rgba(255, 255, 255, 0.22);
+  --text-faint: rgba(255, 255, 255, 0.12);
+  --border: rgba(255, 255, 255, 0.06);
+  --border-card: rgba(255, 255, 255, 0.08);
+  --border-input: rgba(255, 255, 255, 0.12);
+  --surface: #0a0a0a;
+  --surface-alt: #0f0f0f;
+  --surface-raised: #141414;
+  --vignette-color: #050505;
+  --orb-color: rgba(200, 20, 20, 0.18);
+  --heading-outline-stroke: rgba(255, 255, 255, 0.18);
+  --timeline-line: rgba(255, 255, 255, 0.06);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html.light {
+  --bg: #f2f0eb;
+  --red: #cc1010;
+  --red-dim: rgba(180, 20, 20, 0.4);
+  --red-glow: rgba(180, 20, 20, 0.12);
+  --lime: #5ab800;
+  --lime-dim: rgba(90, 184, 0, 0.15);
+  --lavender: #7c5ccc;
+  --lavender-dim: rgba(124, 92, 204, 0.15);
+  --dot-color: rgba(0, 0, 0, 0.06);
+
+  --text-primary: #0a0a0a;
+  --text-secondary: rgba(10, 10, 10, 0.65);
+  --text-muted: rgba(10, 10, 10, 0.5);
+  --text-dim: rgba(10, 10, 10, 0.35);
+  --text-faint: rgba(10, 10, 10, 0.22);
+  --border: rgba(0, 0, 0, 0.07);
+  --border-card: rgba(0, 0, 0, 0.1);
+  --border-input: rgba(0, 0, 0, 0.15);
+  --surface: rgba(0, 0, 0, 0.04);
+  --surface-alt: rgba(0, 0, 0, 0.06);
+  --surface-raised: rgba(0, 0, 0, 0.09);
+  --vignette-color: #f2f0eb;
+  --orb-color: rgba(180, 20, 20, 0.09);
+  --heading-outline-stroke: rgba(0, 0, 0, 0.18);
+  --timeline-line: rgba(0, 0, 0, 0.07);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ─── Reset ───────────────────────────────────────────────────────── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--ff-body);
+  transition: background 0.3s ease, color 0.3s ease;
+  overscroll-behavior: none;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Hide scrollbar globally */
+* { scrollbar-width: none; }
+*::-webkit-scrollbar { display: none; }
+
+/* ─── Custom cursor ───────────────────────────────────────────────── */
+.cursor {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  background: var(--lime);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.08s ease, width 0.2s ease, height 0.2s ease;
+  mix-blend-mode: difference;
+}
+.cursor-ring {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(130, 255, 31, 0.4);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: transform 0.22s ease, width 0.2s ease, height 0.2s ease;
+}
+
+/* ─── Scroll container — window-based Lenis scroll ───────────────── */
+.snap-container {
+  /* Lenis takes over window scroll — this is just a flow wrapper */
+}
+
+/* ─── Section shells ──────────────────────────────────────────────── */
+.snap-section {
+  height: 100dvh;
+  position: relative;
+  overflow: hidden;
+  background: var(--section-bg, var(--bg));
+  display: flex;
+  flex-direction: column;
+  transition: background 0.6s ease;
+}
+
+/* ─── Section-specific background colours ─────────────────────────── */
+#hero         { --section-bg: #050505; --section-orb: rgba(200, 20, 20, 0.22); }
+#about        { --section-bg: #040810; --section-orb: rgba(184, 160, 255, 0.15); }
+#skills       { --section-bg: #040a05; --section-orb: rgba(130, 255, 31, 0.12); }
+#experience   { --section-bg: #080510; --section-orb: rgba(184, 160, 255, 0.18); }
+#projects     { --section-bg: #050810; --section-orb: rgba(130, 255, 31, 0.10); }
+#services     { --section-bg: #0a0705; --section-orb: rgba(200, 20, 20, 0.14); }
+#testimonials { --section-bg: #060506; --section-orb: rgba(184, 160, 255, 0.12); }
+#contact      { --section-bg: #050a08; --section-orb: rgba(130, 255, 31, 0.10); }
+
+html.light .snap-section { background: var(--bg); }
+
+/* ─── Section boundary gradient blend ─────────────────────────────── */
+.snap-section::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.18));
+  pointer-events: none;
+  z-index: 1;
+}
+html.light .snap-section::after { background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.04)); }
+
+/* ─── Dot grid ────────────────────────────────────────────────────── */
+.dot-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, var(--dot-color) 1px, transparent 1px);
+  background-size: var(--dot-size) var(--dot-size);
+  pointer-events: none;
+}
+
+/* ─── Vignette ────────────────────────────────────────────────────── */
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, transparent 30%, color-mix(in srgb, var(--section-bg, var(--bg)) 80%, transparent) 100%);
+  pointer-events: none;
+}
+
+/* ─── Glow orb ────────────────────────────────────────────────────── */
+.red-orb {
+  position: absolute;
+  width: 700px;
+  height: 700px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--section-orb, var(--orb-color)) 0%, transparent 65%);
+  pointer-events: none;
+  transition: background 0.6s ease;
+}
+
+/* ─── Section number watermark ────────────────────────────────────── */
+.section-watermark {
+  position: absolute;
+  font-family: var(--ff-display);
+  font-size: clamp(8rem, 18vw, 16rem);
+  font-weight: 800;
+  color: var(--text-faint);
+  opacity: 0.15;
+  pointer-events: none;
+  line-height: 1;
+  user-select: none;
+  z-index: 0;
+}
+
+/* ─── Heading outline ghost ───────────────────────────────────────── */
+.heading-outline {
+  color: transparent;
+  -webkit-text-stroke: 1px var(--heading-outline-stroke);
+  transition: -webkit-text-stroke 0.3s ease;
+}
+
+/* ─── Scroll-reveal word split ────────────────────────────────────── */
+.word-reveal-wrapper {
+  overflow: hidden;
+  display: inline-block;
+  vertical-align: bottom;
+  margin-right: 0.18em;
+}
+
+/* ─── Ticker / marquee ────────────────────────────────────────────── */
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes ticker-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+.ticker-inner {
+  animation: ticker 28s linear infinite;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+.ticker-inner-reverse {
+  animation: ticker-reverse 22s linear infinite;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+.ticker-inner-fast {
+  animation: ticker 14s linear infinite;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ─── Blink cursor ────────────────────────────────────────────────── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.blink { animation: blink 1s step-end infinite; }
+
+/* ─── Scan line ───────────────────────────────────────────────────── */
+@keyframes scanline {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* ─── Float ───────────────────────────────────────────────────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+.float { animation: float 4s ease-in-out infinite; }
+
+/* ─── Projects horizontal scroll (pinned, scroll-driven) ─────────── */
+.projects-outer {
+  position: relative;
+  background: var(--section-bg, var(--bg));
+}
+.projects-sticky {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.projects-track {
+  display: flex;
+  gap: 2rem;
+  padding: 0 2rem;
+  will-change: transform;
+  flex: 1;
+  align-items: stretch;
+}
+.project-card-h {
+  flex-shrink: 0;
+  width: min(78vw, 460px);
+}
+
+/* ─── Slide-in animations ─────────────────────────────────────────── */
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(48px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-60px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(60px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.88); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ─── Selection ───────────────────────────────────────────────────── */
+::selection { background: var(--lime); color: #000; }
+
+/* ─── Reduced motion ──────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .ticker-inner, .ticker-inner-reverse, .ticker-inner-fast { animation: none; }
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
