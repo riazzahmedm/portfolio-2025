@@ -1,137 +1,146 @@
 'use client'
-import { useState } from 'react'
-import Image from 'next/image'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import SectionShell from '@/components/ui/SectionShell'
-import SectionTag from '@/components/ui/SectionTag'
-import SectionHeading from '@/components/ui/SectionHeading'
 import SectionFooter from '@/components/layout/SectionFooter'
-import { TESTIMONIALS } from '@/lib/data'
-import { Quote } from 'lucide-react'
+
+const FAKE_MESSAGES = [
+  { from: 'client_007', time: '2d ago',  text: 'Hey! Quick question about the project…',   status: 'seen' },
+  { from: 'hr@startup', time: '5d ago',  text: 'Would love to get your feedback on this!',  status: 'seen' },
+  { from: 'old_manager', time: '1w ago', text: 'Can you write a testimonial for yourself?', status: 'seen' },
+]
 
 export default function Testimonials() {
-  const [current, setCurrent] = useState(0)
-  const t = TESTIMONIALS[current]
-
-  const prev = () => setCurrent((c) => (c - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)
-  const next = () => setCurrent((c) => (c + 1) % TESTIMONIALS.length)
-
   return (
     <SectionShell id="testimonials" orbPosition="top-right" watermark="07">
-      <div className="flex-1 flex flex-col justify-center px-8 md:px-14 lg:px-20 py-8 mt-14 min-h-0 max-w-5xl mx-auto w-full">
-        <SectionTag num="07" label="Testimonials" />
-        <SectionHeading solid="FEED" outline="BACK" size="text-[clamp(2.5rem,6vw,5rem)]" />
+      <div className="flex-1 flex flex-col items-center justify-center px-8 md:px-14 lg:px-20 mt-14 min-h-0">
 
-        <div className="relative mt-6">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={current}
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -30 }}
-                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                className="relative"
-              >
-                {/* Quote card */}
-                <div
-                  className="p-8 md:p-10 rounded-2xl border relative overflow-hidden"
-                  style={{
-                    borderColor: 'rgba(184,160,255,0.15)',
-                    background: 'linear-gradient(135deg, rgba(184,160,255,0.04) 0%, var(--surface) 100%)',
-                  }}
-                >
-                  {/* Big quote icon */}
-                  <Quote size={40} className="absolute top-6 right-6 opacity-10" style={{ color: 'var(--lavender)' }} />
+        {/* Section label */}
+        <div className="flex items-center gap-3 mb-10 self-start">
+          <div className="h-px w-8" style={{ background: 'var(--lavender)' }} />
+          <span className="text-[12px] tracking-[0.36em] uppercase" style={{ color: 'var(--lavender)', fontFamily: 'var(--ff-mono)' }}>
+            07 / Testimonials
+          </span>
+        </div>
 
-                  <p
-                    className="text-[17px] md:text-[19px] leading-[1.85] mb-8 italic"
-                    style={{ color: 'var(--text-secondary)', fontFamily: 'var(--ff-body)', fontWeight: 400 }}
-                  >
-                    &ldquo;{t.quote}&rdquo;
-                  </p>
-
-                  <div className="flex items-center gap-4">
-                    {/* Real avatar photo */}
-                    <div
-                      className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0"
-                      style={{ border: '1.5px solid rgba(184,160,255,0.4)' }}
-                    >
-                      {t.avatar ? (
-                        <Image
-                          src={t.avatar}
-                          alt={t.author}
-                          fill
-                          className="object-cover object-top"
-                        />
-                      ) : (
-                        <div
-                          className="w-full h-full flex items-center justify-center text-sm font-bold"
-                          style={{ background: 'rgba(184,160,255,0.15)', color: 'var(--lavender)', fontFamily: 'var(--ff-display)' }}
-                        >
-                          {t.author[0]}
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <div className="text-[15px] font-semibold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--ff-body)' }}>
-                        {t.author}
-                      </div>
-                      <div className="text-[12px] tracking-[0.16em] uppercase mt-0.5" style={{ color: 'var(--lavender)', fontFamily: 'var(--ff-mono)' }}>
-                        {t.role}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Peer review tag */}
-                  <div
-                    className="absolute bottom-4 right-6 text-[11px] tracking-[0.12em]"
-                    style={{ color: 'var(--text-faint)', fontFamily: 'var(--ff-mono)', fontStyle: 'italic' }}
-                  >
-                    // peer review · verified by humans, not tokens
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-
-            {/* Navigation */}
-            <div className="flex items-center justify-between mt-6">
-              <div className="flex gap-3">
-                <button
-                  onClick={prev}
-                  className="w-10 h-10 rounded-full border flex items-center justify-center transition-all duration-200 hover:bg-white/5"
-                  style={{ borderColor: 'var(--border-card)', color: 'var(--text-muted)' }}
-                >
-                  ←
-                </button>
-                <button
-                  onClick={next}
-                  className="w-10 h-10 rounded-full border flex items-center justify-center transition-all duration-200 hover:bg-white/5"
-                  style={{ borderColor: 'var(--border-card)', color: 'var(--text-muted)' }}
-                >
-                  →
-                </button>
-              </div>
-
-              <div className="flex gap-2">
-                {TESTIMONIALS.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setCurrent(i)}
-                    className="rounded-full transition-all duration-300"
-                    style={{
-                      width: i === current ? '24px' : '8px',
-                      height: '8px',
-                      background: i === current ? 'var(--lavender)' : 'var(--text-dim)',
-                    }}
-                  />
-                ))}
-              </div>
-
-              <div className="text-[12px] tracking-[0.12em]" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
-                {String(current + 1).padStart(2, '0')} / {String(TESTIMONIALS.length).padStart(2, '0')}
-              </div>
-            </div>
+        {/* Main message */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="text-center max-w-2xl"
+        >
+          <div
+            style={{
+              fontFamily: 'var(--ff-display)',
+              fontSize: 'clamp(2rem, 5.5vw, 4rem)',
+              fontWeight: 800,
+              lineHeight: 1.15,
+              letterSpacing: '-0.02em',
+              color: '#ffffff',
+              marginBottom: '1.25rem',
+            }}
+          >
+            This was supposed to be<br />
+            <span style={{ color: '#c8b4ff' }}>the feedback section.</span>
           </div>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 15, fontFamily: 'var(--ff-body)', lineHeight: 1.8 }}>
+            But… people are busy right now.
+          </p>
+        </motion.div>
+
+        {/* Fake unread messages */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-10 w-full max-w-md flex flex-col gap-3"
+        >
+          {FAKE_MESSAGES.map((msg, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: -16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.35 + i * 0.12, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl border"
+              style={{
+                background: 'var(--surface)',
+                borderColor: 'var(--border-card)',
+              }}
+            >
+              {/* Avatar initial */}
+              <div
+                className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-[11px] font-bold"
+                style={{ background: 'rgba(184,160,255,0.12)', color: 'var(--lavender)', fontFamily: 'var(--ff-mono)' }}
+              >
+                {msg.from[0].toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-0.5">
+                  <span className="text-[12px] font-semibold truncate" style={{ color: 'rgba(255,255,255,0.85)', fontFamily: 'var(--ff-mono)' }}>
+                    {msg.from}
+                  </span>
+                  <span className="text-[10px] flex-shrink-0 ml-2" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--ff-mono)' }}>
+                    {msg.time}
+                  </span>
+                </div>
+                <div className="text-[12px] truncate" style={{ color: 'rgba(255,255,255,0.55)', fontFamily: 'var(--ff-body)' }}>
+                  {msg.text}
+                </div>
+              </div>
+              {/* Seen indicator */}
+              <div className="flex-shrink-0 text-[10px] tracking-wide" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--ff-mono)' }}>
+                seen
+              </div>
+            </motion.div>
+          ))}
+
+          {/* Blinking typing indicator */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.75 }}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl border"
+            style={{ background: 'var(--surface)', borderColor: 'rgba(184,160,255,0.15)' }}
+          >
+            <div
+              className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-[11px]"
+              style={{ background: 'rgba(184,160,255,0.08)', color: 'var(--lavender)', fontFamily: 'var(--ff-mono)' }}
+            >
+              ?
+            </div>
+            <div className="flex items-center gap-1.5">
+              {[0, 0.18, 0.36].map((delay, i) => (
+                <motion.div
+                  key={i}
+                  animate={{ opacity: [0.2, 1, 0.2], y: [0, -3, 0] }}
+                  transition={{ duration: 0.9, repeat: Infinity, delay, ease: 'easeInOut' }}
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: 'var(--lavender)' }}
+                />
+              ))}
+            </div>
+            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--ff-mono)' }}>
+              someone is typing…
+            </span>
+          </motion.div>
+        </motion.div>
+
+        {/* Footnote */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.9, duration: 0.6 }}
+          className="mt-8 text-center text-[11px] tracking-[0.14em] uppercase"
+          style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--ff-mono)' }}
+        >
+          // real ones incoming · check back soon
+        </motion.p>
+
       </div>
 
       <SectionFooter current={7} />

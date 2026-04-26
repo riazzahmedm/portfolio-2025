@@ -4,7 +4,7 @@ import SectionShell from '@/components/ui/SectionShell'
 import SectionTag from '@/components/ui/SectionTag'
 import SectionHeading from '@/components/ui/SectionHeading'
 import SectionFooter from '@/components/layout/SectionFooter'
-import { SKILLS_GRID, TECH_JOKES, TICKER_ITEMS_2 } from '@/lib/data'
+import { SKILLS_GRID } from '@/lib/data'
 import { useState } from 'react'
 
 const COLOR_MAP: Record<string, string> = {
@@ -21,21 +21,6 @@ const CAT_BG: Record<string, string> = {
 
 const CATEGORIES = ['All', 'Web', 'Mobile', 'Design']
 
-function MarqueeJokes() {
-  const doubled = [...TECH_JOKES, ...TECH_JOKES]
-  return (
-    <div className="overflow-hidden py-2.5 my-2" style={{ borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
-      <div className="ticker-inner-fast">
-        {doubled.map((j, i) => (
-          <span key={i} className="inline-flex items-center gap-3 px-6">
-            <span className="text-[11px] tracking-[0.2em] uppercase px-2 py-0.5 rounded" style={{ background: 'var(--surface-alt)', color: 'var(--lavender)', fontFamily: 'var(--ff-mono)' }}>{j.lang}</span>
-            <span className="text-[12px] tracking-wide" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)', whiteSpace: 'nowrap' }}>{j.text}</span>
-          </span>
-        ))}
-      </div>
-    </div>
-  )
-}
 
 export default function Skills() {
   const [active, setActive] = useState('All')
@@ -72,9 +57,6 @@ export default function Skills() {
             </div>
           </div>
         </div>
-
-        {/* Jokes ticker */}
-        <MarqueeJokes />
 
         {/* Skill grid */}
         <div className="flex-1 overflow-y-auto px-8 md:px-14 lg:px-20 py-4">

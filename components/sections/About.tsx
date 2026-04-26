@@ -1,99 +1,221 @@
 'use client'
-import { motion, useScroll, useSpring, useTransform } from 'framer-motion'
-import SectionShell from '@/components/ui/SectionShell'
+import { useRef } from 'react'
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import SectionFooter from '@/components/layout/SectionFooter'
+import { TECH_JOKES } from '@/lib/data'
 
-const ROW_1 = '5+ YEARS OF ENGINEERING PRECISION · REACT · NEXT.JS · TYPESCRIPT · '
-const ROW_2 = 'WEB & MOBILE · 40+ PROJECTS · REACT NATIVE · .NET CORE · AZURE · '
-const ROW_3 = 'FIGMA TO CODE · OPEN TO WORK · CHENNAI, INDIA · SENIOR ENGINEER · '
+// ── Content ──────────────────────────────────────────────────────────────────
+const BIG_TEXT =
+  'TURNING COMPLEXITY INTO CLARITY · WHERE DESIGN MEETS ENGINEERING · OBSESSED WITH THE 1% DETAILS · PRODUCTS PEOPLE FEEL · CLEAN CODE IS KIND CODE · '
+
+// Single combined ticker strip (top) — personality + philosophy
+const ABOUT_TICKER = [
+  'PIXEL PERFECT', '∞', 'COFFEE → CODE', '∞',
+  'BUG WHISPERER', '∞', 'DARK MODE ALWAYS', '∞',
+  'SHIPS ON TIME', '∞', 'READS CSS SPECS FOR FUN', '∞',
+  'OBSESSED WITH UX', '∞', 'DESIGN IS HOW IT WORKS', '∞',
+  'BUILD WITH PURPOSE', '◆', 'USER ABOVE ALL', '◆',
+  'ITERATE RELENTLESSLY', '◆', 'CLEAN OR REWRITE', '◆',
+  'EMPATHY-DRIVEN', '◆', 'DETAIL IS NOT OPTIONAL', '◆',
+  'PRODUCT THINKER', '◆', 'NEVER STOP LEARNING', '◆',
+]
+
+// ── Top marquee strip (0°, combined) ─────────────────────────────────────────
+function TopMarquee() {
+  const doubled = [...ABOUT_TICKER, ...ABOUT_TICKER]
+  return (
+    <div
+      className="flex-shrink-0 overflow-hidden py-3"
+      style={{
+        background: 'rgba(184,160,255,0.05)',
+        borderTop: '1px solid rgba(184,160,255,0.12)',
+        borderBottom: '1px solid rgba(184,160,255,0.12)',
+      }}
+    >
+      <div className="ticker-inner">
+        {doubled.map((item, i) => (
+          <span
+            key={i}
+            className="text-[12px] tracking-[0.24em] uppercase px-5 inline-flex items-center"
+            style={{
+              color: item === '∞' || item === '◆' ? 'var(--lavender)' : 'rgba(184,160,255,0.5)',
+              fontFamily: 'var(--ff-mono)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {item}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Bottom marquee strip — tech jokes (moved from Skills) ─────────────────────
+function BottomMarquee() {
+  const doubled = [...TECH_JOKES, ...TECH_JOKES]
+  return (
+    <div
+      className="flex-shrink-0 overflow-hidden py-2.5"
+      style={{
+        borderTop: '1px solid var(--border)',
+        borderBottom: '1px solid var(--border)',
+      }}
+    >
+      <div className="ticker-inner-fast">
+        {doubled.map((j, i) => (
+          <span key={i} className="inline-flex items-center gap-3 px-6">
+            <span
+              className="text-[11px] tracking-[0.2em] uppercase px-2 py-0.5 rounded"
+              style={{
+                background: 'var(--surface-alt)',
+                color: 'var(--lavender)',
+                fontFamily: 'var(--ff-mono)',
+              }}
+            >
+              {j.lang}
+            </span>
+            <span
+              className="text-[12px] tracking-wide"
+              style={{
+                color: 'var(--text-dim)',
+                fontFamily: 'var(--ff-mono)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {j.text}
+            </span>
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export default function About() {
-  const { scrollY } = useScroll()
+  const outerRef = useRef<HTMLDivElement>(null)
 
-  // Spring-smooth the raw scrollY before feeding it into transforms.
-  // This removes jitter and gives the text a fluid, inertial feel.
-  const smooth = useSpring(scrollY, { stiffness: 60, damping: 20, restDelta: 0.001 })
+  const { scrollYProgress } = useScroll({
+    target: outerRef,
+    offset: ['start end', 'end end'],
+  })
 
-  const x1 = useTransform(smooth, [0, 3000], ['0%',   '-55%'])
-  const x2 = useTransform(smooth, [0, 3000], ['-8%',  '-48%'])
-  const x3 = useTransform(smooth, [0, 3000], ['4%',   '-58%'])
+  // Big text scrolls fully left — spring adds smooth follow-through on the visual only
+  const xRaw = useTransform(scrollYProgress, [0, 1], ['4%', '-50%'])
+  const x = useSpring(xRaw, { stiffness: 50, damping: 22, restDelta: 0.001 })
 
   return (
-    <SectionShell id="about" orbPosition="bottom-left" watermark="02">
-      {/* mt-14 clears the fixed nav — same pattern as every other section */}
-      <div className="flex-1 flex flex-col min-h-0 mt-14">
+    <div id="about" ref={outerRef} style={{ height: '450vh', position: 'relative' }}>
 
-        {/* Label */}
-        <div className="px-8 md:px-14 lg:px-20 pt-8 pb-4 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="h-px w-8" style={{ background: 'var(--lavender)' }} />
-            <span
-              className="text-[12px] tracking-[0.36em] uppercase"
-              style={{ color: 'var(--lavender)', fontFamily: 'var(--ff-mono)' }}
+      <div
+        className="sticky top-0 overflow-hidden flex flex-col"
+        style={{ height: '100dvh', background: 'var(--section-bg, #040810)' }}
+      >
+        {/* Background decorations */}
+        <div className="dot-grid absolute inset-0 z-0" />
+        <div className="vignette absolute inset-0 z-0" />
+        <div className="red-orb absolute z-0" style={{ bottom: '-200px', left: '-150px' }} />
+        <div className="section-watermark select-none" style={{ bottom: '-2rem', right: '-1rem' }}>02</div>
+
+        {/* ── Main content ── */}
+        <div className="relative flex flex-col h-full mt-14" style={{ zIndex: 10 }}>
+
+          {/* Label + read-progress bar */}
+          <div className="px-8 md:px-14 lg:px-20 pt-8 pb-4 flex-shrink-0">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-px w-8" style={{ background: 'var(--lavender)' }} />
+              <span
+                className="text-[12px] tracking-[0.36em] uppercase"
+                style={{ color: 'var(--lavender)', fontFamily: 'var(--ff-mono)' }}
+              >
+                02 / Who I Am
+              </span>
+            </div>
+            <div className="h-px w-full relative" style={{ background: 'var(--border)' }}>
+              <motion.div
+                className="absolute inset-y-0 left-0 origin-left"
+                style={{
+                  scaleX: scrollYProgress,
+                  background: 'linear-gradient(90deg, var(--lavender), var(--lime))',
+                  width: '100%',
+                }}
+              />
+            </div>
+          </div>
+
+          {/* TOP marquee strip — 0°, combined */}
+          <TopMarquee />
+
+          {/* Big scrolling text — slightly tilted −3°, composed via Framer Motion */}
+          <div className="flex-1 flex items-center overflow-hidden min-h-0">
+            <motion.div
+              style={{ x }}
+              className="whitespace-nowrap"
             >
-              02 / Who I Am
-            </span>
-          </div>
-        </div>
-
-        {/* Scroll-driven text rows — fills remaining vertical space */}
-        <div className="flex-1 flex flex-col justify-center overflow-hidden gap-1">
-
-          <div className="overflow-hidden">
-            <motion.div style={{ x: x1 }} className="whitespace-nowrap">
-              <span style={{
-                fontFamily: 'var(--ff-display)',
-                fontSize: 'clamp(2.8rem, 6.5vw, 6rem)',
-                fontWeight: 800,
-                letterSpacing: '-0.02em',
-                color: 'var(--text-primary)',
-              }}>
-                {ROW_1 + ROW_1}
+              <span
+                style={{
+                  fontFamily: 'var(--ff-display)',
+                  fontSize: 'clamp(3rem, 7vw, 6.5rem)',
+                  fontWeight: 800,
+                  letterSpacing: '-0.02em',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                {BIG_TEXT + BIG_TEXT}
               </span>
             </motion.div>
           </div>
 
-          <div className="overflow-hidden">
-            <motion.div style={{ x: x2 }} className="whitespace-nowrap">
-              <span style={{
-                fontFamily: 'var(--ff-display)',
-                fontSize: 'clamp(2.8rem, 6.5vw, 6rem)',
-                fontWeight: 800,
-                letterSpacing: '-0.02em',
-                color: 'transparent',
-                WebkitTextStroke: '1px var(--heading-outline-stroke)',
-              }}>
-                {ROW_2 + ROW_2}
+          {/* BOTTOM marquee strip — tech jokes from Skills */}
+          <BottomMarquee />
+
+          {/* Supporting copy */}
+          <div className="px-8 md:px-14 lg:px-20 py-5 flex-shrink-0 flex items-end justify-between gap-8">
+            <div className="max-w-xl">
+              <p
+                className="text-[14px] md:text-[15px] leading-[1.95] mb-3"
+                style={{ color: 'var(--text-secondary)', fontFamily: 'var(--ff-body)' }}
+              >
+                I started building apps to scratch my own itch — an obsessive need for things
+                to <em>feel</em> right, not just work. Five years later, that obsession became
+                a career. I sit at the junction of product thinking, visual craft, and
+                engineering rigour.
+              </p>
+              <p
+                className="text-[13px] leading-[1.85]"
+                style={{ color: 'var(--text-muted)', fontFamily: 'var(--ff-body)' }}
+              >
+                Whether it's a micro-interaction that delights or an architecture that scales,
+                I hold both ends of the rope.{' '}
+                <span style={{ color: 'var(--lavender)' }}>
+                  The gap between "it works" and "it's great" is where I live.
+                </span>
+              </p>
+            </div>
+
+            {/* Keep scrolling hint */}
+            <motion.div
+              className="flex-shrink-0 flex flex-col items-center gap-1.5"
+              style={{ opacity: useTransform(scrollYProgress, [0, 0.85], [1, 0]) }}
+            >
+              <span
+                className="text-[10px] tracking-[0.2em] uppercase"
+                style={{ color: 'var(--text-faint)', fontFamily: 'var(--ff-mono)' }}
+              >
+                keep scrolling
               </span>
+              <motion.div
+                animate={{ y: [0, 6, 0] }}
+                transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+                className="w-px h-6"
+                style={{ background: 'linear-gradient(to bottom, var(--lavender), transparent)' }}
+              />
             </motion.div>
           </div>
 
-          <div className="overflow-hidden">
-            <motion.div style={{ x: x3 }} className="whitespace-nowrap">
-              <span style={{
-                fontFamily: 'var(--ff-display)',
-                fontSize: 'clamp(2.8rem, 6.5vw, 6rem)',
-                fontWeight: 800,
-                letterSpacing: '-0.02em',
-                color: 'var(--text-primary)',
-              }}>
-                {ROW_3 + ROW_3}
-              </span>
-            </motion.div>
-          </div>
-
+          <SectionFooter current={2} />
         </div>
-
-        {/* Supporting line */}
-        <div className="px-8 md:px-14 lg:px-20 py-5 flex-shrink-0">
-          <p className="text-[14px] leading-[1.9] max-w-lg" style={{ color: 'var(--text-muted)', fontFamily: 'var(--ff-body)' }}>
-            I bridge design sensibility with technical depth — from React architectures to polished Figma prototypes.{' '}
-            <span style={{ color: 'var(--lavender)' }}>Every pixel and every function matters.</span>
-          </p>
-        </div>
-
-        <SectionFooter current={2} />
       </div>
-    </SectionShell>
+    </div>
   )
 }
