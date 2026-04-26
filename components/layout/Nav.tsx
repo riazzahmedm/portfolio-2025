@@ -19,7 +19,7 @@ export default function Nav() {
 
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 md:px-14 h-14 transition-colors duration-300"
+      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 md:px-14 lg:px-20 h-14 transition-colors duration-300"
       style={{
         borderBottom: '1px solid var(--border)',
         background: theme === 'dark' ? 'rgba(5,5,5,0.88)' : 'rgba(242,240,235,0.92)',

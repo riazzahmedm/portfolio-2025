@@ -1,14 +1,10 @@
 'use client'
-import { useRef } from 'react'
 import Image from 'next/image'
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import SectionShell from '@/components/ui/SectionShell'
 import SectionFooter from '@/components/layout/SectionFooter'
 import { STATS, TICKER_ITEMS, TICKER_ITEMS_2 } from '@/lib/data'
 import { getLenisInstance } from '@/lib/lenisInstance'
-
-const NAME_CHARS_1 = 'RIAZ'.split('')
-const NAME_CHARS_2 = 'AHMED'.split('')
 
 function MarqueeStrip({ items, reverse = false, bg, textColor }: {
   items: string[]
@@ -35,32 +31,17 @@ function MarqueeStrip({ items, reverse = false, bg, textColor }: {
 }
 
 export default function Hero() {
-  // ─── Differential parallax setup ─────────────────────────────────────
-  // Ref on the main content grid — it spans the full visible hero area.
-  // useScroll tracks it from when its top hits the viewport top (progress=0)
-  // to when its bottom hits the viewport top (progress=1, section gone).
-  // SectionShell already moves ALL content -14%; the transforms below are
-  // ADDITIVE offsets that create relative depth between individual layers.
-  const heroGridRef = useRef<HTMLDivElement>(null)
+  // Scroll-driven horizontal text drift.
+  // As the user scrolls down the page, RIAZ drifts left and AHMED drifts right.
+  // useScroll with no target tracks window scroll — direct, no ref needed.
+  const { scrollY } = useScroll()
 
-  const { scrollYProgress } = useScroll({
-    target: heroGridRef,
-    offset: ['start start', 'end start'],
-  })
-
-  const smoothed = useSpring(scrollYProgress, { stiffness: 70, damping: 22 })
-
-  // Layer 1 — "RIAZ" line: barely moves extra (feels like it floats, lingers longest)
-  const riazY = useTransform(smoothed, [0, 1], [0, 18])
-  // Layer 2 — "AHMED" outlined: moves down extra relative to shell (exits faster)
-  const ahmedY = useTransform(smoothed, [0, 1], [0, -55])
-  // Layer 3 — eyebrow + tagline: exits fastest
-  const eyebrowY = useTransform(smoothed, [0, 1], [0, 28])
-  const taglineY = useTransform(smoothed, [0, 1], [0, -90])
-  // Layer 4 — CTAs: fastest exit
-  const ctaY = useTransform(smoothed, [0, 1], [0, -130])
-  // Photo: lags behind everything (feels closest, stays longest)
-  const photoY = useTransform(smoothed, [0, 1], ['0%', '8%'])
+  // Map the first 500px of scroll to the text drift.
+  // No spring — Lenis already smooths it. Immediate response feels best.
+  const riazX    = useTransform(scrollY, [0, 500], ['0%', '-12%'])
+  const ahmedX   = useTransform(scrollY, [0, 500], ['0%',  '12%'])
+  const contentY = useTransform(scrollY, [0, 500], ['0%',  '-6%'])
+  const fadeOut  = useTransform(scrollY, [0, 400], [1, 0])
 
   const scrollTo = (id: string) => {
     const el = document.getElementById(id)
@@ -77,15 +58,16 @@ export default function Hero() {
         <MarqueeStrip items={TICKER_ITEMS} bg="var(--surface)" textColor="var(--text-dim)" />
       </div>
 
-      {/* Main grid — ref here so useScroll has a real DOM element from first render */}
-      <div ref={heroGridRef} className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_420px] xl:grid-cols-[1fr_480px] min-h-0">
+      {/* Main grid */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_420px] xl:grid-cols-[1fr_480px] min-h-0">
 
-        {/* LEFT — Text with differential parallax layers */}
-        <div className="flex flex-col justify-center px-8 md:px-14 lg:px-20 py-6 lg:py-0">
-
-          {/* Eyebrow — layer 3 */}
+        {/* LEFT — text */}
+        <motion.div
+          style={{ y: contentY, opacity: fadeOut }}
+          className="flex flex-col justify-center px-8 md:px-14 lg:px-20 py-6 lg:py-0"
+        >
+          {/* Eyebrow */}
           <motion.div
-            style={{ y: eyebrowY }}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, delay: 0.15 }}
@@ -97,64 +79,63 @@ export default function Hero() {
             </span>
           </motion.div>
 
-          {/* Name — each line is its own parallax layer */}
-          <div className="mb-6" style={{ fontFamily: 'var(--ff-display)', fontSize: 'clamp(4.5rem,11vw,9.5rem)', lineHeight: '0.88', letterSpacing: '-0.02em', fontWeight: 800 }}>
-
-            {/* RIAZ — layer 1, slowest (positive offset = lags behind, floats) */}
-            <motion.div style={{ y: riazY }} className="overflow-hidden flex">
-              {NAME_CHARS_1.map((ch, i) => (
-                <motion.span
-                  key={i}
-                  initial={{ y: '110%', opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.25 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-                  style={{ color: 'var(--text-primary)', display: 'inline-block' }}
-                >
-                  {ch}
-                </motion.span>
-              ))}
+          {/* Name — each row drifts in opposite directions on scroll */}
+          <div
+            className="mb-6 overflow-hidden"
+            style={{
+              fontFamily: 'var(--ff-display)',
+              fontSize: 'clamp(4.5rem, 11vw, 9.5rem)',
+              lineHeight: '0.88',
+              letterSpacing: '-0.02em',
+              fontWeight: 800,
+            }}
+          >
+            {/* RIAZ — slides left on scroll */}
+            <motion.div
+              style={{ x: riazX }}
+              initial={{ opacity: 0, y: 60 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              className="whitespace-nowrap"
+            >
+              <span style={{ color: 'var(--text-primary)' }}>RIAZ</span>
             </motion.div>
 
-            {/* AHMED — layer 2, fast (negative offset = exits ahead of RIAZ) */}
-            <motion.div style={{ y: ahmedY }} className="overflow-hidden flex">
-              {NAME_CHARS_2.map((ch, i) => (
-                <motion.span
-                  key={i}
-                  initial={{ y: '110%', opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.5 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-                  style={{ display: 'inline-block', color: 'transparent', WebkitTextStroke: '1.5px var(--heading-outline-stroke)' }}
-                >
-                  {ch}
-                </motion.span>
-              ))}
+            {/* AHMED — slides right on scroll */}
+            <motion.div
+              style={{ x: ahmedX }}
+              initial={{ opacity: 0, y: 60 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="whitespace-nowrap"
+            >
+              <span style={{ color: 'transparent', WebkitTextStroke: '1.5px var(--heading-outline-stroke)' }}>
+                AHMED
+              </span>
             </motion.div>
           </div>
 
-          {/* Tagline — layer 3, exits faster than the name */}
-          <motion.div style={{ y: taglineY }}>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.9 }}
-              className="text-[15px] leading-[1.85] mb-8 max-w-sm"
-              style={{ color: 'var(--text-muted)', fontFamily: 'var(--ff-body)', fontWeight: 400 }}
-            >
-              Building immersive digital products with{' '}
-              <span style={{ color: 'var(--lavender)' }}>React</span>,{' '}
-              <span style={{ color: 'var(--lavender)' }}>Next.js</span> &amp;{' '}
-              <span style={{ color: 'var(--lavender)' }}>React Native</span>.
-              <br />
-              <span style={{ color: 'var(--text-dim)' }}>5+ years · 40+ projects · Chennai, India.</span>
-            </motion.p>
-          </motion.div>
+          {/* Tagline */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="text-[15px] leading-[1.85] mb-8 max-w-sm"
+            style={{ color: 'var(--text-muted)', fontFamily: 'var(--ff-body)', fontWeight: 400 }}
+          >
+            Building immersive digital products with{' '}
+            <span style={{ color: 'var(--lavender)' }}>React</span>,{' '}
+            <span style={{ color: 'var(--lavender)' }}>Next.js</span> &amp;{' '}
+            <span style={{ color: 'var(--lavender)' }}>React Native</span>.
+            <br />
+            <span style={{ color: 'var(--text-dim)' }}>5+ years · 40+ projects · Chennai, India.</span>
+          </motion.p>
 
-          {/* CTAs — layer 4, exits fastest */}
+          {/* CTAs */}
           <motion.div
-            style={{ y: ctaY }}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.1 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
             className="flex items-center gap-4 flex-wrap"
           >
             <button
@@ -172,46 +153,31 @@ export default function Hero() {
               Say Hello <span style={{ color: 'var(--lavender)' }}>→</span>
             </button>
           </motion.div>
-        </div>
+        </motion.div>
 
-        {/* RIGHT — Portrait photo, lags behind everything (closest layer) */}
+        {/* RIGHT — photo */}
         <div className="hidden lg:flex items-end justify-center relative overflow-hidden">
-
-          {/* Glow */}
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full blur-3xl opacity-15"
             style={{ background: 'var(--lime)' }} />
 
-          {/* Photo — slowest parallax, appears to stay in place while text exits */}
           <motion.div
-            style={{ y: photoY }}
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.0, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
             className="relative z-10"
+            style={{ width: '340px' }}
           >
-            {/* Accent bar */}
             <motion.div
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}
               transition={{ duration: 0.8, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="h-0.5 mb-3"
-              style={{
-                width: '340px',
-                background: 'linear-gradient(90deg, var(--lime), transparent)',
-                transformOrigin: 'left',
-              }}
+              className="h-0.5 w-full mb-3"
+              style={{ background: 'linear-gradient(90deg, var(--lime), transparent)', transformOrigin: 'left' }}
             />
 
-            {/* Photo container */}
             <div
-              style={{
-                width: '340px',
-                borderRadius: '2px',
-                border: '1px solid rgba(130,255,31,0.15)',
-                aspectRatio: '3/4',
-                position: 'relative',
-                overflow: 'hidden',
-              }}
+              className="relative overflow-hidden"
+              style={{ borderRadius: '2px', border: '1px solid rgba(130,255,31,0.15)', aspectRatio: '3/4' }}
             >
               <Image
                 src="/assets/img/about.jpeg"
@@ -219,6 +185,7 @@ export default function Hero() {
                 fill
                 className="object-cover object-top"
                 priority
+                sizes="340px"
               />
               <div
                 className="absolute inset-0"
@@ -233,26 +200,19 @@ export default function Hero() {
               />
             </div>
 
-            {/* Name label */}
-            <div className="flex items-center justify-between mt-3" style={{ width: '340px' }}>
+            <div className="flex items-center justify-between mt-3">
               <div>
-                <div className="text-[11px] tracking-[0.28em] uppercase" style={{ color: 'var(--lime)', fontFamily: 'var(--ff-mono)' }}>
-                  Riaz Ahmed
-                </div>
-                <div className="text-[10px] tracking-[0.2em] uppercase" style={{ color: 'var(--text-faint)', fontFamily: 'var(--ff-mono)' }}>
-                  Chennai, India
-                </div>
+                <div className="text-[11px] tracking-[0.28em] uppercase" style={{ color: 'var(--lime)', fontFamily: 'var(--ff-mono)' }}>Riaz Ahmed</div>
+                <div className="text-[10px] tracking-[0.2em] uppercase" style={{ color: 'var(--text-faint)', fontFamily: 'var(--ff-mono)' }}>Chennai, India</div>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#22cc44] animate-pulse" />
-                <span className="text-[10px] tracking-[0.16em] uppercase" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
-                  Open to work
-                </span>
+                <span className="text-[10px] tracking-[0.16em] uppercase" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>Open to work</span>
               </div>
             </div>
           </motion.div>
 
-          {/* Stats — right edge */}
+          {/* Stats */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -261,10 +221,8 @@ export default function Hero() {
           >
             {STATS.slice(0, 3).map((s, i) => (
               <div key={i} className="text-right">
-                <div className="text-[10px] tracking-[0.22em] uppercase mb-0.5" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
-                  {s.key}
-                </div>
-                <div className="leading-none" style={{ fontFamily: 'var(--ff-display)', fontSize: 'clamp(1.4rem,2.5vw,2rem)', color: 'var(--text-primary)', fontWeight: 700 }}>
+                <div className="text-[10px] tracking-[0.22em] uppercase mb-0.5" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>{s.key}</div>
+                <div style={{ fontFamily: 'var(--ff-display)', fontSize: 'clamp(1.4rem,2.5vw,2rem)', color: 'var(--text-primary)', fontWeight: 700, lineHeight: 1 }}>
                   {s.value.replace('+', '')}<span style={{ color: 'var(--lime)' }}>{s.value.includes('+') ? '+' : ''}</span>
                 </div>
                 <div className="text-[10px] tracking-[0.12em] mt-0.5" style={{ color: 'var(--text-faint)', fontFamily: 'var(--ff-mono)' }}>{s.sub}</div>

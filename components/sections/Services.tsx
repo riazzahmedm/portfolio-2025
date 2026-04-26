@@ -4,7 +4,6 @@ import SectionShell from '@/components/ui/SectionShell'
 import SectionTag from '@/components/ui/SectionTag'
 import SectionHeading from '@/components/ui/SectionHeading'
 import SectionFooter from '@/components/layout/SectionFooter'
-import ScrollFade from '@/components/ui/ScrollFade'
 import { SERVICES } from '@/lib/data'
 import { Terminal, ArrowUpRight } from 'lucide-react'
 
@@ -17,11 +16,11 @@ const METHOD_COLORS: Record<string, string> = {
 export default function Services() {
   return (
     <SectionShell id="services" orbPosition="bottom-right" watermark="06">
-      <div className="flex-1 flex flex-col justify-center px-8 md:px-14 lg:px-20 py-4 mt-14 min-h-0 gap-6">
-        <ScrollFade yOffset={20} keepVisible>
+      <div className="flex-1 flex flex-col justify-center px-8 md:px-14 lg:px-20 py-8 mt-14 min-h-0 gap-6">
+        <div>
           <SectionTag num="06" label="Services" />
           <SectionHeading solid="SER" outline="VICES" size="text-[clamp(2.5rem,6vw,5rem)]" />
-        </ScrollFade>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {SERVICES.map((svc, i) => (

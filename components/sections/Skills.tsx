@@ -46,7 +46,7 @@ export default function Skills() {
       <div className="flex-1 flex flex-col min-h-0 mt-14 overflow-hidden">
 
         {/* Header */}
-        <div className="px-8 md:px-14 lg:px-20 pt-6 pb-4">
+        <div className="px-8 md:px-14 lg:px-20 pt-8 pb-4">
           <SectionTag num="03" label="Skill Set" />
           <div className="flex items-end justify-between gap-4 flex-wrap">
             <SectionHeading solid="SKILL" outline="SET" size="text-[clamp(2.5rem,6vw,5rem)]" />

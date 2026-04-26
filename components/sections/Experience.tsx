@@ -5,7 +5,6 @@ import SectionShell from '@/components/ui/SectionShell'
 import SectionTag from '@/components/ui/SectionTag'
 import SectionHeading from '@/components/ui/SectionHeading'
 import SectionFooter from '@/components/layout/SectionFooter'
-import ScrollFade from '@/components/ui/ScrollFade'
 import { EXPERIENCE } from '@/lib/data'
 import { ArrowRight, CheckCircle2, Circle } from 'lucide-react'
 
@@ -18,11 +17,9 @@ export default function Experience() {
       <div className="flex-1 grid grid-cols-1 md:grid-cols-2 min-h-0 mt-14">
 
         {/* LEFT — Timeline */}
-        <div className="flex flex-col justify-center px-8 md:px-14 lg:px-20 py-6 md:py-0 border-b md:border-b-0 md:border-r transition-colors duration-300" style={{ borderColor: 'var(--border)' }}>
-          <ScrollFade yOffset={20} keepVisible>
-            <SectionTag num="04" label="Experience" />
-            <SectionHeading solid="EXP" outline="ERIENCE" size="text-[clamp(2.5rem,6vw,5rem)]" />
-          </ScrollFade>
+        <div className="flex flex-col justify-center px-8 md:px-14 lg:px-20 py-8 md:py-0 border-b md:border-b-0 md:border-r transition-colors duration-300" style={{ borderColor: 'var(--border)' }}>
+          <SectionTag num="04" label="Experience" />
+          <SectionHeading solid="EXP" outline="ERIENCE" size="text-[clamp(2.5rem,6vw,5rem)]" />
 
           <div className="flex flex-col gap-1">
             {EXPERIENCE.map((job, i) => (
@@ -73,7 +70,7 @@ export default function Experience() {
         </div>
 
         {/* RIGHT — Detail */}
-        <div className="flex flex-col justify-center px-8 md:px-12 lg:px-14 py-6 md:py-0">
+        <div className="flex flex-col justify-center px-8 md:px-14 lg:px-20 py-8 md:py-0">
           <AnimatePresence mode="wait">
             <motion.div
               key={selected}

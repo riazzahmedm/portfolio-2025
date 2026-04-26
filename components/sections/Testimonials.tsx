@@ -6,7 +6,6 @@ import SectionShell from '@/components/ui/SectionShell'
 import SectionTag from '@/components/ui/SectionTag'
 import SectionHeading from '@/components/ui/SectionHeading'
 import SectionFooter from '@/components/layout/SectionFooter'
-import ScrollFade from '@/components/ui/ScrollFade'
 import { TESTIMONIALS } from '@/lib/data'
 import { Quote } from 'lucide-react'
 
@@ -19,14 +18,11 @@ export default function Testimonials() {
 
   return (
     <SectionShell id="testimonials" orbPosition="top-right" watermark="07">
-      <div className="flex-1 flex flex-col justify-center px-8 md:px-14 lg:px-20 py-4 mt-14 min-h-0 max-w-5xl mx-auto w-full">
-        <ScrollFade yOffset={24} keepVisible>
-          <SectionTag num="07" label="Testimonials" />
-          <SectionHeading solid="FEED" outline="BACK" size="text-[clamp(2.5rem,6vw,5rem)]" />
-        </ScrollFade>
+      <div className="flex-1 flex flex-col justify-center px-8 md:px-14 lg:px-20 py-8 mt-14 min-h-0 max-w-5xl mx-auto w-full">
+        <SectionTag num="07" label="Testimonials" />
+        <SectionHeading solid="FEED" outline="BACK" size="text-[clamp(2.5rem,6vw,5rem)]" />
 
-        <ScrollFade yOffset={32} delay={0.06} keepVisible>
-          <div className="relative mt-6">
+        <div className="relative mt-6">
             <AnimatePresence mode="wait">
               <motion.div
                 key={current}
@@ -136,7 +132,6 @@ export default function Testimonials() {
               </div>
             </div>
           </div>
-        </ScrollFade>
       </div>
 
       <SectionFooter current={7} />

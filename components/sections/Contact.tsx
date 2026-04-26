@@ -6,7 +6,6 @@ import SectionTag from '@/components/ui/SectionTag'
 import SectionHeading from '@/components/ui/SectionHeading'
 import SectionFooter from '@/components/layout/SectionFooter'
 import TerminalBlock from '@/components/ui/TerminalBlock'
-import ScrollFade from '@/components/ui/ScrollFade'
 import { Send, MapPin, Mail, ExternalLink, Link } from 'lucide-react'
 
 const TERMINAL_LINES = [
@@ -42,11 +41,9 @@ export default function Contact() {
       <div className="flex-1 grid grid-cols-1 md:grid-cols-2 min-h-0 mt-14">
 
         {/* LEFT — Terminal + Socials */}
-        <div className="flex flex-col justify-center px-8 md:px-14 lg:px-20 py-6 md:py-0 border-b md:border-b-0 md:border-r transition-colors duration-300 gap-5" style={{ borderColor: 'var(--border)' }}>
-          <ScrollFade yOffset={20} keepVisible>
-            <SectionTag num="08" label="Contact" />
-            <SectionHeading solid="LET'S" outline="TALK" size="text-[clamp(2.5rem,6vw,5rem)]" />
-          </ScrollFade>
+        <div className="flex flex-col justify-center px-8 md:px-14 lg:px-20 py-8 md:py-0 border-b md:border-b-0 md:border-r transition-colors duration-300 gap-5" style={{ borderColor: 'var(--border)' }}>
+          <SectionTag num="08" label="Contact" />
+          <SectionHeading solid="LET'S" outline="TALK" size="text-[clamp(2.5rem,6vw,5rem)]" />
 
           <TerminalBlock lines={TERMINAL_LINES} />
 
@@ -66,7 +63,7 @@ export default function Contact() {
         </div>
 
         {/* RIGHT — Form */}
-        <div className="flex flex-col justify-center px-8 md:px-12 lg:px-14 py-6 md:py-0">
+        <div className="flex flex-col justify-center px-8 md:px-14 lg:px-20 py-8 md:py-0">
           {sent ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -142,7 +139,7 @@ export default function Contact() {
 
       {/* Footer */}
       <div className="flex-shrink-0">
-        <div className="flex items-center justify-center px-6 py-2 border-t transition-colors duration-300" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center justify-center px-8 py-2 border-t transition-colors duration-300" style={{ borderColor: 'var(--border)' }}>
           <span className="text-[12px] tracking-[0.16em] uppercase transition-colors duration-300" style={{ color: 'var(--text-faint)', fontFamily: 'var(--ff-mono)' }}>
             © Riaz Ahmed · built with Next.js, caffeine &amp; too many tokens
           </span>
