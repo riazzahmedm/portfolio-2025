@@ -4,11 +4,11 @@ export const NAV_LINKS = [
   { label: 'Skills', href: '#skills' },
   { label: 'Experience', href: '#experience' },
   { label: 'Work', href: '#projects' },
-  { label: 'Connect', href: '#services' },
+  { label: 'Connect', href: '#connect' },
   { label: 'Say hi', href: '#contact' },
 ]
 
-export const SECTIONS = ['hero','about','skills','experience','projects','services','testimonials','contact']
+export const SECTIONS = ['hero','about','skills','experience','projects','connect','testimonials','contact']
 
 export const TICKER_ITEMS = [
   'npm run portfolio',
@@ -132,9 +132,9 @@ export const SKILL_LEVELS = [
 
 export const EXPERIENCE = [
   {
-    year: '2023',
+    year: '2025',
     role: 'Senior Software Engineer',
-    company: 'Current Company',
+    company: 'Feuji',
     current: true,
     tags: ['Next.js', 'React Native', 'TypeScript', 'Azure'],
     points: [
@@ -145,9 +145,9 @@ export const EXPERIENCE = [
     ],
   },
   {
-    year: '2022',
+    year: '2024',
     role: 'Software Engineer',
-    company: 'Previous Company',
+    company: 'ACS',
     current: false,
     tags: ['React', '.NET Core', 'Redux', 'Azure'],
     points: [
@@ -158,9 +158,9 @@ export const EXPERIENCE = [
     ],
   },
   {
-    year: '2020',
+    year: '2021',
     role: 'Mobile App Developer',
-    company: 'Mobile Studio',
+    company: 'ACS',
     current: false,
     tags: ['React Native', 'Expo', 'Ionic', 'TypeScript'],
     points: [
@@ -172,8 +172,8 @@ export const EXPERIENCE = [
   },
   {
     year: '2019',
-    role: 'Frontend Developer',
-    company: 'First Role',
+    role: 'Mobile App Developer',
+    company: 'MobileCRM Technologies',
     current: false,
     tags: ['React', 'HTML/CSS', 'JavaScript', 'Bootstrap'],
     points: [

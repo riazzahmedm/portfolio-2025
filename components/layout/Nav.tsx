@@ -1,5 +1,5 @@
 'use client'
-import { NAV_LINKS } from '@/lib/data'
+import { NAV_LINKS, SECTIONS } from '@/lib/data'
 import { useActiveSection } from '@/hooks/useActiveSection'
 import { useTheme } from '@/lib/theme'
 import { getLenisInstance } from '@/lib/lenisInstance'
@@ -43,7 +43,7 @@ export default function Nav() {
             <button
               onClick={() => scrollTo(link.href)}
               className="text-[13px] font-medium tracking-wide transition-colors duration-200"
-              style={{ color: active === i ? 'var(--lime)' : 'var(--text-dim)', fontFamily: 'var(--ff-body)' }}
+              style={{ color: link.href === `#${SECTIONS[active]}` ? 'var(--lime)' : 'var(--text-dim)', fontFamily: 'var(--ff-body)' }}
             >
               {link.label}
             </button>

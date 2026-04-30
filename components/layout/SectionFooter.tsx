@@ -1,9 +1,10 @@
 interface Props {
   current: number
   total?: number
+  hideLabel?: boolean
 }
 
-export default function SectionFooter({ current, total = 8 }: Props) {
+export default function SectionFooter({ current, total = 8, hideLabel = false }: Props) {
   const num = String(current).padStart(2, '0')
   const tot = String(total).padStart(2, '0')
 
@@ -16,9 +17,11 @@ export default function SectionFooter({ current, total = 8 }: Props) {
         <div className="relative w-10 h-px overflow-hidden" style={{ background: 'var(--border-card)' }}>
           <div className="absolute top-0 bottom-0 w-full" style={{ background: 'var(--red)', animation: 'scanline 2s ease-in-out infinite' }} />
         </div>
-        <span className="text-[12px] tracking-[0.18em] uppercase" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
-          Scroll to explore
-        </span>
+        {!hideLabel && (
+          <span className="text-[12px] tracking-[0.18em] uppercase" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
+            Scroll to explore
+          </span>
+        )}
       </div>
       <span className="text-[12px] tracking-[0.16em]" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
         <span style={{ color: 'var(--red)' }}>{num}</span> / {tot}

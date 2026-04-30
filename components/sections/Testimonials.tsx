@@ -1,25 +1,30 @@
 'use client'
 import { motion } from 'framer-motion'
 import SectionShell from '@/components/ui/SectionShell'
+import SectionTag from '@/components/ui/SectionTag'
 import SectionFooter from '@/components/layout/SectionFooter'
 
 const FAKE_MESSAGES = [
-  { from: 'client_007', time: '2d ago',  text: 'Hey! Quick question about the project…',   status: 'seen' },
-  { from: 'hr@startup', time: '5d ago',  text: 'Would love to get your feedback on this!',  status: 'seen' },
+  { from: 'client_007',  time: '2d ago', text: 'Hey! Quick question about the project…',   status: 'seen' },
+  { from: 'hr@startup',  time: '5d ago', text: 'Would love to get your feedback on this!',  status: 'seen' },
   { from: 'old_manager', time: '1w ago', text: 'Can you write a testimonial for yourself?', status: 'seen' },
 ]
 
 export default function Testimonials() {
   return (
-    <SectionShell id="testimonials" orbPosition="top-right" watermark="07">
-      <div className="flex-1 flex flex-col items-center justify-center px-8 md:px-14 lg:px-20 mt-14 min-h-0">
+    <SectionShell id="testimonials" orbPosition="top-right" watermark="07" noFade>
+      {/* Centre glow */}
+      <div
+        className="absolute inset-0 z-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(184,160,255,0.18) 0%, transparent 70%)',
+        }}
+      />
+      <div className="flex-1 flex flex-col items-center justify-center px-8 md:px-14 lg:px-20 mt-14 min-h-0 relative z-10">
 
         {/* Section label */}
-        <div className="flex items-center gap-3 mb-10 self-start">
-          <div className="h-px w-8" style={{ background: 'var(--lavender)' }} />
-          <span className="text-[12px] tracking-[0.36em] uppercase" style={{ color: 'var(--lavender)', fontFamily: 'var(--ff-mono)' }}>
-            07 / Testimonials
-          </span>
+        <div className="self-start mb-10">
+          <SectionTag num="07" label="Testimonials" />
         </div>
 
         {/* Main message */}
@@ -39,13 +44,15 @@ export default function Testimonials() {
               letterSpacing: '-0.02em',
               color: '#ffffff',
               marginBottom: '1.25rem',
-              textShadow: '0 2px 40px rgba(0,0,0,0.8)',
+              WebkitFontSmoothing: 'antialiased',
             }}
           >
             This was supposed to be<br />
-            <span style={{ color: '#d4bdff', textShadow: '0 0 40px rgba(184,160,255,0.4)' }}>the feedback section.</span>
+            <span style={{ color: 'var(--lavender)', textShadow: '0 0 60px rgba(184,160,255,0.55)' }}>
+              the feedback section.
+            </span>
           </div>
-          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 15, fontFamily: 'var(--ff-body)', lineHeight: 1.8 }}>
+          <p style={{ color: 'rgba(255,255,255,0.82)', fontSize: 15, fontFamily: 'var(--ff-body)', lineHeight: 1.8 }}>
             But… people are busy right now.
           </p>
         </motion.div>
@@ -67,49 +74,48 @@ export default function Testimonials() {
               transition={{ delay: 0.35 + i * 0.12, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
               className="flex items-center gap-3 px-4 py-3 rounded-xl border"
               style={{
-                background: 'var(--surface)',
-                borderColor: 'var(--border-card)',
+                background: 'var(--surface-raised)',
+                borderColor: 'rgba(184,160,255,0.14)',
               }}
             >
-              {/* Avatar initial */}
+              {/* Avatar */}
               <div
                 className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-[11px] font-bold"
-                style={{ background: 'rgba(184,160,255,0.12)', color: 'var(--lavender)', fontFamily: 'var(--ff-mono)' }}
+                style={{ background: 'rgba(184,160,255,0.14)', color: 'var(--lavender)', fontFamily: 'var(--ff-mono)' }}
               >
                 {msg.from[0].toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-[12px] font-semibold truncate" style={{ color: 'rgba(255,255,255,0.85)', fontFamily: 'var(--ff-mono)' }}>
+                  <span className="text-[12px] font-semibold truncate" style={{ color: 'var(--text-primary)', fontFamily: 'var(--ff-mono)' }}>
                     {msg.from}
                   </span>
-                  <span className="text-[10px] flex-shrink-0 ml-2" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--ff-mono)' }}>
+                  <span className="text-[10px] flex-shrink-0 ml-2" style={{ color: 'var(--text-muted)', fontFamily: 'var(--ff-mono)' }}>
                     {msg.time}
                   </span>
                 </div>
-                <div className="text-[12px] truncate" style={{ color: 'rgba(255,255,255,0.55)', fontFamily: 'var(--ff-body)' }}>
+                <div className="text-[12px] truncate" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--ff-body)' }}>
                   {msg.text}
                 </div>
               </div>
-              {/* Seen indicator */}
-              <div className="flex-shrink-0 text-[10px] tracking-wide" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--ff-mono)' }}>
+              <div className="flex-shrink-0 text-[10px] tracking-wide" style={{ color: 'var(--text-muted)', fontFamily: 'var(--ff-mono)' }}>
                 seen
               </div>
             </motion.div>
           ))}
 
-          {/* Blinking typing indicator */}
+          {/* Typing indicator */}
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.75 }}
             className="flex items-center gap-3 px-4 py-3 rounded-xl border"
-            style={{ background: 'var(--surface)', borderColor: 'rgba(184,160,255,0.15)' }}
+            style={{ background: 'var(--surface-raised)', borderColor: 'rgba(184,160,255,0.18)' }}
           >
             <div
               className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-[11px]"
-              style={{ background: 'rgba(184,160,255,0.08)', color: 'var(--lavender)', fontFamily: 'var(--ff-mono)' }}
+              style={{ background: 'rgba(184,160,255,0.1)', color: 'var(--lavender)', fontFamily: 'var(--ff-mono)' }}
             >
               ?
             </div>
@@ -117,14 +123,14 @@ export default function Testimonials() {
               {[0, 0.18, 0.36].map((delay, i) => (
                 <motion.div
                   key={i}
-                  animate={{ opacity: [0.2, 1, 0.2], y: [0, -3, 0] }}
+                  animate={{ opacity: [0.3, 1, 0.3], y: [0, -3, 0] }}
                   transition={{ duration: 0.9, repeat: Infinity, delay, ease: 'easeInOut' }}
                   className="w-1.5 h-1.5 rounded-full"
                   style={{ background: 'var(--lavender)' }}
                 />
               ))}
             </div>
-            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--ff-mono)' }}>
+            <span className="text-[11px]" style={{ color: 'var(--text-muted)', fontFamily: 'var(--ff-mono)' }}>
               someone is typing…
             </span>
           </motion.div>
@@ -137,7 +143,7 @@ export default function Testimonials() {
           viewport={{ once: true }}
           transition={{ delay: 0.9, duration: 0.6 }}
           className="mt-8 text-center text-[11px] tracking-[0.14em] uppercase"
-          style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--ff-mono)' }}
+          style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}
         >
           // real ones incoming · check back soon
         </motion.p>

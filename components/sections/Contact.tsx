@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import SectionShell from '@/components/ui/SectionShell'
 import SectionTag from '@/components/ui/SectionTag'
-import SectionHeading from '@/components/ui/SectionHeading'
 import SectionFooter from '@/components/layout/SectionFooter'
 import TerminalBlock from '@/components/ui/TerminalBlock'
 import { Send, MapPin, Mail, ExternalLink, Link } from 'lucide-react'
@@ -42,8 +41,7 @@ export default function Contact() {
 
         {/* LEFT — Terminal + Socials */}
         <div className="flex flex-col justify-center px-8 md:px-14 lg:px-20 py-8 md:py-0 border-b md:border-b-0 md:border-r transition-colors duration-300 gap-5" style={{ borderColor: 'var(--border)' }}>
-          <SectionTag num="08" label="Contact" />
-          <SectionHeading solid="LET'S" outline="TALK" size="text-[clamp(2.5rem,6vw,5rem)]" />
+          <SectionTag num="08" label="Don't Be A Stranger" />
 
           <TerminalBlock lines={TERMINAL_LINES} />
 
@@ -144,7 +142,7 @@ export default function Contact() {
             © Riaz Ahmed · built with Next.js, caffeine &amp; too many tokens
           </span>
         </div>
-        <SectionFooter current={8} />
+        <SectionFooter current={8} hideLabel />
       </div>
     </SectionShell>
   )

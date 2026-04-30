@@ -6,18 +6,15 @@ import { TECH_JOKES } from '@/lib/data'
 
 // ── Content ──────────────────────────────────────────────────────────────────
 const BIG_TEXT =
-  'TURNING COMPLEXITY INTO CLARITY · WHERE DESIGN MEETS ENGINEERING · OBSESSED WITH THE 1% DETAILS · PRODUCTS PEOPLE FEEL · CLEAN CODE IS KIND CODE · '
+  'SHIPS BEFORE MONDAY · REACT IS HOME · DARK MODE OR NOTHING · STILL SHIPPING FROM CHENNAI · CODE THAT READS LIKE ENGLISH · BUILT FOR THE ONES WHO CARE · '
 
 // Single combined ticker strip (top) — personality + philosophy
 const ABOUT_TICKER = [
-  'PIXEL PERFECT', '∞', 'COFFEE → CODE', '∞',
-  'BUG WHISPERER', '∞', 'DARK MODE ALWAYS', '∞',
-  'SHIPS ON TIME', '∞', 'READS CSS SPECS FOR FUN', '∞',
-  'OBSESSED WITH UX', '∞', 'DESIGN IS HOW IT WORKS', '∞',
-  'BUILD WITH PURPOSE', '◆', 'USER ABOVE ALL', '◆',
-  'ITERATE RELENTLESSLY', '◆', 'CLEAN OR REWRITE', '◆',
-  'EMPATHY-DRIVEN', '◆', 'DETAIL IS NOT OPTIONAL', '◆',
-  'PRODUCT THINKER', '◆', 'NEVER STOP LEARNING', '◆',
+  '7+ YEARS IN THE TRENCHES', '<>', '20+ APPS SHIPPED', '</>', 'ZERO LOREM IPSUM TOLERANCE', '{',
+  'OBSESSED WITH THE 1%', '}', 'BUILT THINGS PEOPLE ACTUALLY USE', '//', 'GIT COMMIT -M "FINALLY"', '*',
+  'CHENNAI → GLOBAL', '*', 'MOBILE FIRST ALWAYS', '[', 'NAMED MY VARIABLES WELL (MOSTLY)', ']',
+  'SHIPS BEFORE MONDAY', '===', 'DESIGN IS NEVER DONE', '&&',
+  'REACT NATIVE SURVIVOR', '||', 'THE GAP BETWEEN GOOD AND GREAT', '!==',
 ]
 
 // ── Top marquee strip (0°, combined) ─────────────────────────────────────────
@@ -101,7 +98,7 @@ export default function About() {
   })
 
   // Big text scrolls fully left — spring adds smooth follow-through on the visual only
-  const xRaw = useTransform(scrollYProgress, [0, 1], ['4%', '-50%'])
+  const xRaw = useTransform(scrollYProgress, [0.2, 1], ['4%', '-50%'])
   const x = useSpring(xRaw, { stiffness: 50, damping: 22, restDelta: 0.001 })
 
   return (
@@ -176,19 +173,18 @@ export default function About() {
                 className="text-[14px] md:text-[15px] leading-[1.95] mb-3"
                 style={{ color: 'var(--text-secondary)', fontFamily: 'var(--ff-body)' }}
               >
-                I started building apps to scratch my own itch — an obsessive need for things
-                to <em>feel</em> right, not just work. Five years later, that obsession became
-                a career. I sit at the junction of product thinking, visual craft, and
-                engineering rigour.
+                Honestly, I got into this because bad apps annoyed me. Kept thinking
+                "I could fix this" — so I learned how. 7+ years and 20+ shipped products later,
+                that same urge is still what gets me out of bed.
               </p>
               <p
                 className="text-[13px] leading-[1.85]"
                 style={{ color: 'var(--text-muted)', fontFamily: 'var(--ff-body)' }}
               >
-                Whether it's a micro-interaction that delights or an architecture that scales,
-                I hold both ends of the rope.{' '}
+                I work in React, Next.js and React Native. I care a lot about the small things —
+                the ones most people skip. If an animation is off by 50ms, I'll notice.{' '}
                 <span style={{ color: 'var(--lavender)' }}>
-                  The gap between "it works" and "it's great" is where I live.
+                  Not everyone cares about that. The ones who do are my kind of people.
                 </span>
               </p>
             </div>
@@ -213,7 +209,7 @@ export default function About() {
             </motion.div>
           </div>
 
-          <SectionFooter current={2} />
+          <SectionFooter current={2} hideLabel />
         </div>
       </div>
     </div>

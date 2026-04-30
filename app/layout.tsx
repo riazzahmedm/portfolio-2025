@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
-import { Boldonse, Space_Grotesk, Space_Mono } from 'next/font/google'
+import { Oswald, Space_Grotesk, Space_Mono } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/lib/theme'
 
-const boldonse = Boldonse({
+const oswald = Oswald({
   subsets: ['latin'],
   weight: ['400'],
   variable: '--ff-display',
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${boldonse.variable} ${spaceGrotesk.variable} ${spaceMono.variable}`}>
+    <html lang="en" className={`${oswald.variable} ${spaceGrotesk.variable} ${spaceMono.variable}`}>
       <body style={{ background: 'var(--bg)', color: 'var(--text-primary)', fontFamily: 'var(--ff-body)' }}>
         <ThemeProvider>
           {children}

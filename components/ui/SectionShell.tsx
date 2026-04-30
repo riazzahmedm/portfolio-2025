@@ -11,6 +11,7 @@ interface Props {
   revealColor?: string
   revealDirection?: 'left' | 'right' | 'top'
   noDecorations?: boolean
+  noFade?: boolean
 }
 
 const ORB_POSITIONS: Record<string, string> = {
@@ -27,18 +28,15 @@ export default function SectionShell({
   watermark,
   className = '',
   noDecorations = false,
+  noFade = false,
 }: Props) {
   const sectionRef = useRef<HTMLElement>(null)
 
-  // Track how far this section has scrolled OUT at the top.
-  // progress = 0: section top aligned with viewport top (section fully in view)
-  // progress = 1: section bottom aligned with viewport top (completely gone)
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ['start start', 'end start'],
   })
 
-  // Content parallaxes up slightly faster than the scroll and fades out
   const contentY = useTransform(scrollYProgress, [0, 1], ['0%', '-14%'])
   const contentOpacity = useTransform(scrollYProgress, [0, 0.5, 0.9], [1, 0.7, 0])
 
@@ -57,7 +55,7 @@ export default function SectionShell({
 
       {/* Content wrapper — scroll-driven exit */}
       <motion.div
-        style={{ y: contentY, opacity: contentOpacity }}
+        style={{ y: contentY, opacity: noFade ? 1 : contentOpacity }}
         className="relative z-10 h-full flex flex-col"
       >
         {children}

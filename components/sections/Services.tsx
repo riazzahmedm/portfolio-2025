@@ -231,7 +231,7 @@ export default function Connect() {
 
   return (
     <div
-      id="services"
+      id="connect"
       className="snap-section"
       style={{ '--section-bg': '#060508', '--section-orb': 'rgba(200,20,20,0.14)' } as React.CSSProperties}
     >
@@ -260,12 +260,12 @@ export default function Connect() {
           transition={{ duration: 0.7, delay: 0.25 }}
         >
           <div style={{
-            fontFamily: 'Georgia, "Times New Roman", serif',
-            fontStyle: 'italic',
-            fontSize: 'clamp(1.1rem, 2.5vw, 1.6rem)',
-            color: 'rgba(255,255,255,0.4)',
-            marginBottom: -4,
-            letterSpacing: '0.02em',
+            fontFamily: 'var(--ff-mono)',
+            fontSize: 'clamp(0.65rem, 1.2vw, 0.8rem)',
+            color: 'rgba(255,255,255,0.35)',
+            marginBottom: 6,
+            letterSpacing: '0.28em',
+            textTransform: 'uppercase',
           }}>
             Connect on
           </div>

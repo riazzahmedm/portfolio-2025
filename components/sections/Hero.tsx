@@ -29,7 +29,7 @@ export default function Hero() {
     <SectionShell id="hero" noDecorations>
 
       {/* AHMED — behind image, right-aligned, vertically centered */}
-      <div className="absolute inset-0 z-[10] flex items-center justify-end pr-6 md:pr-14 lg:pr-60 overflow-hidden">
+      <div className="absolute inset-0 z-[10] flex items-center justify-end pr-8 md:pr-30 lg:pr-80 overflow-hidden">
         <motion.div
           style={{ x: ahmedX, opacity: ahmedOpacity }}
           initial={{ y: 60 }}
@@ -58,14 +58,14 @@ export default function Hero() {
       </motion.div>
 
       {/* RIAZ — in front of image, left-aligned, vertically centered */}
-      <div className="absolute inset-0 z-[0] flex items-center justify-start pl-8 md:pl-14 lg:pl-60 overflow-hidden">
+      <div className="absolute inset-0 z-[0] flex items-center justify-start pl-5 md:pl-14 lg:pl-50 overflow-hidden">
         <motion.div
           style={{ x: riazX, opacity: riazOpacity }}
           initial={{ y: 60 }}
           animate={{ y: 0 }}
           transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
         >
-          <span style={{ ...nameStyle, display: 'inline-block', color: 'transparent', WebkitTextStroke: '1px rgba(255,255,255,0.25)' }} className='mb-10'>AHMED</span>
+          <span style={{ ...nameStyle, display: 'inline-block', color: 'rgba(255,255,255,0.25)' }} className='mb-10'>AHMED</span>
         </motion.div>
       </div>
 

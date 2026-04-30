@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import SectionShell from '@/components/ui/SectionShell'
 import SectionTag from '@/components/ui/SectionTag'
-import SectionHeading from '@/components/ui/SectionHeading'
 import SectionFooter from '@/components/layout/SectionFooter'
 import { EXPERIENCE } from '@/lib/data'
 import { ArrowRight, CheckCircle2, Circle } from 'lucide-react'
@@ -18,8 +17,7 @@ export default function Experience() {
 
         {/* LEFT — Timeline */}
         <div className="flex flex-col justify-center px-8 md:px-14 lg:px-20 py-8 md:py-0 border-b md:border-b-0 md:border-r transition-colors duration-300" style={{ borderColor: 'var(--border)' }}>
-          <SectionTag num="04" label="Experience" />
-          <SectionHeading solid="EXP" outline="ERIENCE" size="text-[clamp(2.5rem,6vw,5rem)]" />
+          <SectionTag num="04" label="Companies That Trusted Me" />
 
           <div className="flex flex-col gap-1">
             {EXPERIENCE.map((job, i) => (
@@ -82,10 +80,10 @@ export default function Experience() {
               <div className="flex items-center gap-2 mb-2">
                 <div className="h-px w-6" style={{ background: 'var(--lavender)' }} />
                 <div className="text-[12px] tracking-[0.22em] uppercase" style={{ color: 'var(--lavender)', fontFamily: 'var(--ff-mono)' }}>
-                  {job.current ? '● Currently here' : `Since ${job.year}`}
+                  {job.current ? 'Currently here' : `Since ${job.year}`}
                 </div>
               </div>
-              <div className="text-[22px] font-bold tracking-tight mb-1" style={{ fontFamily: 'var(--ff-display)', color: 'var(--text-primary)' }}>
+              <div className="text-[40px] font-bold tracking-tight mb-1 uppercase" style={{ fontFamily: 'var(--ff-display)', color: 'var(--text-primary)' }}>
                 {job.role}
               </div>
               <div className="text-[13px] tracking-[0.16em] uppercase mb-5" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>

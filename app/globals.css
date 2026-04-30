@@ -19,7 +19,7 @@ html.lenis, html.lenis body { height: auto; }
   --dot-size: 32px;
 
   /* Font vars — next/font class on <html> sets the real values; --ff-* avoids Tailwind's --font-* namespace */
-  --ff-display: 'Boldonse', sans-serif;
+  --ff-display: 'Oswald', sans-serif;
   --ff-body: 'Space Grotesk', sans-serif;
   --ff-mono: 'Space Mono', monospace;
 
@@ -128,8 +128,8 @@ html, body {
 #skills       { --section-bg: #040a05; --section-orb: rgba(130, 255, 31, 0.12); }
 #experience   { --section-bg: #080510; --section-orb: rgba(184, 160, 255, 0.18); }
 #projects     { --section-bg: #050810; --section-orb: rgba(130, 255, 31, 0.10); }
-#services     { --section-bg: #0a0705; --section-orb: rgba(200, 20, 20, 0.14); }
-#testimonials { --section-bg: #0d0b14; --section-orb: rgba(184, 160, 255, 0.18); }
+#connect      { --section-bg: #0a0705; --section-orb: rgba(200, 20, 20, 0.14); }
+#testimonials { --section-bg: #130f20; --section-orb: rgba(184, 160, 255, 0.45); }
 #contact      { --section-bg: #050a08; --section-orb: rgba(130, 255, 31, 0.10); }
 
 html.light .snap-section { background: var(--bg); }

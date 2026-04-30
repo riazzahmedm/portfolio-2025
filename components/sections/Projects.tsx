@@ -3,7 +3,6 @@ import { useRef, useEffect, useState } from 'react'
 import Image from 'next/image'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import SectionTag from '@/components/ui/SectionTag'
-import SectionHeading from '@/components/ui/SectionHeading'
 import SectionFooter from '@/components/layout/SectionFooter'
 import { PROJECTS } from '@/lib/data'
 
@@ -173,8 +172,7 @@ export default function Projects() {
           {/* Header */}
           <div className="px-8 md:px-14 lg:px-20 pt-8 pb-3 flex items-end justify-between gap-4 flex-shrink-0">
             <div>
-              <SectionTag num="05" label="Projects" />
-              <SectionHeading solid="PRO" outline="JECTS" size="text-[clamp(2.5rem,6vw,5rem)]" />
+              <SectionTag num="05" label="Things I Actually Shipped" />
             </div>
 
             {/* Scroll hint */}
@@ -298,7 +296,7 @@ export default function Projects() {
             </div>
           </div>
 
-          <SectionFooter current={5} />
+          <SectionFooter current={5} hideLabel />
         </div>
       </div>
     </div>
