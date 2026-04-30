@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
-import { Syne, Space_Grotesk, Space_Mono } from 'next/font/google'
+import { Boldonse, Space_Grotesk, Space_Mono } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/lib/theme'
 
-const syne = Syne({
+const boldonse = Boldonse({
   subsets: ['latin'],
-  weight: ['400', '500', '700', '800'],
+  weight: ['400'],
   variable: '--ff-display',
   display: 'swap',
 })
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${syne.variable} ${spaceGrotesk.variable} ${spaceMono.variable}`}>
+    <html lang="en" className={`${boldonse.variable} ${spaceGrotesk.variable} ${spaceMono.variable}`}>
       <body style={{ background: 'var(--bg)', color: 'var(--text-primary)', fontFamily: 'var(--ff-body)' }}>
         <ThemeProvider>
           {children}

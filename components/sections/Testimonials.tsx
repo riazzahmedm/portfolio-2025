@@ -39,12 +39,13 @@ export default function Testimonials() {
               letterSpacing: '-0.02em',
               color: '#ffffff',
               marginBottom: '1.25rem',
+              textShadow: '0 2px 40px rgba(0,0,0,0.8)',
             }}
           >
             This was supposed to be<br />
-            <span style={{ color: '#c8b4ff' }}>the feedback section.</span>
+            <span style={{ color: '#d4bdff', textShadow: '0 0 40px rgba(184,160,255,0.4)' }}>the feedback section.</span>
           </div>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 15, fontFamily: 'var(--ff-body)', lineHeight: 1.8 }}>
+          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 15, fontFamily: 'var(--ff-body)', lineHeight: 1.8 }}>
             But… people are busy right now.
           </p>
         </motion.div>

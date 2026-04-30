@@ -10,6 +10,7 @@ interface Props {
   className?: string
   revealColor?: string
   revealDirection?: 'left' | 'right' | 'top'
+  noDecorations?: boolean
 }
 
 const ORB_POSITIONS: Record<string, string> = {
@@ -25,6 +26,7 @@ export default function SectionShell({
   orbPosition = 'top-right',
   watermark,
   className = '',
+  noDecorations = false,
 }: Props) {
   const sectionRef = useRef<HTMLElement>(null)
 
@@ -43,9 +45,9 @@ export default function SectionShell({
   return (
     <section id={id} ref={sectionRef} className={`snap-section ${className}`}>
       {/* Static decorations — not affected by exit parallax */}
-      <div className="dot-grid" />
-      <div className="vignette" />
-      <div className={`red-orb ${ORB_POSITIONS[orbPosition]}`} />
+      {!noDecorations && <div className="dot-grid" />}
+      {!noDecorations && <div className="vignette" />}
+      {!noDecorations && <div className={`red-orb ${ORB_POSITIONS[orbPosition]}`} />}
 
       {watermark && (
         <div className="section-watermark select-none" style={{ bottom: '-2rem', right: '-1rem' }}>
