@@ -105,7 +105,7 @@ export default function About() {
         <div className="relative flex flex-col h-full mt-14" style={{ zIndex: 10 }}>
 
           {/* Label + read-progress bar */}
-          <div className="px-8 md:px-14 lg:px-20 pt-8 pb-4 flex-shrink-0">
+          <div className="px-8 md:px-14 lg:px-20 xl:px-32 2xl:px-48 pt-8 pb-4 flex-shrink-0">
             <div className="flex items-center gap-3 mb-4">
               <div className="h-px w-8" style={{ background: 'var(--lavender)' }} />
               <span
@@ -154,10 +154,10 @@ export default function About() {
           <BottomMarquee />
 
           {/* Supporting copy */}
-          <div className="px-8 md:px-14 lg:px-20 py-5 flex-shrink-0 flex items-end justify-between gap-8">
+          <div className="px-8 md:px-14 lg:px-20 xl:px-32 2xl:px-48 py-3 md:py-5 flex-shrink-0 flex items-end justify-between gap-8">
             <div className="max-w-xl">
               <p
-                className="text-[14px] md:text-[15px] leading-[1.95] mb-3"
+                className="text-[13px] md:text-[15px] leading-[1.75] md:leading-[1.95] mb-2 md:mb-3"
                 style={{ color: 'var(--text-secondary)', fontFamily: 'var(--ff-body)' }}
               >
                 Bruce Wayne didn't become Batman overnight — neither did I. Bad apps annoyed me,
@@ -165,20 +165,20 @@ export default function About() {
                 city needs saving. 20+ shipped products. Zero lorem ipsum.
               </p>
               <p
-                className="text-[13px] leading-[1.85]"
+                className="text-[11px] md:text-[13px] leading-[1.75] md:leading-[1.85]"
                 style={{ color: 'var(--text-muted)', fontFamily: 'var(--ff-body)' }}
               >
                 I work in React, Next.js and React Native. I operate best in the dark — dark mode,
-                late nights, hard problems. &nbsp;
+                late nights, hard problems.{' '}
                 <span style={{ color: 'var(--lavender)' }}>
                   Not everyone works in the shadows. The ones who do are my kind of people.
                 </span>
               </p>
             </div>
 
-            {/* Keep scrolling hint */}
+            {/* Keep scrolling hint — desktop only */}
             <motion.div
-              className="flex-shrink-0 flex flex-col items-center gap-1.5"
+              className="hidden md:flex flex-shrink-0 flex-col items-center gap-1.5"
               style={{ opacity: useTransform(scrollYProgress, [0, 0.85], [1, 0]) }}
             >
               <span

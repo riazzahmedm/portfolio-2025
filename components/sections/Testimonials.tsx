@@ -15,7 +15,7 @@ export default function Testimonials() {
           background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(184,160,255,0.08) 0%, transparent 70%)',
         }}
       />
-      <div className="flex-1 flex flex-col items-center justify-center px-8 md:px-14 lg:px-20 mt-14 min-h-0 relative z-10">
+      <div className="flex-1 flex flex-col items-center justify-center px-8 md:px-14 lg:px-20 xl:px-32 2xl:px-48 mt-14 min-h-0 relative z-10">
 
         {/* Section label */}
         <div className="self-start mb-10">

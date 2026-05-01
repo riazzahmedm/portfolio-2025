@@ -21,7 +21,7 @@ export default function Nav() {
 
   return (
     <nav
-      className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-0.5 px-2 py-2 rounded-full transition-all duration-500 ${isHero ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+      className={`fixed top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-0 sm:gap-0.5 px-1.5 sm:px-2 py-1.5 sm:py-2 rounded-full transition-all duration-500 ${isHero ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
       style={{
         background: 'rgba(10,10,10,0.85)',
         backdropFilter: 'blur(20px)',
@@ -32,7 +32,7 @@ export default function Nav() {
       {/* Logo */}
       <button
         onClick={() => scrollTo('#hero')}
-        className="w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-extrabold mr-1 flex-shrink-0"
+        className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[12px] sm:text-[13px] font-extrabold mr-0.5 sm:mr-1 flex-shrink-0"
         style={{
           fontFamily: 'var(--ff-display)',
           background: 'var(--surface-raised)',
@@ -56,7 +56,7 @@ export default function Nav() {
             key={link.href}
             onClick={() => scrollTo(link.href)}
             title={link.label}
-            className="relative w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110"
+            className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110"
             style={{
               background: isActive ? 'rgba(130,255,31,0.1)' : 'transparent',
               color: isActive ? 'var(--lime)' : 'var(--text-dim)',
@@ -77,7 +77,7 @@ export default function Nav() {
       <div className="w-px h-4 mx-1.5 flex-shrink-0" style={{ background: 'var(--border-card)' }} />
 
       {/* Available dot */}
-      <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
+      <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center flex-shrink-0">
         <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--lime)' }} />
       </div>
     </nav>

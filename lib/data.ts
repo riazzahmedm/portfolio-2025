@@ -134,7 +134,7 @@ export const EXPERIENCE = [
   {
     year: '2019',
     role: 'Mobile App Developer',
-    company: 'MobileCRM Technologies',
+    company: 'MCT',
     current: false,
     tags: ['React', 'HTML/CSS', 'JavaScript', 'Bootstrap'],
     points: [

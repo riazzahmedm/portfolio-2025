@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import SectionShell from '@/components/ui/SectionShell'
 import SectionTag from '@/components/ui/SectionTag'
@@ -12,22 +12,35 @@ const COLOR = {
   red:      { accent: 'var(--red)',      bg: 'rgba(220,30,30,0.05)',   border: 'rgba(220,30,30,0.12)'   },
 }
 
-type SkillColor = keyof typeof COLOR
-
 const CATEGORIES = ['All', 'Web', 'Mobile', 'Design'] as const
 type Category = typeof CATEGORIES[number]
 
+function useCols() {
+  const [cols, setCols] = useState(6)
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth
+      setCols(w < 640 ? 3 : w < 1024 ? 4 : 6)
+    }
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
+  return cols
+}
+
 export default function Skills() {
   const [active, setActive] = useState<Category>('All')
+  const cols = useCols()
   const filtered = active === 'All' ? BENTO_SKILLS : BENTO_SKILLS.filter((s: BentoSkill) => s.category === active)
-  const isBento = active === 'All'
+  const isBento = active === 'All' && cols === 6
 
   return (
     <SectionShell id="skills" orbPosition="top-left" watermark="03">
       <div className="flex-1 flex flex-col min-h-0 mt-14 overflow-hidden">
 
         {/* Header */}
-        <div className="px-8 md:px-14 lg:px-20 pt-8 pb-4 flex-shrink-0">
+        <div className="px-8 md:px-14 lg:px-20 xl:px-32 2xl:px-48 pt-8 pb-4 flex-shrink-0">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <SectionTag num="03" label="What I Work With" />
             <div className="flex gap-2 flex-wrap">
@@ -52,12 +65,12 @@ export default function Skills() {
         </div>
 
         {/* Grid */}
-        <div className="flex-1 min-h-0 px-8 md:px-14 lg:px-20 pb-4">
+        <div className="flex-1 min-h-0 px-8 md:px-14 lg:px-20 xl:px-32 2xl:px-48 pb-4">
           <motion.div
             layout
             className="grid gap-2.5 h-full"
             style={{
-              gridTemplateColumns: 'repeat(6, 1fr)',
+              gridTemplateColumns: `repeat(${cols}, 1fr)`,
               gridAutoRows: 'minmax(70px, 1fr)',
             }}
           >
@@ -76,13 +89,13 @@ export default function Skills() {
                     exit={{ opacity: 0, scale: 0.88 }}
                     transition={{ duration: 0.28 }}
                     whileHover={{ y: -3, scale: 1.02 }}
-                    className="relative flex flex-col items-center justify-center rounded-2xl border cursor-default p-4 gap-2.5"
+                    className="relative flex flex-col items-center justify-center rounded-2xl border cursor-default p-3 md:p-4 gap-2"
                     style={{
                       gridColumn: isBento && skill.colSpan ? `span ${skill.colSpan}` : undefined,
                       gridRow:    isBento && skill.rowSpan ? `span ${skill.rowSpan}` : undefined,
                       background: c.bg,
                       borderColor: c.border,
-                      minHeight: isFeatured ? '180px' : isBento && skill.rowSpan === 2 ? '180px' : '100px',
+                      minHeight: isFeatured ? '140px' : isBento && skill.rowSpan === 2 ? '140px' : '80px',
                       transition: 'box-shadow 0.25s ease, border-color 0.25s ease',
                     }}
                     onMouseEnter={e => {
@@ -96,11 +109,7 @@ export default function Skills() {
                       el.style.borderColor = c.border
                     }}
                   >
-                    {/* Category dot */}
-                    <div
-                      className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full opacity-60"
-                      style={{ background: c.accent }}
-                    />
+                    <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full opacity-60" style={{ background: c.accent }} />
 
                     <img
                       src={skill.logo}
@@ -115,7 +124,7 @@ export default function Skills() {
                     />
 
                     <span
-                      className="text-[12px] tracking-wide text-center leading-tight"
+                      className="text-[10px] sm:text-[12px] tracking-wide text-center leading-tight"
                       style={{ color: 'var(--text-secondary)', fontFamily: 'var(--ff-body)', fontWeight: 500 }}
                     >
                       {skill.name}
@@ -123,7 +132,7 @@ export default function Skills() {
 
                     {isFeatured && (
                       <span
-                        className="text-[9px] tracking-[0.24em] uppercase px-2 py-0.5 rounded-full mt-1"
+                        className="hidden sm:inline text-[9px] tracking-[0.24em] uppercase px-2 py-0.5 rounded-full mt-1"
                         style={{ background: `${c.accent}14`, color: c.accent, fontFamily: 'var(--ff-mono)' }}
                       >
                         {skill.category}

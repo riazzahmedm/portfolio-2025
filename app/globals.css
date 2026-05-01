@@ -81,30 +81,44 @@ html, body {
 * { scrollbar-width: none; }
 *::-webkit-scrollbar { display: none; }
 
-/* ─── Custom cursor ───────────────────────────────────────────────── */
+/* ─── Custom cursor (desktop only) ───────────────────────────────── */
 .cursor {
+  display: none;
+}
+.cursor-ring {
+  display: none;
+}
+@media (pointer: fine) {
+*, *::before, *::after { cursor: none !important; }
+.cursor {
+  display: block;
   position: fixed;
-  width: 8px;
-  height: 8px;
-  background: var(--lime);
+  width: 10px;
+  height: 10px;
+  background: #ffffff;
   border-radius: 50%;
   pointer-events: none;
   z-index: 9999;
   transform: translate(-50%, -50%);
-  transition: transform 0.08s ease, width 0.2s ease, height 0.2s ease;
-  mix-blend-mode: difference;
+  transition: transform 0.06s ease, width 0.18s ease, height 0.18s ease;
+  box-shadow: 0 0 6px 2px rgba(255,255,255,0.9), 0 0 18px 4px rgba(160,80,255,0.6);
 }
 .cursor-ring {
+  display: block;
   position: fixed;
-  width: 32px;
-  height: 32px;
-  border: 1px solid rgba(130, 255, 31, 0.4);
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid rgba(255,255,255,0.55);
   border-radius: 50%;
   pointer-events: none;
   z-index: 9998;
   transform: translate(-50%, -50%);
-  transition: transform 0.22s ease, width 0.2s ease, height 0.2s ease;
+  transition: transform 0.24s ease, width 0.22s ease, height 0.22s ease;
+  background: rgba(10,0,20,0.25);
+  box-shadow: 0 0 10px 2px rgba(140,60,255,0.35), inset 0 0 8px rgba(140,60,255,0.15);
+  backdrop-filter: blur(1px);
 }
+} /* end @media (pointer: fine) */
 
 /* ─── Scroll container — window-based Lenis scroll ───────────────── */
 .snap-container {

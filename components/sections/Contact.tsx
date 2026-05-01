@@ -67,15 +67,86 @@ export default function Contact() {
 
   return (
     <SectionShell id="contact" orbPosition="top-right" watermark="08">
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 min-h-0 mt-14">
+
+      {/* ── MOBILE layout ── */}
+      <div className="md:hidden flex flex-col flex-1 min-h-0 mt-14 px-6 pt-5 pb-4 gap-4">
+        <SectionTag num="08" label="Don't Be A Stranger" />
+
+        {/* Social chips */}
+        <div className="grid grid-cols-2 gap-2">
+          {SOCIALS.map(({ icon: Icon, label, value, color }) => (
+            <div key={label} className="flex items-center gap-2 px-3 py-2 rounded-lg border"
+              style={{ borderColor: 'var(--border-card)', background: 'var(--surface)' }}>
+              <Icon size={13} style={{ color, flexShrink: 0 }} />
+              <div>
+                <div className="text-[9px] tracking-[0.14em] uppercase" style={{ color: 'var(--text-faint)', fontFamily: 'var(--ff-mono)' }}>{label}</div>
+                <div className="text-[10px] truncate" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>{value}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Mobile form */}
+        {sent ? (
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex-1 flex flex-col items-center justify-center text-center gap-3">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: 'rgba(130,255,31,0.12)', border: '1px solid var(--lime)' }}>
+              <Send size={20} style={{ color: 'var(--lime)' }} />
+            </div>
+            <div className="text-[18px] font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--ff-display)' }}>
+              Message delivered. <SpiderIcon size={18} />
+            </div>
+            <div className="text-[12px]" style={{ color: 'var(--text-muted)', fontFamily: 'var(--ff-mono)' }}>Response ETA: &lt; 24h</div>
+          </motion.div>
+        ) : (
+          <motion.form onSubmit={handleSubmit} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="flex flex-col gap-3 flex-1">
+            <div className="text-[20px] font-bold uppercase leading-tight" style={{ color: 'var(--text-primary)', fontFamily: 'var(--ff-display)' }}>
+             With great projects comes great responsibility.
+            </div>
+
+            {[
+              { key: 'name', label: 'Your name', type: 'text', placeholder: 'Peter Parker' },
+              { key: 'email', label: 'Email', type: 'email', placeholder: 'peter@dailybugle.com' },
+            ].map(({ key, label, type, placeholder }) => (
+              <div key={key}>
+                <label className="block text-[10px] tracking-[0.16em] uppercase mb-1.5" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>{label}</label>
+                <input type={type} required placeholder={placeholder}
+                  value={form[key as keyof typeof form]}
+                  onChange={(e) => setForm(f => ({ ...f, [key]: e.target.value }))}
+                  className="w-full px-3 py-2.5 rounded-lg border text-[13px] outline-none"
+                  style={{ background: 'var(--surface-alt)', borderColor: 'var(--border-card)', color: 'var(--text-secondary)', fontFamily: 'var(--ff-body)' }}
+                />
+              </div>
+            ))}
+
+            <div>
+              <label className="block text-[10px] tracking-[0.16em] uppercase mb-1.5" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>Message</label>
+              <textarea required rows={3} placeholder="Tell me about your project… I'll swing by."
+                value={form.message}
+                onChange={(e) => setForm(f => ({ ...f, message: e.target.value }))}
+                className="w-full px-3 py-2.5 rounded-lg border text-[13px] outline-none resize-none"
+                style={{ background: 'var(--surface-alt)', borderColor: 'var(--border-card)', color: 'var(--text-secondary)', fontFamily: 'var(--ff-body)' }}
+              />
+            </div>
+
+            {error && <p className="text-[11px]" style={{ color: 'var(--red)', fontFamily: 'var(--ff-mono)' }}>{error}</p>}
+
+            <button type="submit" disabled={loading}
+              className="text-[12px] tracking-[0.16em] uppercase py-3 px-5 rounded-lg font-bold flex items-center justify-center gap-2 disabled:opacity-60"
+              style={{ background: 'var(--lime)', color: '#050505', fontFamily: 'var(--ff-body)' }}>
+              {loading ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
+              {loading ? 'Firing web…' : 'thwip(); // send'}
+            </button>
+          </motion.form>
+        )}
+      </div>
+
+      {/* ── DESKTOP layout ── */}
+      <div className="hidden md:grid flex-1 grid-cols-2 min-h-0 mt-14">
 
         {/* LEFT — Terminal + Socials */}
-        <div className="flex flex-col justify-center px-8 md:px-14 lg:px-20 py-8 md:py-0 border-b md:border-b-0 md:border-r transition-colors duration-300 gap-5" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex flex-col justify-center px-14 lg:px-20 xl:px-32 2xl:px-48 py-0 border-r transition-colors duration-300 gap-5" style={{ borderColor: 'var(--border)' }}>
           <SectionTag num="08" label="Don't Be A Stranger" />
-
           <TerminalBlock lines={TERMINAL_WITH_ICON} />
-
-          {/* Social links */}
           <div className="grid grid-cols-2 gap-2">
             {SOCIALS.map(({ icon: Icon, label, value, color }) => (
               <div key={label} className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border transition-colors duration-200"
@@ -91,7 +162,7 @@ export default function Contact() {
         </div>
 
         {/* RIGHT — Form */}
-        <div className="flex flex-col justify-center px-8 md:px-14 lg:px-20 py-8 md:py-0">
+        <div className="flex flex-col justify-center px-14 lg:px-20 xl:px-32 2xl:px-48 py-0">
           {sent ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -117,11 +188,8 @@ export default function Contact() {
               className="flex flex-col gap-5"
             >
               <div className="text-[24px] font-bold mb-1 uppercase" style={{ color: 'var(--text-primary)', fontFamily: 'var(--ff-display)' }}>
-                Shoot your shot. Not webs.
-              </div>
-              <p className="text-[13px] -mt-3" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-body)' }}>
                 With great projects comes great responsibility.
-              </p>
+              </div>
 
               {[
                 { key: 'name', label: 'Your name', type: 'text', placeholder: 'Peter Parker' },

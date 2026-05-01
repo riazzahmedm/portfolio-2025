@@ -170,7 +170,7 @@ export default function Projects() {
           />
 
           {/* Header */}
-          <div className="px-8 md:px-14 lg:px-20 pt-8 pb-3 flex items-end justify-between gap-4 flex-shrink-0">
+          <div className="px-8 md:px-14 lg:px-20 xl:px-32 2xl:px-48 pt-8 pb-3 flex items-end justify-between gap-4 flex-shrink-0">
             <div>
               <SectionTag num="05" label="Things I Actually Shipped" />
             </div>
