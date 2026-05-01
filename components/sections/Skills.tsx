@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import SectionShell from '@/components/ui/SectionShell'
 import SectionTag from '@/components/ui/SectionTag'
 import SectionFooter from '@/components/layout/SectionFooter'
+import { BENTO_SKILLS, type BentoSkill } from '@/lib/data'
 
 const COLOR = {
   lime:     { accent: 'var(--lime)',     bg: 'rgba(130,255,31,0.05)',  border: 'rgba(130,255,31,0.12)'  },
@@ -13,46 +14,12 @@ const COLOR = {
 
 type SkillColor = keyof typeof COLOR
 
-type Skill = {
-  name: string
-  logo: string
-  invert?: boolean
-  color: SkillColor
-  category: 'Web' | 'Mobile' | 'Design'
-  colSpan?: number
-  rowSpan?: number
-}
-
-const SKILLS: Skill[] = [
-  // Web
-  { name: 'React',      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/react/react-original.svg',            color: 'lime',     category: 'Web',    colSpan: 2, rowSpan: 2 },
-  { name: 'Next.js',   logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nextjs/nextjs-original.svg',           invert: true, color: 'lime', category: 'Web' },
-  { name: 'TypeScript', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/typescript/typescript-original.svg',  color: 'lime',     category: 'Web'  },
-  { name: 'Tailwind',   logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tailwindcss/tailwindcss-original.svg',color: 'lime',     category: 'Web'  },
-  { name: 'Redux',      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/redux/redux-original.svg',            color: 'lime',     category: 'Web'  },
-  { name: '.NET Core',  logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/dotnetcore/dotnetcore-original.svg',  color: 'lime',     category: 'Web'  },
-  // Mobile
-  { name: 'React Native', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/react/react-original.svg',         color: 'lavender', category: 'Mobile', colSpan: 2 },
-  { name: 'Expo',       logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/expo/expo-original.svg',              invert: true, color: 'lavender', category: 'Mobile' },
-  { name: 'iOS',        logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/apple/apple-original.svg',            invert: true, color: 'lavender', category: 'Mobile' },
-  { name: 'Android',    logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/android/android-original.svg',       color: 'lavender', category: 'Mobile' },
-  { name: 'Azure',      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/azure/azure-original.svg',           color: 'lavender', category: 'Mobile' },
-  { name: 'Ionic',      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/ionic/ionic-original.svg',           color: 'lavender', category: 'Mobile' },
-  // Design
-  { name: 'Figma',      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/figma/figma-original.svg',           color: 'red',      category: 'Design', rowSpan: 2 },
-  { name: 'Adobe XD',   logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/xd/xd-original.svg',                 color: 'red',      category: 'Design' },
-  { name: 'Photoshop',  logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/photoshop/photoshop-original.svg',   color: 'red',      category: 'Design' },
-  { name: 'HTML5',      logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg',           color: 'red',      category: 'Design' },
-  { name: 'CSS3',       logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg',             color: 'red',      category: 'Design' },
-  { name: 'Illustrator',logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/illustrator/illustrator-original.svg', color: 'red',   category: 'Design' },
-]
-
 const CATEGORIES = ['All', 'Web', 'Mobile', 'Design'] as const
 type Category = typeof CATEGORIES[number]
 
 export default function Skills() {
   const [active, setActive] = useState<Category>('All')
-  const filtered = active === 'All' ? SKILLS : SKILLS.filter(s => s.category === active)
+  const filtered = active === 'All' ? BENTO_SKILLS : BENTO_SKILLS.filter((s: BentoSkill) => s.category === active)
   const isBento = active === 'All'
 
   return (

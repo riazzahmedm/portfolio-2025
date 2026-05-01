@@ -5,34 +5,64 @@ import SectionShell from '@/components/ui/SectionShell'
 import SectionTag from '@/components/ui/SectionTag'
 import SectionFooter from '@/components/layout/SectionFooter'
 import TerminalBlock from '@/components/ui/TerminalBlock'
-import { Send, MapPin, Mail, ExternalLink, Link } from 'lucide-react'
+import { Send, ExternalLink, Link, Loader2 } from 'lucide-react'
+import { TERMINAL_LINES } from '@/lib/data'
 
-const TERMINAL_LINES = [
-  { type: 'cmd' as const, text: 'whoami' },
-  { type: 'success' as const, text: 'Riaz Ahmed — Senior Software Engineer' },
-  { type: 'cmd' as const, text: 'ping riaz --hire' },
-  { type: 'dim' as const, text: 'Connecting to riazzahmedm@gmail.com...' },
-  { type: 'success' as const, text: '✓ Available for new opportunities' },
-  { type: 'cmd' as const, text: 'cat contact.json' },
-  { type: 'out' as const, text: '{ "email": "riazzahmedm@gmail.com",' },
-  { type: 'out' as const, text: '  "location": "Chennai, India",' },
-  { type: 'out' as const, text: '  "status": "open to work" }' },
-]
+// Sign up at formspree.io → New Form → copy the form ID here
+const FORMSPREE_ID = 'mjglvlpn'
 
 const SOCIALS = [
-  { icon: Mail, label: 'Email', value: 'riazzahmedm@gmail.com', color: 'var(--lime)' },
-  { icon: MapPin, label: 'Location', value: 'Chennai, India', color: 'var(--lavender)' },
-  { icon: ExternalLink, label: 'GitHub', value: 'github.com/riaz', color: 'var(--text-muted)' },
-  { icon: Link, label: 'LinkedIn', value: 'linkedin.com/in/riaz', color: 'var(--text-muted)' },
+  { icon: ExternalLink, label: 'GitHub', value: 'github.com/riaz', color: 'var(--lavender)' },
+  { icon: Link, label: 'LinkedIn', value: 'linkedin.com/in/riaz', color: 'var(--lavender)' },
 ]
+
+function SpiderIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="8" r="2.5" />
+      <ellipse cx="12" cy="15" rx="3" ry="4" />
+      <line x1="9" y1="12.5" x2="3" y2="9"  stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="9" y1="14.5" x2="2" y2="14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="9" y1="16.5" x2="3" y2="20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="15" y1="12.5" x2="21" y2="9"  stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="15" y1="14.5" x2="22" y2="14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="15" y1="16.5" x2="21" y2="20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+const TERMINAL_WITH_ICON = TERMINAL_LINES.map((line, i) =>
+  i === 1
+    ? { ...line, text: <span className="flex items-center gap-1.5">{line.text as string} <SpiderIcon size={14} /></span> }
+    : line
+)
 
 export default function Contact() {
   const [sent, setSent] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const [form, setForm] = useState({ name: '', email: '', message: '' })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSent(true)
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(form),
+      })
+      if (res.ok) {
+        setSent(true)
+      } else {
+        setError('Something went wrong. Try emailing me directly.')
+      }
+    } catch {
+      setError('Network error. Try emailing me directly.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -43,7 +73,7 @@ export default function Contact() {
         <div className="flex flex-col justify-center px-8 md:px-14 lg:px-20 py-8 md:py-0 border-b md:border-b-0 md:border-r transition-colors duration-300 gap-5" style={{ borderColor: 'var(--border)' }}>
           <SectionTag num="08" label="Don't Be A Stranger" />
 
-          <TerminalBlock lines={TERMINAL_LINES} />
+          <TerminalBlock lines={TERMINAL_WITH_ICON} />
 
           {/* Social links */}
           <div className="grid grid-cols-2 gap-2">
@@ -72,7 +102,9 @@ export default function Contact() {
                 style={{ background: 'rgba(130,255,31,0.12)', border: '1px solid var(--lime)' }}>
                 <Send size={22} style={{ color: 'var(--lime)' }} />
               </div>
-              <div className="text-[20px] font-bold mb-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--ff-display)' }}>Message delivered.</div>
+              <div className="text-[20px] font-bold mb-2 flex items-center justify-center gap-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--ff-display)' }}>
+                Message delivered <SpiderIcon size={22} />
+              </div>
               <div className="text-[13px]" style={{ color: 'var(--text-muted)', fontFamily: 'var(--ff-mono)' }}>Response ETA: &lt; 24h</div>
             </motion.div>
           ) : (
@@ -84,16 +116,16 @@ export default function Contact() {
               transition={{ duration: 0.6 }}
               className="flex flex-col gap-5"
             >
-              <div className="text-[24px] font-bold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--ff-display)' }}>
-                Start a conversation
+              <div className="text-[24px] font-bold mb-1 uppercase" style={{ color: 'var(--text-primary)', fontFamily: 'var(--ff-display)' }}>
+                Shoot your shot. Not webs.
               </div>
               <p className="text-[13px] -mt-3" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-body)' }}>
-                No cold calls. Just real talk about your project.
+                With great projects comes great responsibility.
               </p>
 
               {[
-                { key: 'name', label: 'Your name', type: 'text', placeholder: 'John Doe' },
-                { key: 'email', label: 'Email address', type: 'email', placeholder: 'john@company.com' },
+                { key: 'name', label: 'Your name', type: 'text', placeholder: 'Peter Parker' },
+                { key: 'email', label: 'Email address', type: 'email', placeholder: 'peter@dailybugle.com' },
               ].map(({ key, label, type, placeholder }) => (
                 <div key={key}>
                   <label className="block text-[11px] tracking-[0.16em] uppercase mb-2" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>{label}</label>
@@ -114,7 +146,7 @@ export default function Contact() {
                 <textarea
                   required
                   rows={4}
-                  placeholder="Tell me about your project..."
+                  placeholder="Tell me about your project… I'll swing by."
                   value={form.message}
                   onChange={(e) => setForm(f => ({ ...f, message: e.target.value }))}
                   className="w-full px-4 py-3 rounded-lg border text-[14px] outline-none transition-all duration-200 focus:border-lime-400 resize-none"
@@ -122,13 +154,18 @@ export default function Contact() {
                 />
               </div>
 
+              {error && (
+                <p className="text-[12px]" style={{ color: 'var(--red)', fontFamily: 'var(--ff-mono)' }}>{error}</p>
+              )}
+
               <button
                 type="submit"
-                className="text-[13px] tracking-[0.18em] uppercase py-3.5 px-6 rounded-lg font-bold transition-all duration-200 hover:brightness-110 hover:scale-[1.02] flex items-center justify-center gap-3"
+                disabled={loading}
+                className="text-[13px] tracking-[0.18em] uppercase py-3.5 px-6 rounded-lg font-bold transition-all duration-200 hover:brightness-110 hover:scale-[1.02] flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100"
                 style={{ background: 'var(--lime)', color: '#050505', fontFamily: 'var(--ff-body)' }}
               >
-                <Send size={14} />
-                git commit -m &ldquo;Let&apos;s work together&rdquo;
+                {loading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                {loading ? 'Firing web…' : 'thwip(); // send message'}
               </button>
             </motion.form>
           )}

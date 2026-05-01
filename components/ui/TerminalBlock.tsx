@@ -1,9 +1,10 @@
 'use client'
+import React from 'react'
 import { motion } from 'framer-motion'
 
 interface Line {
   type: 'cmd' | 'out' | 'success' | 'dim'
-  text: string
+  text: string | React.ReactNode
 }
 
 interface Props {
@@ -46,7 +47,7 @@ export default function TerminalBlock({ title = 'riaz@portfolio ~ zsh', lines }:
         ))}
         <div className="text-[14px] flex gap-2 mt-1">
           <span style={{ color: 'var(--red)' }}>❯</span>
-          <span className="blink inline-block w-2 h-3 align-middle" style={{ background: 'var(--red)' }} />
+          <span className="blink inline-block w-2 h-3 align-middle mt-1.5" style={{ background: 'var(--red)' }} />
         </div>
       </div>
     </motion.div>

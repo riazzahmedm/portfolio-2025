@@ -276,6 +276,7 @@ export default function Connect() {
             color: '#fff',
             letterSpacing: '-0.03em',
             lineHeight: 1.05,
+            textTransform: 'uppercase'
           }}>
             Instagram
           </div>

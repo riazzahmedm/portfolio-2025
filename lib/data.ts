@@ -33,102 +33,63 @@ export const TICKER_ITEMS = [
   '∞',
 ]
 
-export const TICKER_ITEMS_2 = [
-  'react.useState(🔥)',
-  '◆',
-  'TypeScript: strict mode enabled',
-  '◆',
-  'figma → code: no cap',
-  '◆',
-  'pixel perfect or bust',
-  '◆',
-  'dark mode is a right, not a feature',
-  '◆',
-  'const bugs = []  // always empty',
-  '◆',
-  'ship it. 🚀',
-  '◆',
-  'coffee.then(code)',
-  '◆',
-]
-
-export const STATS = [
-  { key: 'projects.length', value: '40+', sub: 'shipped to prod' },
-  { key: 'experience.years', value: '5+', sub: 'in the stack' },
-  { key: 'conflicts.resolved', value: '300+', sub: 'merge conflicts' },
-  { key: 'tokens.consumed', value: '∞', sub: 'claude-assisted' },
-  { key: 'ctrl_z.count', value: '0', sub: 'zero regrets' },
-]
-
-export type Skill = { name: string; value: string; comment: string; isNumber?: boolean }
-
-export const SKILLS_GRID = [
-  // Web
-  { name: 'React', icon: '⚛️', level: 95, color: 'lime', category: 'Web' },
-  { name: 'Next.js', icon: '▲', level: 93, color: 'lime', category: 'Web' },
-  { name: 'TypeScript', icon: 'TS', level: 90, color: 'lime', category: 'Web' },
-  { name: 'Tailwind', icon: '🌬', level: 90, color: 'lime', category: 'Web' },
-  { name: '.NET Core', icon: '◈', level: 78, color: 'lime', category: 'Web' },
-  { name: 'Redux', icon: '♻', level: 88, color: 'lime', category: 'Web' },
-  // Mobile
-  { name: 'React Native', icon: '📱', level: 92, color: 'lavender', category: 'Mobile' },
-  { name: 'Expo', icon: '⬡', level: 88, color: 'lavender', category: 'Mobile' },
-  { name: 'iOS', icon: '', level: 80, color: 'lavender', category: 'Mobile' },
-  { name: 'Android', icon: '🤖', level: 80, color: 'lavender', category: 'Mobile' },
-  { name: 'Azure', icon: '☁', level: 75, color: 'lavender', category: 'Mobile' },
-  { name: 'Ionic', icon: '⚡', level: 72, color: 'lavender', category: 'Mobile' },
-  // Design
-  { name: 'Figma', icon: '◐', level: 88, color: 'red', category: 'Design' },
-  { name: 'Adobe XD', icon: '✦', level: 80, color: 'red', category: 'Design' },
-  { name: 'Photoshop', icon: '🖼', level: 75, color: 'red', category: 'Design' },
-  { name: 'Illustrator', icon: '✏', level: 70, color: 'red', category: 'Design' },
-  { name: 'Procreate', icon: '🎨', level: 68, color: 'red', category: 'Design' },
-  { name: 'HTML/CSS', icon: '◻', level: 96, color: 'red', category: 'Design' },
-]
-
 export const TECH_JOKES = [
-  { text: 'undefined is not a function', lang: 'JS' },
-  { text: 'const tokens = Infinity // claude-powered', lang: 'TS' },
-  { text: '// TODO: never', lang: '🤫' },
+  { text: 'Dark mode is a right, not a feature', lang: 'BATMAN' },
+  { text: 'git blame → it was the Joker', lang: 'GIT' },
+  { text: '// TODO: sleep', lang: 'BRUCE' },
   { text: 'it works on my machine™', lang: 'PROD' },
-  { text: 'SELECT * FROM solutions WHERE bug = NULL', lang: 'SQL' },
-  { text: 'git commit -m "fix: final FINAL v3"', lang: 'GIT' },
+  { text: 'undefined is not a function', lang: 'JS' },
+  { text: 'Why do we fall sir? To fix the merge conflict.', lang: 'ALFRED' },
 ]
 
-export const SKILLS: { web: Skill[]; mobile: Skill[]; design: Skill[] } = {
-  web: [
-    { name: 'react', value: '"5+ years"', comment: '// battle-tested' },
-    { name: 'nextjs', value: '"expert"', comment: '// SSR, ISR, App Router' },
-    { name: 'typescript', value: '"strict mode"', comment: '// always' },
-    { name: 'redux', value: '"state wizard"', comment: '// global control' },
-    { name: 'tailwind', value: '"daily driver"', comment: '// no more CSS files' },
-    { name: 'dotnet', value: '"C# / Core"', comment: '// full stack' },
-  ],
-  mobile: [
-    { name: 'reactNative', value: '"5+ years"', comment: '// iOS + Android' },
-    { name: 'expo', value: '"managed flow"', comment: '// fast deploys' },
-    { name: 'ionic', value: '"angular era"', comment: '// cross-platform' },
-    { name: 'azure', value: '"cloud infra"', comment: '// deployed & scaled' },
-    { name: 'tokens', value: 'Infinity', comment: '// claude-powered', isNumber: true },
-    { name: 'ctrlZ', value: '"never needed"', comment: '// git revert ftw' },
-  ],
-  design: [
-    { name: 'figma', value: '"3+ years"', comment: '// design → code' },
-    { name: 'adobeXD', value: '"wireframes"', comment: '// prototyping' },
-    { name: 'procreate', value: '"art mode"', comment: '// creative outlet' },
-    { name: 'photoshop', value: '"when needed"', comment: '// pixel pusher' },
-    { name: 'illustrator', value: '"vectors"', comment: '// logos & icons' },
-    { name: 'htmlcss', value: '"semantic"', comment: '// the foundation' },
-  ],
+// ── About ─────────────────────────────────────────────────────────────────────
+
+export const ABOUT_BIG_TEXT =
+  'SHIPS BEFORE MONDAY · REACT IS HOME · NO LOREM IPSUM IN GOTHAM · BUILT THINGS PEOPLE ACTUALLY USE · DARK MODE OR NOTHING · '
+
+export const ABOUT_TICKER = [
+  'GIT COMMIT -M "FINAL FINALLY v4"', '<>', 'DESIGN IS NEVER DONE', '</>', 'REACT NATIVE SURVIVOR', '{}',
+  'THE NIGHT IS DARKEST BEFORE DEPLOY', '!==', 'THE GAP BETWEEN GOOD AND GREAT', ';', 'MOBILE FIRST ALWAYS', '===',
+  'CHENNAI → GOTHAM → GLOBAL', '*', 'NAMED MY VARIABLES WELL (MOSTLY)', '||',
+]
+
+// ── Skills ────────────────────────────────────────────────────────────────────
+
+export type BentoSkill = {
+  name: string
+  logo: string
+  invert?: boolean
+  color: 'lime' | 'lavender' | 'red'
+  category: 'Web' | 'Mobile' | 'Design'
+  colSpan?: number
+  rowSpan?: number
 }
 
-export const SKILL_LEVELS = [
-  { label: 'React / Next.js', pct: 95 },
-  { label: 'React Native', pct: 92 },
-  { label: 'TypeScript', pct: 90 },
-  { label: 'UI/UX Design', pct: 82 },
-  { label: '.NET Core', pct: 78 },
+export const BENTO_SKILLS: BentoSkill[] = [
+  // Web
+  { name: 'React',       logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/react/react-original.svg',              color: 'lime',     category: 'Web',    colSpan: 2, rowSpan: 2 },
+  { name: 'Next.js',    logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nextjs/nextjs-original.svg',             invert: true, color: 'lime', category: 'Web' },
+  { name: 'TypeScript',  logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/typescript/typescript-original.svg',    color: 'lime',     category: 'Web'  },
+  { name: 'Tailwind',    logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tailwindcss/tailwindcss-original.svg',  color: 'lime',     category: 'Web'  },
+  { name: 'Redux',       logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/redux/redux-original.svg',              color: 'lime',     category: 'Web'  },
+  { name: '.NET Core',   logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/dotnetcore/dotnetcore-original.svg',    color: 'lime',     category: 'Web'  },
+  // Mobile
+  { name: 'React Native',logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/react/react-original.svg',             color: 'lavender', category: 'Mobile', colSpan: 2 },
+  { name: 'Expo',        logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/expo/expo-original.svg',                invert: true, color: 'lavender', category: 'Mobile' },
+  { name: 'iOS',         logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/apple/apple-original.svg',              invert: true, color: 'lavender', category: 'Mobile' },
+  { name: 'Android',     logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/android/android-original.svg',         color: 'lavender', category: 'Mobile' },
+  { name: 'Azure',       logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/azure/azure-original.svg',             color: 'lavender', category: 'Mobile' },
+  { name: 'Ionic',       logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/ionic/ionic-original.svg',             color: 'lavender', category: 'Mobile' },
+  // Design
+  { name: 'Figma',       logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/figma/figma-original.svg',             color: 'red',      category: 'Design', rowSpan: 2 },
+  { name: 'Adobe XD',    logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/xd/xd-original.svg',                   color: 'red',      category: 'Design' },
+  { name: 'Photoshop',   logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/photoshop/photoshop-original.svg',     color: 'red',      category: 'Design' },
+  { name: 'HTML5',       logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg',             color: 'red',      category: 'Design' },
+  { name: 'CSS3',        logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg',               color: 'red',      category: 'Design' },
+  { name: 'Illustrator', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/illustrator/illustrator-original.svg', color: 'red',      category: 'Design' },
 ]
+
+// ── Experience ────────────────────────────────────────────────────────────────
 
 export const EXPERIENCE = [
   {
@@ -184,6 +145,8 @@ export const EXPERIENCE = [
     ],
   },
 ]
+
+// ── Projects ──────────────────────────────────────────────────────────────────
 
 export const PROJECTS = [
   {
@@ -259,53 +222,25 @@ export const PROJECTS = [
   },
 ]
 
-export const SERVICES = [
-  {
-    method: 'POST',
-    endpoint: '/web-development',
-    title: 'Web Development',
-    description: 'Full-stack web apps with Next.js, React, and .NET Core. From architecture to deployment.',
-    tech: ['Next.js', 'React', 'TypeScript', '.NET Core', 'Azure'],
-    icon: '◈',
-    accentColor: 'var(--lime)',
-  },
-  {
-    method: 'GET',
-    endpoint: '/mobile-apps',
-    title: 'Mobile Development',
-    description: 'Cross-platform iOS and Android with React Native and Expo. Production-grade, App Store ready.',
-    tech: ['React Native', 'Expo', 'Redux', 'TypeScript'],
-    icon: '▣',
-    accentColor: 'var(--lavender)',
-  },
-  {
-    method: 'PUT',
-    endpoint: '/ui-ux-design',
-    title: 'UI/UX Design',
-    description: 'Design systems, wireframes, and prototypes in Figma. Design that speaks directly to developers.',
-    tech: ['Figma', 'Adobe XD', 'Procreate', 'Photoshop'],
-    icon: '◐',
-    accentColor: 'var(--red)',
-  },
+// ── Testimonials ──────────────────────────────────────────────────────────────
+
+export const FAKE_MESSAGES = [
+  { from: 'client_007',  time: '1w ago',  text: 'I would love to get your feedback on this!' },
+  { from: 'ex_teammate', time: '2w ago',  text: 'Would you write me a testimonial? I already wrote yours. It was glowing. Just saying.' },
+  { from: 'old_manager',  time: '2d ago',  text: 'Hey! Just checking if you got my reference request… and the one before that 🙃' },
+  { from: 'homelander',  time: '1mo ago', text: 'We all need you. Please respond.' },
 ]
 
-export const TESTIMONIALS = [
-  {
-    quote: 'Riaz is energetic and passionate at what he does. Punctual and timely. His technical depth combined with a strong design eye makes him rare — someone who truly bridges both worlds.',
-    author: 'Colleague',
-    role: 'Senior Engineer',
-    avatar: '/assets/img/t1.jpg',
-  },
-  {
-    quote: 'Working with Riaz was a pleasure. He delivered features faster than expected and the code quality was exceptional. He took ownership of the entire frontend and ran with it.',
-    author: 'Tech Lead',
-    role: 'Engineering Manager',
-    avatar: '/assets/img/t2.jpg',
-  },
-  {
-    quote: 'Riaz has an incredible ability to take a vague brief and turn it into a polished product. His React Native work on our app was the cleanest mobile code I have reviewed.',
-    author: 'Client',
-    role: 'Product Owner',
-    avatar: '/assets/img/t3.jpg',
-  },
+// ── Contact ───────────────────────────────────────────────────────────────────
+
+export const TERMINAL_LINES = [
+  { type: 'cmd' as const,     text: 'alter-ego --reveal' },
+  { type: 'success' as const, text: 'Riaz Ahmed · Your Friendly Neighborhood Dev' },
+  { type: 'cmd' as const,     text: 'thwip --locate riaz' },
+  { type: 'dim' as const,     text: 'Swinging in from Earth 616, Chennai, India...' },
+  { type: 'success' as const, text: '✓ Landed. Available for new missions.' },
+  { type: 'cmd' as const,     text: 'cat spidey-sense.json' },
+  { type: 'out' as const,     text: '{ "email": "riazzahmedm@gmail.com",' },
+  { type: 'out' as const,     text: '  "signal": "tingling — you need a dev",' },
+  { type: 'out' as const,     text: '  "status": "mask off, ready to build" }' },
 ]

@@ -129,7 +129,7 @@ html, body {
 #experience   { --section-bg: #080510; --section-orb: rgba(184, 160, 255, 0.18); }
 #projects     { --section-bg: #050810; --section-orb: rgba(130, 255, 31, 0.10); }
 #connect      { --section-bg: #0a0705; --section-orb: rgba(200, 20, 20, 0.14); }
-#testimonials { --section-bg: #130f20; --section-orb: rgba(184, 160, 255, 0.45); }
+#testimonials { --section-bg: #080510; --section-orb: rgba(184, 160, 255, 0.18); }
 #contact      { --section-bg: #050a08; --section-orb: rgba(130, 255, 31, 0.10); }
 
 html.light .snap-section { background: var(--bg); }

@@ -2,20 +2,7 @@
 import { useRef } from 'react'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import SectionFooter from '@/components/layout/SectionFooter'
-import { TECH_JOKES } from '@/lib/data'
-
-// ── Content ──────────────────────────────────────────────────────────────────
-const BIG_TEXT =
-  'SHIPS BEFORE MONDAY · REACT IS HOME · DARK MODE OR NOTHING · STILL SHIPPING FROM CHENNAI · CODE THAT READS LIKE ENGLISH · BUILT FOR THE ONES WHO CARE · '
-
-// Single combined ticker strip (top) — personality + philosophy
-const ABOUT_TICKER = [
-  '7+ YEARS IN THE TRENCHES', '<>', '20+ APPS SHIPPED', '</>', 'ZERO LOREM IPSUM TOLERANCE', '{',
-  'OBSESSED WITH THE 1%', '}', 'BUILT THINGS PEOPLE ACTUALLY USE', '//', 'GIT COMMIT -M "FINALLY"', '*',
-  'CHENNAI → GLOBAL', '*', 'MOBILE FIRST ALWAYS', '[', 'NAMED MY VARIABLES WELL (MOSTLY)', ']',
-  'SHIPS BEFORE MONDAY', '===', 'DESIGN IS NEVER DONE', '&&',
-  'REACT NATIVE SURVIVOR', '||', 'THE GAP BETWEEN GOOD AND GREAT', '!==',
-]
+import { TECH_JOKES, ABOUT_BIG_TEXT, ABOUT_TICKER } from '@/lib/data'
 
 // ── Top marquee strip (0°, combined) ─────────────────────────────────────────
 function TopMarquee() {
@@ -125,7 +112,7 @@ export default function About() {
                 className="text-[12px] tracking-[0.36em] uppercase"
                 style={{ color: 'var(--lavender)', fontFamily: 'var(--ff-mono)' }}
               >
-                02 / Who I Am
+                02 / The Dark Knight
               </span>
             </div>
             <div className="h-px w-full relative" style={{ background: 'var(--border)' }}>
@@ -158,7 +145,7 @@ export default function About() {
                   color: 'var(--text-primary)',
                 }}
               >
-                {BIG_TEXT + BIG_TEXT}
+                {ABOUT_BIG_TEXT + ABOUT_BIG_TEXT}
               </span>
             </motion.div>
           </div>
@@ -173,18 +160,18 @@ export default function About() {
                 className="text-[14px] md:text-[15px] leading-[1.95] mb-3"
                 style={{ color: 'var(--text-secondary)', fontFamily: 'var(--ff-body)' }}
               >
-                Honestly, I got into this because bad apps annoyed me. Kept thinking
-                "I could fix this" — so I learned how. 7+ years and 20+ shipped products later,
-                that same urge is still what gets me out of bed.
+                Bruce Wayne didn't become Batman overnight — neither did I. Bad apps annoyed me,
+                I thought "I could fix this," and 7+ years later I'm still showing up like the
+                city needs saving. 20+ shipped products. Zero lorem ipsum.
               </p>
               <p
                 className="text-[13px] leading-[1.85]"
                 style={{ color: 'var(--text-muted)', fontFamily: 'var(--ff-body)' }}
               >
-                I work in React, Next.js and React Native. I care a lot about the small things —
-                the ones most people skip. If an animation is off by 50ms, I'll notice.{' '}
+                I work in React, Next.js and React Native. I operate best in the dark — dark mode,
+                late nights, hard problems. &nbsp;
                 <span style={{ color: 'var(--lavender)' }}>
-                  Not everyone cares about that. The ones who do are my kind of people.
+                  Not everyone works in the shadows. The ones who do are my kind of people.
                 </span>
               </p>
             </div>

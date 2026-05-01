@@ -3,12 +3,7 @@ import { motion } from 'framer-motion'
 import SectionShell from '@/components/ui/SectionShell'
 import SectionTag from '@/components/ui/SectionTag'
 import SectionFooter from '@/components/layout/SectionFooter'
-
-const FAKE_MESSAGES = [
-  { from: 'client_007',  time: '2d ago', text: 'Hey! Quick question about the project…',   status: 'seen' },
-  { from: 'hr@startup',  time: '5d ago', text: 'Would love to get your feedback on this!',  status: 'seen' },
-  { from: 'old_manager', time: '1w ago', text: 'Can you write a testimonial for yourself?', status: 'seen' },
-]
+import { FAKE_MESSAGES } from '@/lib/data'
 
 export default function Testimonials() {
   return (
@@ -17,7 +12,7 @@ export default function Testimonials() {
       <div
         className="absolute inset-0 z-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(184,160,255,0.18) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(184,160,255,0.08) 0%, transparent 70%)',
         }}
       />
       <div className="flex-1 flex flex-col items-center justify-center px-8 md:px-14 lg:px-20 mt-14 min-h-0 relative z-10">
@@ -48,7 +43,7 @@ export default function Testimonials() {
             }}
           >
             This was supposed to be<br />
-            <span style={{ color: 'var(--lavender)', textShadow: '0 0 60px rgba(184,160,255,0.55)' }}>
+            <span style={{ color: 'var(--lavender)' }}>
               the feedback section.
             </span>
           </div>
@@ -137,7 +132,7 @@ export default function Testimonials() {
         </motion.div>
 
         {/* Footnote */}
-        <motion.p
+        {/* <motion.p
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -146,7 +141,7 @@ export default function Testimonials() {
           style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}
         >
           // real ones incoming · check back soon
-        </motion.p>
+        </motion.p> */}
 
       </div>
 
