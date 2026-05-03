@@ -305,7 +305,7 @@ export default function Connect() {
         rotate="-5deg"
         delay={0.7}
         gradient="linear-gradient(145deg,#1a1a2e,#e94560)"
-        src="/insta-video.mov"
+        src="/insta-video.mp4"
         scale={scale}
         onFirstDrag={onFirstDrag}
       />
@@ -314,7 +314,7 @@ export default function Connect() {
         rotate="6deg"
         delay={0.8}
         gradient="linear-gradient(145deg,#0f2027,#2c5364)"
-        src="/insta-video-2.mov"
+        src="/insta-video-2.mp4"
         scale={scale}
         onFirstDrag={onFirstDrag}
       />
@@ -323,7 +323,7 @@ export default function Connect() {
         rotate="4deg"
         delay={0.9}
         gradient="linear-gradient(145deg,#3d0c02,#c0392b)"
-        src="/insta-video-3.mov"
+        src="/insta-video-3.mp4"
         scale={scale}
         onFirstDrag={onFirstDrag}
       />
