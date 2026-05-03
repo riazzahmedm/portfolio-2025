@@ -2,6 +2,7 @@
 import { useRef } from 'react'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import SectionFooter from '@/components/layout/SectionFooter'
+import SectionTag from '@/components/ui/SectionTag'
 import { TECH_JOKES, ABOUT_BIG_TEXT, ABOUT_TICKER } from '@/lib/data'
 
 // ── Top marquee strip (0°, combined) ─────────────────────────────────────────
@@ -106,15 +107,7 @@ export default function About() {
 
           {/* Label + read-progress bar */}
           <div className="px-8 md:px-14 lg:px-20 xl:px-32 2xl:px-48 pt-8 pb-4 flex-shrink-0">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="h-px w-8" style={{ background: 'var(--lavender)' }} />
-              <span
-                className="text-[12px] tracking-[0.36em] uppercase"
-                style={{ color: 'var(--lavender)', fontFamily: 'var(--ff-mono)' }}
-              >
-                02 / The Dark Knight
-              </span>
-            </div>
+            <SectionTag num="02" label="The Dark Knight" />
             <div className="h-px w-full relative" style={{ background: 'var(--border)' }}>
               <motion.div
                 className="absolute inset-y-0 left-0 origin-left"

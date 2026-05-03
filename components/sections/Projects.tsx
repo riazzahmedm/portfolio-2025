@@ -71,7 +71,7 @@ function MockupScreen({ gradient, accent, type, image }: { gradient: string; acc
       {/* Type badge — always shown */}
       <div className="absolute bottom-3 left-3">
         <span className="text-[10px] tracking-[0.2em] uppercase px-2.5 py-1 rounded-full"
-          style={{ background: `${accent}22`, color: accent, border: `1px solid ${accent}55`, fontFamily: 'var(--ff-mono)', backdropFilter: 'blur(6px)' }}>
+          style={{ background: `${accent}44`, color: '#fff', border: `1px solid ${accent}88`, fontFamily: 'var(--ff-mono)' }}>
           {type}
         </span>
       </div>
@@ -159,39 +159,19 @@ export default function Projects() {
 
         {/* Content */}
         <div className="relative z-10 h-full flex flex-col pt-14">
-          {/* Progress bar */}
-          <motion.div
-            className="absolute top-14 left-0 right-0 h-px z-20"
-            style={{
-              background: 'linear-gradient(90deg, var(--lime), var(--lavender))',
-              scaleX: scrollYProgress,
-              transformOrigin: 'left',
-            }}
-          />
-
           {/* Header */}
-          <div className="px-8 md:px-14 lg:px-20 xl:px-32 2xl:px-48 pt-8 pb-3 flex items-end justify-between gap-4 flex-shrink-0">
-            <div>
-              <SectionTag num="05" label="Things I Actually Shipped" />
+          <div className="px-8 md:px-14 lg:px-20 xl:px-32 2xl:px-48 pt-8 pb-3 flex-shrink-0">
+            <SectionTag num="05" label="Things I Actually Shipped" />
+            <div className="h-px w-full relative" style={{ background: 'var(--border)' }}>
+              <motion.div
+                className="absolute inset-y-0 left-0 origin-left"
+                style={{
+                  scaleX: scrollYProgress,
+                  background: 'linear-gradient(90deg, var(--lime), var(--lavender))',
+                  width: '100%',
+                }}
+              />
             </div>
-
-            {/* Scroll hint */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4, duration: 0.7 }}
-              className="flex items-center gap-2.5 pb-2"
-            >
-              <motion.span
-                animate={{ x: [0, 6, 0] }}
-                transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-                style={{ color: 'var(--lime)', fontFamily: 'var(--ff-mono)', fontSize: '18px' }}
-              >→</motion.span>
-              <span className="text-[11px] tracking-[0.18em] uppercase" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
-                scroll to explore
-              </span>
-            </motion.div>
           </div>
 
           {/* Horizontal track — driven by scroll progress */}
@@ -214,8 +194,6 @@ export default function Projects() {
                     style={{
                       borderColor: 'var(--border-card)',
                       background: 'var(--surface)',
-                      minHeight: '72%',
-                      alignSelf: 'center',
                     }}
                     onMouseEnter={e => (e.currentTarget.style.borderColor = project.mockupAccent)}
                     onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-card)')}
@@ -259,7 +237,7 @@ export default function Projects() {
                           <span
                             key={tag}
                             className="text-[10px] tracking-[0.14em] uppercase px-2 py-1 rounded-full border"
-                            style={{ color: 'var(--text-dim)', borderColor: 'var(--border-card)', fontFamily: 'var(--ff-mono)' }}
+                            style={{ color: 'var(--text-secondary)', borderColor: 'rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.05)', fontFamily: 'var(--ff-mono)' }}
                           >
                             {tag}
                           </span>

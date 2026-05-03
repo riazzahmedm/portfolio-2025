@@ -109,7 +109,6 @@ export default function Skills() {
                       el.style.borderColor = c.border
                     }}
                   >
-                    <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full opacity-60" style={{ background: c.accent }} />
 
                     <img
                       src={skill.logo}

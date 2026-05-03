@@ -171,6 +171,21 @@ html.light .snap-section::after { background: linear-gradient(to bottom, transpa
   background-size: var(--dot-size) var(--dot-size);
   pointer-events: none;
 }
+/* Line grid for sections 05, 06, 07 */
+#projects .dot-grid,
+#connect .dot-grid,
+#testimonials .dot-grid {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+}
+html.light #projects .dot-grid,
+html.light #connect .dot-grid,
+html.light #testimonials .dot-grid {
+  background-image:
+    linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+}
 
 /* ─── Vignette ────────────────────────────────────────────────────── */
 .vignette {
@@ -287,11 +302,12 @@ html.light .snap-section::after { background: linear-gradient(to bottom, transpa
   padding: 0 2rem;
   will-change: transform;
   flex: 1;
-  align-items: stretch;
+  align-items: center;
 }
 .project-card-h {
   flex-shrink: 0;
   width: min(78vw, 460px);
+  height: 72%;
 }
 
 /* ─── Slide-in animations ─────────────────────────────────────────── */
@@ -314,6 +330,28 @@ html.light .snap-section::after { background: linear-gradient(to bottom, transpa
 
 /* ─── Selection ───────────────────────────────────────────────────── */
 ::selection { background: var(--lime); color: #000; }
+
+/* ─── Mobile typography & spacing ────────────────────────────────── */
+@media (max-width: 767px) {
+  html { font-size: 14px; }
+
+  /* Tighten watermark so it doesn't crowd the content */
+  .section-watermark {
+    font-size: clamp(5rem, 28vw, 8rem);
+    opacity: 0.08;
+  }
+
+  /* Compress mono tracking — main source of horizontal congestion */
+  [style*="ff-mono"],
+  [class*="tracking-"] {
+    letter-spacing: 0.1em;
+  }
+
+  /* Give snap sections a touch more breathable padding */
+  .snap-section {
+    --mobile-px: 1.25rem;
+  }
+}
 
 /* ─── Reduced motion ──────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {

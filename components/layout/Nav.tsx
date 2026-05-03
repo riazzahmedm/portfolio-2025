@@ -74,12 +74,12 @@ export default function Nav() {
       })}
 
       {/* Divider */}
-      <div className="w-px h-4 mx-1.5 flex-shrink-0" style={{ background: 'var(--border-card)' }} />
+      {/* <div className="w-px h-4 mx-1.5 flex-shrink-0" style={{ background: 'var(--border-card)' }} /> */}
 
       {/* Available dot */}
-      <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center flex-shrink-0">
+      {/* <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center flex-shrink-0">
         <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--lime)' }} />
-      </div>
+      </div> */}
     </nav>
   )
 }
