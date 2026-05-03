@@ -1,4 +1,6 @@
 'use client'
+import { useState } from 'react'
+import { AnimatePresence } from 'framer-motion'
 import Nav from '@/components/layout/Nav'
 import SideNav from '@/components/layout/SideNav'
 import Hero from '@/components/sections/Hero'
@@ -10,12 +12,18 @@ import Connect from '@/components/sections/Connect'
 import Testimonials from '@/components/sections/Testimonials'
 import Contact from '@/components/sections/Contact'
 import SmoothScroll from '@/components/providers/SmoothScroll'
+import Loader from '@/components/ui/Loader'
 import { useCursor } from '@/hooks/useCursor'
 
 export default function Home() {
   useCursor()
+  const [loaded, setLoaded] = useState(false)
 
   return (
+    <>
+      <AnimatePresence>
+        {!loaded && <Loader onComplete={() => setLoaded(true)} />}
+      </AnimatePresence>
     <SmoothScroll>
       {/* Custom cursor */}
       <div className="cursor" />
@@ -35,5 +43,6 @@ export default function Home() {
         <Contact />
       </main>
     </SmoothScroll>
+    </>
   )
 }
