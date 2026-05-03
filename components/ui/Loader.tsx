@@ -25,8 +25,8 @@ export default function Loader({ onComplete }: { onComplete: () => void }) {
 
   return (
     <motion.div
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.45, ease: 'easeInOut' }}
+      initial={{ opacity: 1 }}
+      exit={{ opacity: 0, transition: { duration: 0.45, ease: 'easeInOut' } }}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
         background: '#050505',

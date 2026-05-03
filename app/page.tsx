@@ -21,8 +21,8 @@ export default function Home() {
 
   return (
     <>
-      <AnimatePresence>
-        {!loaded && <Loader onComplete={() => setLoaded(true)} />}
+      <AnimatePresence mode="wait">
+        {!loaded && <Loader key="loader" onComplete={() => setLoaded(true)} />}
       </AnimatePresence>
     <SmoothScroll>
       {/* Custom cursor */}
