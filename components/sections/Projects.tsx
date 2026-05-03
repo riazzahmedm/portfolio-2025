@@ -94,6 +94,18 @@ function ScrollProgressBar({ progress }: { progress: number }) {
   )
 }
 
+const SPELLS = [
+  'expecto patronum',
+  'expelliarmus',
+  'lumos maxima',
+  'alohomora',
+  'stupefy',
+  'riddikulus',
+  'obliviate',
+  'incendio',
+  'nox',
+]
+
 // ─── Main section ─────────────────────────────────────────────────────────────
 export default function Projects() {
   const outerRef = useRef<HTMLDivElement>(null)
@@ -161,7 +173,7 @@ export default function Projects() {
         <div className="relative z-10 h-full flex flex-col pt-14">
           {/* Header */}
           <div className="px-8 md:px-14 lg:px-20 xl:px-32 2xl:px-48 pt-8 pb-3 flex-shrink-0">
-            <SectionTag num="05" label="Things I Actually Shipped" />
+            <SectionTag num="05" label="Spells Cast in Production" />
             <div className="h-px w-full relative" style={{ background: 'var(--border)' }}>
               <motion.div
                 className="absolute inset-y-0 left-0 origin-left"
@@ -212,19 +224,29 @@ export default function Projects() {
                           <div className="text-[11px] tracking-[0.22em] uppercase mb-1" style={{ color: project.mockupAccent, fontFamily: 'var(--ff-mono)' }}>
                             {project.year}
                           </div>
-                          <div className="text-[17px] font-bold tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: 'var(--ff-display)' }}>
+                          <div className="text-[17px] font-bold tracking-tight uppercase" style={{ color: 'var(--text-primary)', fontFamily: 'var(--ff-display)' }}>
                             {project.name}
                           </div>
                         </div>
                         {project.link && (
-                          <a
-                            href={project.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[18px] opacity-30 hover:opacity-100 transition-opacity mt-1"
-                            style={{ color: project.mockupAccent }}
-                            onClick={e => e.stopPropagation()}
-                          >↗</a>
+                          <div className="relative group/link">
+                            <a
+                              href={project.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[18px] opacity-30 group-hover/link:opacity-100 transition-opacity mt-1 block"
+                              style={{ color: project.mockupAccent }}
+                              onClick={e => e.stopPropagation()}
+                            >↗</a>
+                            <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover/link:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+                              <span
+                                className="text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-full"
+                                style={{ background: 'black', color: project.mockupAccent, border: `1px solid ${project.mockupAccent}55`, fontFamily: 'var(--ff-mono)' }}
+                              >
+                                Wingardium Leviosa ✦
+                              </span>
+                            </div>
+                          </div>
                         )}
                       </div>
 
@@ -244,8 +266,8 @@ export default function Projects() {
                         ))}
                       </div>
 
-                      <div className="text-[11px] tracking-[0.14em] pt-2 border-t" style={{ color: 'var(--text-faint)', borderColor: 'var(--border)', fontFamily: 'var(--ff-mono)' }}>
-                        npm run {slug}
+                      <div className="text-[11px] tracking-[0.14em] pt-2 border-t" style={{ color: 'var(--text-secondary)', borderColor: 'var(--border)', fontFamily: 'var(--ff-mono)' }}>
+                        {SPELLS[i % SPELLS.length]} {slug}
                       </div>
                     </div>
                   </motion.div>
@@ -270,7 +292,7 @@ export default function Projects() {
               ))}
             </div>
             <div className="text-[12px] tracking-[0.14em]" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
-              {String(activeIdx + 1).padStart(2, '0')} / {String(NUM).padStart(2, '0')}
+              {String(activeIdx + 1).padStart(2, '0')} of {String(NUM).padStart(2, '0')}
             </div>
           </div>
 
