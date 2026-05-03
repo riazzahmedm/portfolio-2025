@@ -5,15 +5,15 @@ import SectionShell from '@/components/ui/SectionShell'
 import SectionTag from '@/components/ui/SectionTag'
 import SectionFooter from '@/components/layout/SectionFooter'
 import TerminalBlock from '@/components/ui/TerminalBlock'
-import { Send, ExternalLink, Link, Loader2 } from 'lucide-react'
+import { Send, Phone, Link, Loader2 } from 'lucide-react'
 import { TERMINAL_LINES } from '@/lib/data'
 
 // Sign up at formspree.io → New Form → copy the form ID here
 const FORMSPREE_ID = 'mjglvlpn'
 
 const SOCIALS = [
-  { icon: ExternalLink, label: 'GitHub', value: 'github.com/riaz', color: 'var(--lavender)' },
-  { icon: Link, label: 'LinkedIn', value: 'linkedin.com/in/riaz', color: 'var(--lavender)' },
+  { icon: Phone,        label: 'WhatsApp',  value: '+91 80728 52495',                          href: 'https://wa.me/918072852495',                                color: 'var(--lavender)' },
+  { icon: Link,         label: 'LinkedIn', value: 'in/riaz-ahmed',                           href: 'https://www.linkedin.com/in/riaz-ahmed-665a9715b/',         color: 'var(--lavender)' },
 ]
 
 function SpiderIcon({ size = 20 }: { size?: number }) {
@@ -74,15 +74,15 @@ export default function Contact() {
 
         {/* Social chips */}
         <div className="grid grid-cols-2 gap-2">
-          {SOCIALS.map(({ icon: Icon, label, value, color }) => (
-            <div key={label} className="flex items-center gap-2 px-3 py-2 rounded-lg border"
-              style={{ borderColor: 'var(--border-card)', background: 'var(--surface)' }}>
+          {SOCIALS.map(({ icon: Icon, label, value, href, color }) => (
+            <a key={label} href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 rounded-lg border"
+              style={{ borderColor: 'var(--border-card)', background: 'var(--surface)', textDecoration: 'none' }}>
               <Icon size={13} style={{ color, flexShrink: 0 }} />
               <div>
                 <div className="text-[9px] tracking-[0.14em] uppercase" style={{ color: 'var(--text-faint)', fontFamily: 'var(--ff-mono)' }}>{label}</div>
                 <div className="text-[10px] truncate" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>{value}</div>
               </div>
-            </div>
+            </a>
           ))}
         </div>
 
@@ -148,15 +148,15 @@ export default function Contact() {
           <SectionTag num="08" label="Don't Be A Stranger" />
           <TerminalBlock lines={TERMINAL_WITH_ICON} />
           <div className="grid grid-cols-2 gap-2">
-            {SOCIALS.map(({ icon: Icon, label, value, color }) => (
-              <div key={label} className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border transition-colors duration-200"
-                style={{ borderColor: 'var(--border-card)', background: 'var(--surface)' }}>
+            {SOCIALS.map(({ icon: Icon, label, value, href, color }) => (
+              <a key={label} href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border transition-colors duration-200"
+                style={{ borderColor: 'var(--border-card)', background: 'var(--surface)', textDecoration: 'none' }}>
                 <Icon size={14} style={{ color, flexShrink: 0 }} />
                 <div>
                   <div className="text-[10px] tracking-[0.14em] uppercase" style={{ color: 'var(--text-faint)', fontFamily: 'var(--ff-mono)' }}>{label}</div>
                   <div className="text-[11px] truncate" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>{value}</div>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         </div>

@@ -1,11 +1,34 @@
 'use client'
 import Image from 'next/image'
+import { useState, useEffect } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import SectionShell from '@/components/ui/SectionShell'
 import SectionFooter from '@/components/layout/SectionFooter'
 
+function useAspectRatio() {
+  const [ratio, setRatio] = useState('16:9')
+  useEffect(() => {
+    const calc = () => {
+      const w = window.innerWidth
+      const h = window.innerHeight
+      const r = w / h
+      if (r > 2.3) return setRatio('21:9')
+      if (r > 1.7) return setRatio('16:9')
+      if (r > 1.5) return setRatio('16:10')
+      if (r > 1.2) return setRatio('4:3')
+      if (r > 0.9) return setRatio('1:1')
+      return setRatio('9:16')
+    }
+    calc()
+    window.addEventListener('resize', calc)
+    return () => window.removeEventListener('resize', calc)
+  }, [])
+  return ratio
+}
+
 export default function Hero() {
   const { scrollY } = useScroll()
+  const aspectRatio = useAspectRatio()
 
   const imgScale     = useTransform(scrollY, [0, 700], [1, 1.14])
   const imgY         = useTransform(scrollY, [0, 700], ['0%', '-10%'])
@@ -69,34 +92,38 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* Mobile-only cinematic overlay */}
+      {/* Top cinematic bar — all screens */}
       <motion.div
-        className="md:hidden absolute inset-0 z-[30] flex flex-col justify-between pointer-events-none"
+        className="absolute top-0 left-0 right-0 z-[30] flex items-center justify-between px-5 py-4 pointer-events-none"
+        style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, transparent 100%)' }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.2, duration: 1.0 }}
       >
-        {/* Top letterbox bar */}
-        <div className="w-full flex items-center justify-between px-5 py-4" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.92) 0%, transparent 100%)' }}>
-          <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '9px', letterSpacing: '0.32em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase' }}>
-            MMXXV · RIAZ AHMED
-          </span>
-          <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '9px', letterSpacing: '0.24em', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase' }}>
-            1.43:1
-          </span>
-        </div>
+        <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '9px', letterSpacing: '0.32em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase' }}>
+          MMXXV
+        </span>
+        <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '9px', letterSpacing: '0.24em', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase' }}>
+          {aspectRatio}
+        </span>
+      </motion.div>
 
-        {/* Bottom letterbox bar */}
-        <div className="w-full px-5 pb-40 pt-6 flex flex-col items-center gap-3" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 100%)' }}>
-          <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '8px', letterSpacing: '0.4em', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', textAlign: 'center' }}>
-            THIS EXPERIENCE WAS ENGINEERED FOR
-          </div>
-          <div style={{ fontFamily: 'var(--ff-display)', fontSize: '28px', fontWeight: 800, letterSpacing: '0.12em', color: '#ffffff', textTransform: 'uppercase', lineHeight: 1 }}>
-            LARGE SCREENS
-          </div>
-          <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '8px', letterSpacing: '0.32em', color: 'rgba(255,255,255,0.22)', textTransform: 'uppercase', textAlign: 'center' }}>
-            FOR FULL IMAX EXPERIENCE · OPEN ON DESKTOP
-          </div>
+      {/* Bottom letterbox bar — mobile only */}
+      <motion.div
+        className="md:hidden absolute bottom-0 left-0 right-0 z-[30] px-5 pb-40 pt-6 flex flex-col items-center gap-3 pointer-events-none"
+        style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 100%)' }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.2, duration: 1.0 }}
+      >
+        <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '8px', letterSpacing: '0.4em', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', textAlign: 'center' }}>
+          THIS EXPERIENCE WAS ENGINEERED FOR
+        </div>
+        <div style={{ fontFamily: 'var(--ff-display)', fontSize: '28px', fontWeight: 800, letterSpacing: '0.12em', color: '#ffffff', textTransform: 'uppercase', lineHeight: 1 }}>
+          LARGE SCREENS
+        </div>
+        <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '8px', letterSpacing: '0.32em', color: 'rgba(255,255,255,0.22)', textTransform: 'uppercase', textAlign: 'center' }}>
+          FOR FULL IMAX EXPERIENCE · OPEN ON DESKTOP
         </div>
       </motion.div>
 

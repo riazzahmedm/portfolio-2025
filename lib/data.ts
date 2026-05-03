@@ -67,26 +67,28 @@ export type BentoSkill = {
 
 export const BENTO_SKILLS: BentoSkill[] = [
   // Web
-  { name: 'React',       logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/react/react-original.svg',              color: 'lime',     category: 'Web',    colSpan: 2, rowSpan: 2 },
-  { name: 'Next.js',    logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nextjs/nextjs-original.svg',             invert: true, color: 'lime', category: 'Web' },
+  { name: 'React',       logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/react/react-original.svg',              color: 'lime',     category: 'Web',    colSpan: 2},
+  { name: 'Next.js',    logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nextjs/nextjs-original.svg',             invert: true, color: 'lime', category: 'Web', rowSpan: 2 },
+  { name: 'JavaScript',  logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg',    color: 'lime',     category: 'Web', colSpan: 2   },
   { name: 'TypeScript',  logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/typescript/typescript-original.svg',    color: 'lime',     category: 'Web'  },
   { name: 'Tailwind',    logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tailwindcss/tailwindcss-original.svg',  color: 'lime',     category: 'Web'  },
   { name: 'Redux',       logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/redux/redux-original.svg',              color: 'lime',     category: 'Web'  },
   { name: '.NET Core',   logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/dotnetcore/dotnetcore-original.svg',    color: 'lime',     category: 'Web'  },
   // Mobile
   { name: 'React Native',logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/react/react-original.svg',             color: 'lavender', category: 'Mobile', colSpan: 2 },
-  { name: 'Expo',        logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/expo/expo-original.svg',                invert: true, color: 'lavender', category: 'Mobile' },
+  { name: 'Expo',        logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/expo/expo-original.svg',                invert: true, color: 'lavender', category: 'Mobile', colSpan: 2 },
   { name: 'iOS',         logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/apple/apple-original.svg',              invert: true, color: 'lavender', category: 'Mobile' },
   { name: 'Android',     logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/android/android-original.svg',         color: 'lavender', category: 'Mobile' },
   { name: 'Azure',       logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/azure/azure-original.svg',             color: 'lavender', category: 'Mobile' },
   { name: 'Ionic',       logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/ionic/ionic-original.svg',             color: 'lavender', category: 'Mobile' },
   // Design
-  { name: 'Figma',       logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/figma/figma-original.svg',             color: 'red',      category: 'Design', rowSpan: 2 },
+  { name: 'Figma',       logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/figma/figma-original.svg',             color: 'red',      category: 'Design' },
   { name: 'Adobe XD',    logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/xd/xd-original.svg',                   color: 'red',      category: 'Design' },
   { name: 'Photoshop',   logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/photoshop/photoshop-original.svg',     color: 'red',      category: 'Design' },
   { name: 'HTML5',       logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg',             color: 'red',      category: 'Design' },
   { name: 'CSS3',        logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg',               color: 'red',      category: 'Design' },
   { name: 'Illustrator', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/illustrator/illustrator-original.svg', color: 'red',      category: 'Design' },
+  // { name: 'Procreate',   logo: 'https://cdn.simpleicons.org/procreate/ffffff',                                                      color: 'red',      category: 'Design' },
 ]
 
 // ── Experience ────────────────────────────────────────────────────────────────
@@ -97,12 +99,12 @@ export const EXPERIENCE = [
     role: 'Senior Software Engineer',
     company: 'Feuji',
     current: true,
-    tags: ['Next.js', 'React Native', 'TypeScript', 'Azure'],
+    tags: ['React', 'Typescript', '.NET Core', 'C#', 'Microservices'],
     points: [
-      'Led frontend architecture for 3 production apps serving 50k+ users',
-      'Reduced bundle size by 40% via code splitting and lazy loading',
-      'Mentored 4 junior developers, introduced component design system',
-      'Shipped React Native app to App Store with 4.8★ rating',
+      'Building web & mobile app for Sunny Benefits — a React platform serving employee benefits at scale',
+      'Developing and maintaining the admin portal using React, .NET Core, C#, and microservice architecture',
+      'Owning full-stack features end-to-end across consumer-facing apps and internal tooling',
+      'Collaborating closely with product and design to ship polished, production-ready features fast',
     ],
   },
   {
@@ -110,12 +112,11 @@ export const EXPERIENCE = [
     role: 'Software Engineer',
     company: 'ACS',
     current: false,
-    tags: ['React', '.NET Core', 'Redux', 'Azure'],
+    tags: ['React', 'Redux', 'Next', '.NET Core', 'C#', 'Azure'],
     points: [
-      'Built full-stack features across React frontend and .NET Core API',
-      'Resolved 300+ merge conflicts across a large monorepo codebase',
-      'Integrated third-party APIs: payment, mapping, analytics',
-      'Collaborated directly with design team bridging Figma to React',
+      'Developed dynamic web applications using React, Next.js, Redux, and Context API, focusing on responsive design and maintainable architecture',
+      'Implemented performance optimization techniques such as codesplitting, lazy loading, memoization to significantly improve load times and ensure a smoother, high-performing user experience across web and mobile platforms.',
+      'Integrated with HL7 (healthcare) and CODA (financial) systems to enable secure, seamless data exchange across regulated platforms.'
     ],
   },
   {
@@ -123,12 +124,11 @@ export const EXPERIENCE = [
     role: 'Mobile App Developer',
     company: 'ACS',
     current: false,
-    tags: ['React Native', 'Expo', 'Ionic', 'TypeScript'],
+    tags: ['React Native', 'Expo', 'Redux', 'Ionic', 'Javascript', 'TypeScript'],
     points: [
-      'Developed 5+ cross-platform apps for iOS and Android',
-      'Built offline-first architecture with local SQLite storage',
-      'Integrated push notifications, deep linking, and camera APIs',
-      'Shipped Ionic/Angular app with 10k+ active users',
+      'Developed and maintained multiple cross-platform mobile applications using React Native and Redux, delivering consistent performance across iOS and Android.',
+      'Designed user interfaces and prototypes in Figma and Adobe XD for select projects, collaborating closely with stakeholders and design teams.',
+      'Integrated REST, GraphQL APIs and ensured smooth mobile app performance across devices.'
     ],
   },
   {
@@ -136,12 +136,11 @@ export const EXPERIENCE = [
     role: 'Mobile App Developer',
     company: 'MCT',
     current: false,
-    tags: ['React', 'HTML/CSS', 'JavaScript', 'Bootstrap'],
+    tags: ['React Native', 'Ionic', 'JavaScript', 'Bootstrap'],
     points: [
-      'Built responsive UIs from Figma and Adobe XD designs',
-      'Maintained and extended legacy jQuery codebase',
-      'Introduced component-based architecture with React',
-      'Delivered 10+ client projects on time',
+      'Built hybrid mobile apps using React Native and Redux for B2B and consumer platforms.',
+      'Delivered full-stack mobile solutions for a food delivery platform, including order tracking and real-time notifications',
+      'Integrated REST APIs and native modules to expand app functionality and enhance user experience.'
     ],
   },
 ]
@@ -188,8 +187,8 @@ export const PROJECTS = [
     tags: ['CODA', '.Net Core', 'C#', 'Console App', 'SOAP XML'],
     type: 'Console App',
     year: '2022',
-    mockupGradient: 'linear-gradient(135deg, #003049 0%, #023e8a 50%, #0077b6 100%)',
-    mockupAccent: '#e02020',
+    mockupGradient: 'linear-gradient(135deg, #1a0a2e 0%, #16213e 50%, #0f3460 100%)',
+    mockupAccent: '#82ff1f',
     mockupImage: '/assets/img/portfolio18.png',
     link: 'https://millenniumconsulting.com/unit4financialsbycoda/',
   },
@@ -207,12 +206,13 @@ export const PROJECTS = [
   {
     name: 'MidiUnderground',
     description: 'Radio station platform — live streaming, show scheduling, listener analytics.',
-    tags: ['React', 'React Native', 'Node.js'],
+    tags: ['React', 'React Native', 'Redux'],
     type: 'Web + Mobile',
     year: '2022',
-    mockupGradient: 'linear-gradient(135deg, #1a0000 0%, #2d0000 50%, #3d0000 100%)',
-    mockupAccent: '#82ff1f',
-    mockupImage: '/assets/img/portfolio4.jpg',
+    mockupGradient: 'linear-gradient(135deg, #0d1117 0%, #161b22 50%, #21262d 100%)',
+    mockupAccent: '#b8a0ff',
+    mockupImage: '/assets/img/portfolio7.png',
+    link: 'https://dribbble.com/shots/26054127-MIDI-Underground',
   },
   {
     name: 'Onboarding Hub',
@@ -220,9 +220,10 @@ export const PROJECTS = [
     tags: ['Next.js', 'TypeScript', 'Azure'],
     type: 'Web App',
     year: '2021',
-    mockupGradient: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
+    mockupGradient: 'linear-gradient(135deg, #0d1117 0%, #161b22 50%, #21262d 100%)',
     mockupAccent: '#b8a0ff',
-    mockupImage: '/assets/img/portfolio5.jpg',
+    mockupImage: '/assets/img/portfolio15.jpg',
+    link: 'https://dribbble.com/shots/26065000-Onboarding-Hub',
   },
   {
     name: 'IFF Research',
@@ -230,9 +231,10 @@ export const PROJECTS = [
     tags: ['React', '.NET Core', 'TypeScript'],
     type: 'Web App',
     year: '2021',
-    mockupGradient: 'linear-gradient(135deg, #050505 0%, #0a1628 50%, #0d2137 100%)',
-    mockupAccent: '#e02020',
-    mockupImage: '/assets/img/portfolio6.jpg',
+    mockupGradient: 'linear-gradient(135deg, #1a0a2e 0%, #16213e 50%, #0f3460 100%)',
+    mockupAccent: '#82ff1f',
+    mockupImage: '/assets/img/portfolio17.png',
+    link: 'https://www.iffresearch.com/',
   },
   {
     name: 'Murge Eat',
@@ -240,10 +242,12 @@ export const PROJECTS = [
     tags: ['React Native', 'Expo', 'Redux'],
     type: 'Mobile App',
     year: '2020',
-    mockupGradient: 'linear-gradient(135deg, #1a0f00 0%, #2d1a00 50%, #3d2400 100%)',
-    mockupAccent: '#82ff1f',
-    mockupImage: '/assets/img/portfolio7.png',
+     mockupGradient: 'linear-gradient(135deg, #003049 0%, #023e8a 50%, #0077b6 100%)',
+    mockupAccent: '#e02020',
+    mockupImage: '/assets/img/portfolio16.jpg',
+    link: 'https://dribbble.com/shots/26048749-Murge-Eat-Mobile-App'
   },
+  
 ]
 
 // ── Testimonials ──────────────────────────────────────────────────────────────

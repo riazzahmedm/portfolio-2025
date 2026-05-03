@@ -121,7 +121,7 @@ export default function About() {
           </div>
 
           {/* TOP marquee strip — 0°, combined */}
-          <TopMarquee />
+          {/* <TopMarquee /> */}
 
           {/* Big scrolling text — slightly tilted −3°, composed via Framer Motion */}
           <div className="flex-1 flex items-center overflow-hidden min-h-0">

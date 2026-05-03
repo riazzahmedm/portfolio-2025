@@ -70,12 +70,62 @@ export function useCursor() {
       raf = requestAnimationFrame(tick)
     }
 
+    const onEnter = () => {
+      Object.assign(blob.style, {
+        width: '88px',
+        height: '88px',
+        background: 'radial-gradient(ellipse at center, rgba(150,70,255,0.28) 0%, rgba(110,30,220,0.10) 65%, transparent 100%)',
+        boxShadow: '0 0 48px 14px rgba(130,50,255,0.18)',
+        filter: 'blur(5px)',
+      })
+      Object.assign(dot.style, {
+        width: '6px',
+        height: '6px',
+        background: '#d4a8ff',
+      })
+    }
+
+    const onLeave = () => {
+      Object.assign(blob.style, {
+        width: '72px',
+        height: '72px',
+        background: 'radial-gradient(ellipse at center, rgba(140,60,255,0.35) 0%, rgba(100,20,220,0.12) 70%, transparent 100%)',
+        boxShadow: '0 0 40px 12px rgba(120,40,255,0.22)',
+        filter: 'blur(4px)',
+      })
+      Object.assign(dot.style, {
+        width: '8px',
+        height: '8px',
+        background: '#ffffff',
+        boxShadow: 'none',
+      })
+    }
+
+    const interactables = () => document.querySelectorAll('a, button, [role="button"], input, textarea, select, label')
+
+    const attachListeners = () => {
+      interactables().forEach(el => {
+        el.addEventListener('mouseenter', onEnter)
+        el.addEventListener('mouseleave', onLeave)
+      })
+    }
+
+    attachListeners()
+
+    const observer = new MutationObserver(attachListeners)
+    observer.observe(document.body, { childList: true, subtree: true })
+
     window.addEventListener('mousemove', onMove)
     raf = requestAnimationFrame(tick)
 
     return () => {
       window.removeEventListener('mousemove', onMove)
       cancelAnimationFrame(raf)
+      observer.disconnect()
+      interactables().forEach(el => {
+        el.removeEventListener('mouseenter', onEnter)
+        el.removeEventListener('mouseleave', onLeave)
+      })
     }
   }, [])
 }
