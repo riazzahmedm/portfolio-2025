@@ -220,6 +220,7 @@ function VideoCard({ pos, rotate, delay, gradient, scale, src, onFirstDrag }: {
               src={src}
               playsInline
               loop
+              preload="metadata"
               style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }}
             />
           )}

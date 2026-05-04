@@ -237,7 +237,11 @@ export default function Projects() {
                               className="text-[18px] opacity-30 group-hover/link:opacity-100 transition-opacity mt-1 block"
                               style={{ color: project.mockupAccent }}
                               onClick={e => e.stopPropagation()}
-                            >↗</a>
+                            >
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline-block' }}>
+                                <path d="M3 13L13 3M13 3H6M13 3V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            </a>
                             <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover/link:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
                               <span
                                 className="text-[10px] tracking-[0.18em] uppercase px-2.5 py-1 rounded-full"
