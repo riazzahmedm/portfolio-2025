@@ -175,13 +175,14 @@ function MusicCard({ trackId, pos, rotate, delay, scale, onFirstDrag }: {
 }
 
 // ── Video card ─────────────────────────────────────────────────────────────────
-function VideoCard({ pos, rotate, delay, gradient, scale, src, onFirstDrag }: {
+function VideoCard({ pos, rotate, delay, gradient, scale, src, poster, onFirstDrag }: {
   pos: React.CSSProperties
   rotate: string
   delay: number
   gradient: string
   scale: number
   src?: string
+  poster?: string
   onFirstDrag: () => void
 }) {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -218,9 +219,10 @@ function VideoCard({ pos, rotate, delay, gradient, scale, src, onFirstDrag }: {
             <video
               ref={videoRef}
               src={src}
+              poster={poster}
               playsInline
               loop
-              preload="metadata"
+              preload="none"
               style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }}
             />
           )}
@@ -307,6 +309,7 @@ export default function Connect() {
         delay={0.7}
         gradient="linear-gradient(145deg,#1a1a2e,#e94560)"
         src="/insta-video.mp4"
+        poster="/insta-video-poster.jpg"
         scale={scale}
         onFirstDrag={onFirstDrag}
       />
@@ -316,6 +319,7 @@ export default function Connect() {
         delay={0.8}
         gradient="linear-gradient(145deg,#0f2027,#2c5364)"
         src="/insta-video-2.mp4"
+        poster="/insta-video-2-poster.jpg"
         scale={scale}
         onFirstDrag={onFirstDrag}
       />
@@ -325,6 +329,7 @@ export default function Connect() {
         delay={0.9}
         gradient="linear-gradient(145deg,#3d0c02,#c0392b)"
         src="/insta-video-3.mp4"
+        poster="/insta-video-3-poster.jpg"
         scale={scale}
         onFirstDrag={onFirstDrag}
       />
