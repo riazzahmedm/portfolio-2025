@@ -1,6 +1,7 @@
 'use client'
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useRef } from 'react'
+import Image from 'next/image'
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import SectionShell from '@/components/ui/SectionShell'
 import SectionTag from '@/components/ui/SectionTag'
 import SectionFooter from '@/components/layout/SectionFooter'
@@ -11,7 +12,30 @@ export default function Experience() {
   const [selected, setSelected] = useState(0)
   const job = EXPERIENCE[selected]
 
+  const sectionRef = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start end', 'end start'] })
+  const y1 = useTransform(scrollYProgress, [0, 1], [50, -50])
+  const y2 = useTransform(scrollYProgress, [0, 1], [-50, 50])
+  const imgOpacity = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0, 1, 1, 0])
+
   return (
+    <div ref={sectionRef} style={{ position: 'relative' }}>
+
+      {/* ── Easter egg: Interstellar corner images ── */}
+      <motion.div style={{ y: y1, opacity: imgOpacity }}
+        className="hidden md:block absolute bottom-20 left-15 z-30 pointer-events-none">
+        <motion.div style={{ opacity: 0.5, rotate: -7 }} whileHover={{ scale: 1.08 }} transition={{ duration: 0.35 }}>
+          <Image src="/interstellar1.PNG" alt="" width={100} height={135} className="rounded-lg" style={{ objectFit: 'cover', filter: 'saturate(0.7)' }} />
+        </motion.div>
+      </motion.div>
+
+      <motion.div style={{ y: y2, opacity: imgOpacity }}
+        className="hidden md:block absolute top-12 right-15 z-30 pointer-events-none">
+        <motion.div style={{ opacity: 0.5, rotate: 6 }} whileHover={{ scale: 1.08 }} transition={{ duration: 0.35 }}>
+          <Image src="/interstellar2.PNG" alt="" width={100} height={135} className="rounded-lg" style={{ objectFit: 'cover', filter: 'saturate(0.7)' }} />
+        </motion.div>
+      </motion.div>
+
     <SectionShell id="experience" orbPosition="top-left" watermark="04">
 
       {/* ── MOBILE layout (< md) ─────────────────────────────────────────── */}
@@ -200,5 +224,6 @@ export default function Experience() {
 
       <SectionFooter current={4} />
     </SectionShell>
+    </div>
   )
 }

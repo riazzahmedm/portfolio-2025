@@ -1,10 +1,10 @@
 export const NAV_LINKS = [
-  { label: 'Home', href: '#hero' },
   { label: 'About', href: '#about' },
   { label: 'Skills', href: '#skills' },
   { label: 'Experience', href: '#experience' },
   { label: 'Work', href: '#projects' },
   { label: 'Connect', href: '#connect' },
+  { label: 'Testimonials', href: '#testimonials' },
   { label: 'Say hi', href: '#contact' },
 ]
 

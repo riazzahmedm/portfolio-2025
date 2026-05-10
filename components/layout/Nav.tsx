@@ -2,9 +2,9 @@
 import { NAV_LINKS, SECTIONS } from '@/lib/data'
 import { useActiveSection } from '@/hooks/useActiveSection'
 import { getLenisInstance } from '@/lib/lenisInstance'
-import { Home, User, Code2, Briefcase, FolderOpen, Globe, Mail } from 'lucide-react'
+import { User, Code2, Briefcase, FolderOpen, Globe, Star, Mail } from 'lucide-react'
 
-const NAV_ICONS = [Home, User, Code2, Briefcase, FolderOpen, Globe, Mail]
+const NAV_ICONS = [User, Code2, Briefcase, FolderOpen, Globe, Star, Mail]
 
 export default function Nav() {
   const active = useActiveSection()
@@ -50,7 +50,7 @@ export default function Nav() {
       {/* Icon links */}
       {NAV_LINKS.map((link, i) => {
         const Icon = NAV_ICONS[i]
-        const isActive = link.href === `#${SECTIONS[active]}`
+        const isActive = active > 0 && link.href === `#${SECTIONS[active]}`
         return (
           <button
             key={link.href}

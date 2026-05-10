@@ -11,8 +11,9 @@ export function useActiveSection() {
       let found = 0
       for (let i = 0; i < SECTIONS.length; i++) {
         const el = document.getElementById(SECTIONS[i])
-        if (el && el.offsetTop <= midY) {
-          found = i
+        if (el) {
+          const elTop = el.getBoundingClientRect().top + window.scrollY
+          if (elTop <= midY) found = i
         }
       }
       setActive(found)
