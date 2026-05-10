@@ -40,7 +40,7 @@ export default function Skills() {
       <div className="flex-1 flex flex-col min-h-0 mt-14 overflow-hidden">
 
         {/* Header */}
-        <div className="px-8 md:px-14 lg:px-20 xl:px-32 2xl:px-48 pt-8 pb-4 flex-shrink-0">
+        <div className="px-4 md:px-14 lg:px-20 xl:px-32 2xl:px-48 pt-4 md:pt-8 pb-3 md:pb-4 flex-shrink-0">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <SectionTag num="03" label="What I Work With" />
             <div className="flex gap-2 flex-wrap">
@@ -65,20 +65,20 @@ export default function Skills() {
         </div>
 
         {/* Grid */}
-        <div className="flex-1 min-h-0 px-8 md:px-14 lg:px-20 xl:px-32 2xl:px-48 pb-4">
+        <div className="flex-1 min-h-0 px-4 md:px-14 lg:px-20 xl:px-32 2xl:px-48 pb-4 overflow-y-auto md:overflow-visible">
           <motion.div
             layout
-            className="grid gap-2.5 h-full"
+            className="grid gap-2 md:gap-2.5 md:h-full"
             style={{
               gridTemplateColumns: `repeat(${cols}, 1fr)`,
-              gridAutoRows: 'minmax(70px, 1fr)',
+              gridAutoRows: cols < 6 ? 'minmax(72px, auto)' : 'minmax(70px, 1fr)',
             }}
           >
             <AnimatePresence mode="popLayout">
               {filtered.map(skill => {
                 const c = COLOR[skill.color]
                 const isFeatured = isBento && skill.colSpan === 2 && skill.rowSpan === 2
-                const logoSize = isFeatured ? 56 : isBento && (skill.colSpan === 2 || skill.rowSpan === 2) ? 40 : 32
+                const logoSize = isFeatured ? 56 : isBento && (skill.colSpan === 2 || skill.rowSpan === 2) ? 40 : cols < 6 ? 26 : 32
 
                 return (
                   <motion.div
@@ -89,13 +89,13 @@ export default function Skills() {
                     exit={{ opacity: 0, scale: 0.88 }}
                     transition={{ duration: 0.28 }}
                     whileHover={{ y: -3, scale: 1.02 }}
-                    className="relative flex flex-col items-center justify-center rounded-2xl border cursor-default p-3 md:p-4 gap-2"
+                    className="relative flex flex-col items-center justify-center rounded-xl md:rounded-2xl border cursor-default p-2 md:p-4 gap-1.5 md:gap-2"
                     style={{
                       gridColumn: isBento && skill.colSpan ? `span ${skill.colSpan}` : undefined,
                       gridRow:    isBento && skill.rowSpan ? `span ${skill.rowSpan}` : undefined,
                       background: c.bg,
                       borderColor: c.border,
-                      minHeight: isFeatured ? '140px' : isBento && skill.rowSpan === 2 ? '140px' : '80px',
+                      minHeight: isFeatured ? '140px' : isBento && skill.rowSpan === 2 ? '140px' : cols < 6 ? '72px' : '80px',
                       transition: 'box-shadow 0.25s ease, border-color 0.25s ease',
                     }}
                     onMouseEnter={e => {
