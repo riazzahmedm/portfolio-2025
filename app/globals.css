@@ -326,6 +326,15 @@ html.light #testimonials .dot-grid {
   to   { opacity: 1; transform: scale(1); }
 }
 
+/* ─── Utility keyframes (shared across pages) ─────────────────────── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+
 /* ─── Selection ───────────────────────────────────────────────────── */
 ::selection { background: var(--lime); color: #000; }
 
