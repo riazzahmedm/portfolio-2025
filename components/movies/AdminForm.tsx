@@ -42,14 +42,13 @@ interface FormState {
   status:   LogStatus
   platform: string
   draws:    string[]
-  tags:     string
   rewatch:  boolean
 }
 
 const blank: FormState = {
   vibe: '', review: '', overview: '',
   watchedOn: new Date().toISOString().split('T')[0],
-  status: 'watched', platform: '', draws: [], tags: '', rewatch: false,
+  status: 'watched', platform: '', draws: [], rewatch: false,
 }
 
 // ── Sub-components ───────────────────────────────────────────────────────────
@@ -89,27 +88,38 @@ function VibeSelector({ value, onChange }: { value: string; onChange: (v: string
 
 function PlatformSelector({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div style={{
-      display: 'flex', gap: '8px', flexWrap: 'wrap',
-    }}>
+    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
       {PLATFORMS.map(p => {
         const on = value === p.key
         return (
           <button
             key={p.key} type="button"
+            title={p.label}
             onClick={() => onChange(on ? '' : p.key)}
             style={{
-              display:    'flex', alignItems: 'center', gap: '5px',
-              padding:    '7px 14px', borderRadius: '100px', cursor: 'pointer',
-              border:     `1px solid ${on ? 'rgba(184,160,255,0.45)' : 'rgba(255,255,255,0.08)'}`,
-              background: on ? 'rgba(184,160,255,0.12)' : 'rgba(255,255,255,0.02)',
-              color:      on ? '#b8a0ff' : 'rgba(255,255,255,0.45)',
-              fontSize:   '12px', fontFamily: 'var(--ff-body)',
-              transition: 'all 0.18s', fontWeight: on ? 600 : 400,
+              display:    'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              gap:        '4px',
+              width:      p.logo ? '56px' : 'auto',
+              minWidth:   p.logo ? '56px' : '64px',
+              height:     '56px',
+              padding:    p.logo ? '0' : '0 14px',
+              borderRadius: '12px', cursor: 'pointer',
+              border:     `1px solid ${on ? 'rgba(184,160,255,0.5)' : 'rgba(255,255,255,0.08)'}`,
+              background: on ? 'rgba(184,160,255,0.14)' : 'rgba(255,255,255,0.03)',
+              transition: 'all 0.18s', flexShrink: 0,
             }}
           >
-            <span style={{ fontSize: '14px' }}>{p.emoji}</span>
-            <span>{p.label}</span>
+            {p.logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={p.logo} alt={p.label} style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'contain' }} />
+            ) : (
+              <>
+                <span style={{ fontSize: '18px', lineHeight: 1 }}>{p.emoji}</span>
+                <span style={{ fontSize: '9px', color: on ? '#b8a0ff' : 'rgba(255,255,255,0.4)', fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>
+                  {p.label.toUpperCase()}
+                </span>
+              </>
+            )}
           </button>
         )
       })}
@@ -282,7 +292,6 @@ export default function AdminForm({
     status:    initialLog.status,
     platform:  initialLog.platform ?? '',
     draws:     initialLog.draws ?? [],
-    tags:      (initialLog.tags ?? []).join(', '),
     rewatch:   initialLog.rewatch ?? false,
   } : blank)
   const [editTmdbOverride, setEditTmdbOverride] = useState<TMDBResult | null>(null)
@@ -381,7 +390,6 @@ export default function AdminForm({
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     if (!isEdit && !selected) { setError('Select a title first'); return }
-    if (!isEdit && type === 'episode' && !selectedEpisode) { setError('Select an episode'); return }
     setSubmitting(true); setError('')
 
     if (isEdit) {
@@ -407,7 +415,7 @@ export default function AdminForm({
         episode:         selectedEpisode?.episode_number ?? initialLog!.episode ?? null,
         episode_title:   selectedEpisode?.name ?? initialLog!.episode_title ?? null,
         status:          form.status,
-        tags:            form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+        tags:            [],
         rewatch:         form.rewatch,
       }
       const res = await fetch(`/api/movies/${initialLog!.id}`, {
@@ -448,7 +456,7 @@ export default function AdminForm({
       episode:         selectedEpisode?.episode_number ?? null,
       episode_title:   selectedEpisode?.name ?? null,
       status:          form.status,
-      tags:            form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+      tags:            [],
       rewatch:         form.rewatch,
       source:          'manual',
     }
@@ -506,7 +514,7 @@ export default function AdminForm({
           <div>
             <SectionLabel>Type</SectionLabel>
             <div style={{ display: 'flex', gap: '8px' }}>
-              {(['movie', 'series', 'episode'] as LogType[]).map(t => {
+              {(['movie', 'series'] as LogType[]).map(t => {
                 const on = type === t
                 return (
                   <button key={t} type="button" onClick={() => setType(t)}
@@ -588,7 +596,7 @@ export default function AdminForm({
           <div>
             <SectionLabel>Type</SectionLabel>
             <div style={{ display: 'flex', gap: '8px' }}>
-              {(['movie', 'series', 'episode'] as LogType[]).map(t => {
+              {(['movie', 'series'] as LogType[]).map(t => {
                 const on = type === t
                 return (
                   <button key={t} type="button" onClick={() => { setType(t); clear() }}
@@ -804,12 +812,14 @@ export default function AdminForm({
           style={{ ...INPUT, resize: 'vertical', lineHeight: 1.55 }} />
       </div>
 
-      {/* ── Date + Status ── */}
-      <div style={{ display: 'flex', gap: '16px' }}>
-        <div style={{ flex: 1 }}>
-          <SectionLabel>Date watched</SectionLabel>
-          <DatePicker value={form.watchedOn} onChange={v => setField('watchedOn', v)} />
-        </div>
+      {/* ── Date watched (full width) ── */}
+      <div>
+        <SectionLabel>Date watched</SectionLabel>
+        <DatePicker value={form.watchedOn} onChange={v => setField('watchedOn', v)} />
+      </div>
+
+      {/* ── Status + Rewatch (same row) ── */}
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
         <div style={{ flex: 1 }}>
           <SectionLabel>Status</SectionLabel>
           <div style={{ position: 'relative' }}>
@@ -822,24 +832,16 @@ export default function AdminForm({
             <ChevronDown size={14} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.3)', pointerEvents: 'none' }} />
           </div>
         </div>
-      </div>
-
-      {/* ── Tags + Rewatch ── */}
-      <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-end' }}>
-        <div style={{ flex: 1 }}>
-          <SectionLabel>Tags (comma-separated)</SectionLabel>
-          <input value={form.tags} onChange={e => setField('tags', e.target.value)}
-            placeholder="sci-fi, thriller, …" style={INPUT} />
-        </div>
         <button type="button" onClick={() => setField('rewatch', !form.rewatch)}
           style={{
-            padding: '10px 18px', marginBottom: '0px', borderRadius: '100px',
+            display: 'flex', alignItems: 'center', gap: '6px',
+            padding: '10px 16px', borderRadius: '10px', flexShrink: 0,
             border: `1px solid ${form.rewatch ? 'rgba(130,255,31,0.4)' : 'rgba(255,255,255,0.08)'}`,
             background: form.rewatch ? 'rgba(130,255,31,0.08)' : 'transparent',
             color: form.rewatch ? '#82ff1f' : 'rgba(255,255,255,0.35)',
             fontSize: '12px', cursor: 'pointer', fontFamily: 'var(--ff-mono)',
             letterSpacing: '0.1em', textTransform: 'uppercase', transition: 'all 0.18s',
-            whiteSpace: 'nowrap',
+            whiteSpace: 'nowrap', height: '42px',
           }}>
           <RefreshCw size={13} /> Rewatch
         </button>

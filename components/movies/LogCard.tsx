@@ -36,11 +36,15 @@ function PlatformBadge({ platform }: { platform: string }) {
   if (!p) return null
   return (
     <div style={{
-      display: 'inline-flex', alignItems: 'center', gap: '3px',
-      fontSize: '9px', color: 'rgba(255,255,255,0.3)',
+      display: 'inline-flex', alignItems: 'center', gap: '4px',
+      fontSize: '9px', color: 'rgba(255,255,255,0.4)',
       fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em',
     }}>
-      <span>{p.emoji}</span>
+      {p.logo
+        // eslint-disable-next-line @next/next/no-img-element
+        ? <img src={p.logo} alt={p.label} style={{ width: '12px', height: '12px', borderRadius: '3px', objectFit: 'contain' }} />
+        : <span style={{ fontSize: '10px' }}>{p.emoji}</span>
+      }
       <span>{p.label}</span>
     </div>
   )

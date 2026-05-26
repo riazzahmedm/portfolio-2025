@@ -21,18 +21,16 @@ export const VIBES: {
 
 // ── Platforms ────────────────────────────────────────────────────────────────
 export const PLATFORMS = [
-  { key: 'theatre',   label: 'Theatre',     emoji: '🎭' },
-  { key: 'imax',      label: 'IMAX',        emoji: '🎬' },
-  { key: 'netflix',   label: 'Netflix',     emoji: '🔴' },
-  { key: 'prime',     label: 'Prime Video', emoji: '📦' },
-  { key: 'disney',    label: 'Disney+',     emoji: '✨' },
-  { key: 'apple',     label: 'Apple TV+',   emoji: '🍎' },
-  { key: 'hotstar',   label: 'Hotstar',     emoji: '⭐' },
-  { key: 'jiocienma', label: 'JioCinema',   emoji: '📡' },
-  { key: 'mubi',      label: 'MUBI',        emoji: '🎞️' },
-  { key: 'youtube',   label: 'YouTube',     emoji: '▶️' },
-  { key: 'bluray',    label: 'Blu-ray',     emoji: '💿' },
-  { key: 'unofficial',label: 'Unofficial',  emoji: '🏴‍☠️' },
+  { key: 'theatre',    label: 'Theatre',     emoji: '🎭', logo: null },
+  { key: 'imax',       label: 'IMAX',        emoji: '🎬', logo: null },
+  { key: 'netflix',    label: 'Netflix',     emoji: '🔴', logo: 'https://www.google.com/s2/favicons?domain=netflix.com&sz=64' },
+  { key: 'prime',      label: 'Prime Video', emoji: '📦', logo: 'https://www.google.com/s2/favicons?domain=primevideo.com&sz=64' },
+  { key: 'disney',     label: 'Disney+',     emoji: '✨', logo: 'https://www.google.com/s2/favicons?domain=disneyplus.com&sz=64' },
+  { key: 'apple',      label: 'Apple TV+',   emoji: '🍎', logo: 'https://www.google.com/s2/favicons?domain=tv.apple.com&sz=64' },
+  { key: 'hotstar',    label: 'Hotstar',     emoji: '⭐', logo: 'https://www.google.com/s2/favicons?domain=hotstar.com&sz=64' },
+  { key: 'mubi',       label: 'MUBI',        emoji: '🎞️', logo: 'https://www.google.com/s2/favicons?domain=mubi.com&sz=64' },
+  { key: 'youtube',    label: 'YouTube',     emoji: '▶️', logo: 'https://www.google.com/s2/favicons?domain=youtube.com&sz=64' },
+  { key: 'unofficial', label: 'Unofficial',  emoji: '🏴‍☠️', logo: null },
 ]
 
 // ── What drew you to it ──────────────────────────────────────────────────────

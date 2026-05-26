@@ -148,7 +148,7 @@ export default function DatePicker({
           transition: 'border-color 0.2s',
         }}
       >
-        <span>{value ? formatDisplay(value) : 'Pick a date'}</span>
+        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value ? formatDisplay(value) : 'Pick a date'}</span>
         {/* calendar icon */}
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
           stroke={open ? '#b8a0ff' : 'rgba(255,255,255,0.28)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -163,14 +163,15 @@ export default function DatePicker({
         <div style={{
           position:     'absolute',
           top:          'calc(100% + 8px)',
-          left:         0,
+          left:         '50%',
+          transform:    'translateX(-50%)',
           zIndex:       200,
           background:   '#111111',
           border:       '1px solid rgba(184,160,255,0.18)',
           borderRadius: '18px',
           padding:      '20px',
           boxShadow:    '0 28px 72px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.04)',
-          minWidth:     '288px',
+          width:        'min(308px, calc(100vw - 48px))',
           userSelect:   'none',
         }}>
 
@@ -241,7 +242,7 @@ export default function DatePicker({
                   type="button"
                   onClick={() => selectCell(cell)}
                   style={{
-                    width: '38px', height: '38px',
+                    width: '36px', height: '36px',
                     borderRadius: '10px',
                     border: tod && !sel
                       ? '1px solid rgba(184,160,255,0.5)'
