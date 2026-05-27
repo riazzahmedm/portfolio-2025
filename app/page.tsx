@@ -13,10 +13,7 @@ import Testimonials from '@/components/sections/Testimonials'
 import Contact from '@/components/sections/Contact'
 import SmoothScroll from '@/components/providers/SmoothScroll'
 import Loader from '@/components/ui/Loader'
-import { useCursor } from '@/hooks/useCursor'
-
 export default function Home() {
-  useCursor()
   const [loaded, setLoaded] = useState(false)
 
   return (
@@ -25,9 +22,6 @@ export default function Home() {
         {!loaded && <Loader key="loader" onComplete={() => setLoaded(true)} />}
       </AnimatePresence>
     <SmoothScroll>
-      {/* Custom cursor */}
-      <div className="cursor" />
-      <div className="cursor-ring" />
 
       <Nav />
       <SideNav />

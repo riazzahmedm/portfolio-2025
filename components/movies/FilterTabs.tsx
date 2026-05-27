@@ -19,7 +19,7 @@ export default function FilterTabs({
   onChange: (f: LogFilter) => void
 }) {
   return (
-    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' } as React.CSSProperties}>
       {TABS.map(tab => {
         const on = active === tab.key
         return (
@@ -41,6 +41,8 @@ export default function FilterTabs({
               display:      'flex',
               alignItems:   'center',
               gap:          '6px',
+              flexShrink:   0,
+              whiteSpace:   'nowrap',
             }}
           >
             {tab.label}

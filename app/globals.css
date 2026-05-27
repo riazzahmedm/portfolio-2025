@@ -93,28 +93,28 @@ html, body {
 .cursor {
   display: block;
   position: fixed;
-  width: 10px;
-  height: 10px;
+  top: 0; left: 0;
+  width: 8px;
+  height: 8px;
   background: #ffffff;
   border-radius: 50%;
   pointer-events: none;
   z-index: 9999;
-  transform: translate(-50%, -50%);
-  transition: transform 0.06s ease, width 0.18s ease, height 0.18s ease;
-  box-shadow: 0 0 6px 2px rgba(255,255,255,0.9), 0 0 18px 4px rgba(160,80,255,0.6);
+  will-change: transform;
+  transition: width 0.15s ease, height 0.15s ease;
 }
 .cursor-ring {
   display: block;
   position: fixed;
+  top: 0; left: 0;
   width: 72px;
   height: 72px;
   border: none;
   border-radius: 50%;
   pointer-events: none;
   z-index: 9998;
-  transform: translate(-50%, -50%);
   background: transparent;
-  box-shadow: none;
+  will-change: transform;
 }
 } /* end @media (pointer: fine) */
 

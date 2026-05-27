@@ -37,10 +37,6 @@ export async function GET(
     const date     = new Date(log.watched_on).toLocaleDateString('en-US', {
       month: 'long', day: 'numeric', year: 'numeric',
     })
-    const favName  = log.favorite_person?.name ?? null
-    const favRole  = log.favorite_person?.role ?? null
-    const favImg   = log.favorite_person?.profile_url ?? null
-
     return new ImageResponse(
       (
         <div
@@ -151,33 +147,6 @@ export async function GET(
               </div>
             )}
 
-            {/* Favourite person */}
-            {favName && (
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: '20px',
-                marginBottom: '52px',
-                padding: '16px 32px 16px 16px',
-                background: 'rgba(184,160,255,0.08)',
-                border: '1px solid rgba(184,160,255,0.2)',
-                borderRadius: '100px',
-              }}>
-                <div style={{
-                  width: '56px', height: '56px', borderRadius: '50%',
-                  overflow: 'hidden', background: '#1a1a1a',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  {favImg
-                    // eslint-disable-next-line @next/next/no-img-element
-                    ? <img src={favImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : <span style={{ fontSize: '28px' }}>👤</span>
-                  }
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ color: LAVENDER, fontSize: '28px', fontWeight: 600 }}>♥ {favName}</span>
-                  {favRole && <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '22px' }}>{favRole}</span>}
-                </div>
-              </div>
-            )}
 
             {/* Review */}
             {review && (
@@ -209,7 +178,7 @@ export async function GET(
               display: 'flex', color: 'rgba(255,255,255,0.18)',
               fontSize: '26px', letterSpacing: '0.22em',
             }}>
-              riazahmed.com
+              riazz-portfolio.vercel.app/movies
             </div>
           </div>
         </div>

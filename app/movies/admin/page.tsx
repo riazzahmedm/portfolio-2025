@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Lock, Eye, EyeOff, LogOut } from 'lucide-react'
+import { toast } from 'sonner'
 import AdminForm from '@/components/movies/AdminForm'
 
 /* ── Password gate ──────────────────────────────────────────────────────── */
@@ -118,6 +119,7 @@ export default function AdminPage() {
   async function logout() {
     await fetch('/api/auth/movies', { method: 'DELETE' })
     setAuthed(false)
+    toast.success('Logged out')
   }
 
   if (checking) return (
@@ -170,16 +172,20 @@ export default function AdminPage() {
 
       {/* ── Content ── */}
       <main style={{ maxWidth: '720px', margin: '0 auto', padding: '40px 24px 80px' }}>
-        <h1 style={{
-          fontSize: 'clamp(1.8rem, 4vw, 2.4rem)',
-          fontFamily: 'var(--ff-display)', fontWeight: 400,
-          margin: '0 0 8px', letterSpacing: '-0.01em',
-        }}>
-          Log <span style={{ WebkitTextStroke: '1px rgba(255,255,255,0.22)', color: 'transparent' }}>Entry</span>
-        </h1>
-        <p style={{ color: 'var(--text-dim)', fontSize: '13px', margin: '0 0 32px', fontFamily: 'var(--ff-mono)' }}>
-          Add a movie, series, or episode to your watchlog.
-        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '32px' }}>
+          <h1 style={{
+            margin: 0, fontFamily: 'var(--ff-mono)', fontWeight: 400,
+            fontSize: 'clamp(1rem, 2.8vw, 1.25rem)',
+            letterSpacing: '0.22em', textTransform: 'uppercase',
+            display: 'flex', alignItems: 'center', gap: '14px', color: '#fff',
+          }}>
+            <span style={{ color: '#b8a0ff' }}>—</span>
+            Log Entry
+          </h1>
+          <p style={{ color: 'var(--text-dim)', fontSize: '12px', margin: 0, fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em' }}>
+            Add a movie or series to your watchlog.
+          </p>
+        </div>
 
         <div style={{
           background: 'var(--surface)',

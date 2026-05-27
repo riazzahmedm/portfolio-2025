@@ -1,8 +1,10 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { Search, X, ChevronDown, Check, RefreshCw } from 'lucide-react'
+import { Search, X, ChevronDown, Check, RefreshCw, Eye } from 'lucide-react'
+import { toast } from 'sonner'
 import type { LogType, LogStatus, TMDBResult, TMDBEpisode, FavoritePerson, MovieLog } from '@/lib/movies.types'
 import DatePicker from './DatePicker'
+import TMDBPreviewModal from './TMDBPreviewModal'
 import { VIBES, PLATFORMS, DRAWS } from '@/lib/movies.types'
 
 // ── Shared style helpers ────────────────────────────────────────────────────
@@ -267,14 +269,16 @@ function PersonGrid({
 export default function AdminForm({
   onSuccess,
   initialLog,
+  preSelectedTmdb,
 }: {
-  onSuccess:   () => void
-  initialLog?: MovieLog
+  onSuccess:        () => void
+  initialLog?:      MovieLog
+  preSelectedTmdb?: { id: number; title: string; poster_url: string | null; type: 'movie' | 'series' }
 }) {
   const isEdit = !!initialLog
 
-  const [type,            setType]            = useState<LogType>(initialLog?.type ?? 'movie')
-  const [query,           setQuery]           = useState('')
+  const [type,            setType]            = useState<LogType>(initialLog?.type ?? preSelectedTmdb?.type ?? 'movie')
+  const [query,           setQuery]           = useState(preSelectedTmdb?.title ?? '')
   const [results,         setResults]         = useState<TMDBResult[]>([])
   const [selected,        setSelected]        = useState<TMDBResult | null>(null)
   const [seasons,         setSeasons]         = useState<number[]>([])
@@ -297,9 +301,9 @@ export default function AdminForm({
   const [editTmdbOverride, setEditTmdbOverride] = useState<TMDBResult | null>(null)
   const [editQuery,        setEditQuery]        = useState('')
   const [editResults,      setEditResults]      = useState<TMDBResult[]>([])
+  const [previewItem,      setPreviewItem]      = useState<TMDBResult | null>(null)
   const [submitting,       setSubmitting]       = useState(false)
   const [error,            setError]            = useState('')
-  const [success,          setSuccess]          = useState(false)
   const debounce    = useRef<ReturnType<typeof setTimeout> | null>(null)
   const editDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -314,6 +318,16 @@ export default function AdminForm({
     }, 380)
     return () => { if (editDebounce.current) clearTimeout(editDebounce.current) }
   }, [isEdit, editQuery, editTmdbOverride, type])
+
+  // Pre-select a TMDB item when coming from Watch Later
+  useEffect(() => {
+    if (!preSelectedTmdb || isEdit) return
+    const tmdbType = preSelectedTmdb.type === 'movie' ? 'movie' : 'tv'
+    fetch(`/api/tmdb/search?q=${preSelectedTmdb.id}&type=${tmdbType}`)
+      .then(r => r.json())
+      .then((results: TMDBResult[]) => { if (results[0]) pick(results[0]) })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // In edit mode, fetch cast/crew — re-runs when TMDB override is picked
   useEffect(() => {
@@ -423,11 +437,13 @@ export default function AdminForm({
         body: JSON.stringify(patch),
       })
       if (res.ok) {
-        setSuccess(true)
-        setTimeout(() => { setSuccess(false); onSuccess() }, 1200)
+        toast.success('Entry updated', { description: patch.title as string })
+        onSuccess()
       } else {
         const d = await res.json()
-        setError(d.error ?? 'Something went wrong')
+        const msg = d.error ?? 'Something went wrong'
+        setError(msg)
+        toast.error('Update failed', { description: msg })
       }
       setSubmitting(false)
       return
@@ -467,12 +483,13 @@ export default function AdminForm({
     })
 
     if (res.ok) {
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 2500)
+      toast.success('Logged!', { description: body.title as string })
       clear(); setForm(blank); onSuccess()
     } else {
       const d = await res.json()
-      setError(d.error ?? 'Something went wrong')
+      const msg = d.error ?? 'Something went wrong'
+      setError(msg)
+      toast.error('Failed to log', { description: msg })
     }
     setSubmitting(false)
   }
@@ -480,6 +497,52 @@ export default function AdminForm({
   const posterThumb = selected?.poster_path ? TMDB_IMG(selected.poster_path, 'w185') : null
 
   return (
+    <>
+    {previewItem && (
+      <TMDBPreviewModal
+        result={previewItem}
+        mediaType={type === 'movie' ? 'movie' : 'tv'}
+        onClose={() => setPreviewItem(null)}
+        onPick={r => {
+          if (isEdit) {
+            setEditTmdbOverride(r)
+            setEditQuery(r.title ?? r.name ?? '')
+            setEditResults([])
+            if (r.overview) setField('overview', r.overview)
+          } else {
+            pick(r)
+          }
+          setPreviewItem(null)
+        }}
+        onWatchLater={async (r, genres) => {
+          const year = r.release_date   ? new Date(r.release_date).getFullYear()   :
+                       r.first_air_date ? new Date(r.first_air_date).getFullYear() : null
+          const title = r.title ?? r.name ?? 'Title'
+          const res = await fetch('/api/watchlist', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              tmdb_id:     r.id,
+              type:        type === 'movie' ? 'movie' : 'series',
+              title,
+              poster_url:  r.poster_path   ? `https://image.tmdb.org/t/p/w500${r.poster_path}`   : null,
+              backdrop_url:r.backdrop_path ? `https://image.tmdb.org/t/p/w1280${r.backdrop_path}` : null,
+              year,
+              overview:    r.overview ?? null,
+              genres,
+              tmdb_rating: r.vote_average ?? null,
+            }),
+          })
+          if (res.ok) {
+            toast.success(`Added to Watch Later`, {
+              description: title,
+            })
+          } else {
+            toast.error('Failed to save — try again')
+          }
+          setPreviewItem(null)
+        }}
+      />
+    )}
     <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
       {/* ── In edit mode: locked title preview + type selector ── */}
@@ -511,10 +574,32 @@ export default function AdminForm({
             </div>
             <Check size={16} color="#82ff1f" style={{ marginTop: '2px', flexShrink: 0 }} />
           </div>
+          {/* Episode info — read-only pill when season/episode is stored */}
+          {initialLog!.season != null && initialLog!.episode != null && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              background: 'rgba(184,160,255,0.06)',
+              border: '1px solid rgba(184,160,255,0.18)',
+              borderRadius: '10px', padding: '10px 14px',
+            }}>
+              <span style={{
+                fontSize: '11px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.14em',
+                color: '#b8a0ff', fontWeight: 700,
+              }}>
+                S{String(initialLog!.season).padStart(2, '0')}E{String(initialLog!.episode).padStart(2, '0')}
+              </span>
+              {initialLog!.episode_title && (
+                <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)', fontFamily: 'var(--ff-body)' }}>
+                  {initialLog!.episode_title}
+                </span>
+              )}
+            </div>
+          )}
+
           <div>
             <SectionLabel>Type</SectionLabel>
             <div style={{ display: 'flex', gap: '8px' }}>
-              {(['movie', 'series'] as LogType[]).map(t => {
+              {(['movie', 'series', 'episode'] as LogType[]).map(t => {
                 const on = type === t
                 return (
                   <button key={t} type="button" onClick={() => setType(t)}
@@ -561,29 +646,39 @@ export default function AdminForm({
                   const year  = (r.release_date ?? r.first_air_date ?? '').slice(0, 4)
                   const thumb = r.poster_path ? `https://image.tmdb.org/t/p/w92${r.poster_path}` : null
                   return (
-                    <button key={r.id} type="button"
-                      onClick={() => {
-                        setEditTmdbOverride(r)
-                        setEditQuery(r.title ?? r.name ?? '')
-                        setEditResults([])
-                        if (r.overview) setField('overview', r.overview)
-                      }}
-                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', background: 'none', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', color: '#fff' }}
-                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
-                      onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                    >
-                      <div style={{ width: '32px', height: '48px', borderRadius: '4px', background: '#0a0a0a', flexShrink: 0, overflow: 'hidden' }}>
-                        {thumb
-                          // eslint-disable-next-line @next/next/no-img-element
-                          ? <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>🎬</div>
-                        }
-                      </div>
-                      <div>
-                        <div style={{ fontSize: '13px', fontWeight: 600, fontFamily: 'var(--ff-body)' }}>{r.title ?? r.name}</div>
-                        {year && <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--ff-mono)' }}>{year}</div>}
-                      </div>
-                    </button>
+                    <div key={r.id} style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <button type="button"
+                        onClick={() => {
+                          setEditTmdbOverride(r)
+                          setEditQuery(r.title ?? r.name ?? '')
+                          setEditResults([])
+                          if (r.overview) setField('overview', r.overview)
+                        }}
+                        style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', color: '#fff' }}
+                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
+                        onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+                      >
+                        <div style={{ width: '32px', height: '48px', borderRadius: '4px', background: '#0a0a0a', flexShrink: 0, overflow: 'hidden' }}>
+                          {thumb
+                            // eslint-disable-next-line @next/next/no-img-element
+                            ? <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>🎬</div>
+                          }
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '13px', fontWeight: 600, fontFamily: 'var(--ff-body)' }}>{r.title ?? r.name}</div>
+                          {year && <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--ff-mono)' }}>{year}</div>}
+                        </div>
+                      </button>
+                      <button type="button" onClick={() => setPreviewItem(r)}
+                        title="Preview"
+                        style={{ padding: '10px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)', flexShrink: 0, display: 'flex', alignItems: 'center', transition: 'color 0.15s' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#b8a0ff' }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.25)' }}
+                      >
+                        <Eye size={14} />
+                      </button>
+                    </div>
                   )
                 })}
               </div>
@@ -644,23 +739,33 @@ export default function AdminForm({
                   const year  = (r.release_date ?? r.first_air_date ?? '').slice(0, 4)
                   const thumb = TMDB_IMG(r.poster_path, 'w92')
                   return (
-                    <button key={r.id} type="button" onClick={() => pick(r)}
-                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', background: 'none', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', color: '#fff' }}
-                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
-                      onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                    >
-                      <div style={{ width: '32px', height: '48px', borderRadius: '4px', background: '#0a0a0a', flexShrink: 0, overflow: 'hidden' }}>
-                        {thumb
-                          // eslint-disable-next-line @next/next/no-img-element
-                          ? <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>🎬</div>
-                        }
-                      </div>
-                      <div>
-                        <div style={{ fontSize: '13px', fontWeight: 600, fontFamily: 'var(--ff-body)' }}>{r.title ?? r.name}</div>
-                        {year && <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--ff-mono)' }}>{year}</div>}
-                      </div>
-                    </button>
+                    <div key={r.id} style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <button type="button" onClick={() => pick(r)}
+                        style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', color: '#fff' }}
+                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
+                        onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+                      >
+                        <div style={{ width: '32px', height: '48px', borderRadius: '4px', background: '#0a0a0a', flexShrink: 0, overflow: 'hidden' }}>
+                          {thumb
+                            // eslint-disable-next-line @next/next/no-img-element
+                            ? <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>🎬</div>
+                          }
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '13px', fontWeight: 600, fontFamily: 'var(--ff-body)' }}>{r.title ?? r.name}</div>
+                          {year && <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--ff-mono)' }}>{year}</div>}
+                        </div>
+                      </button>
+                      <button type="button" onClick={() => setPreviewItem(r)}
+                        title="Preview"
+                        style={{ padding: '10px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)', flexShrink: 0, display: 'flex', alignItems: 'center', transition: 'color 0.15s' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#b8a0ff' }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.25)' }}
+                      >
+                        <Eye size={14} />
+                      </button>
+                    </div>
                   )
                 })}
               </div>
@@ -847,15 +952,10 @@ export default function AdminForm({
         </button>
       </div>
 
-      {/* ── Error / success ── */}
+      {/* ── Validation error (inline — for "select a title first" etc.) ── */}
       {error && (
         <div style={{ padding: '10px 14px', borderRadius: '10px', background: 'rgba(224,32,32,0.08)', border: '1px solid rgba(224,32,32,0.25)', color: '#e06060', fontSize: '13px', fontFamily: 'var(--ff-body)' }}>
           {error}
-        </div>
-      )}
-      {success && (
-        <div style={{ padding: '10px 14px', borderRadius: '10px', background: 'rgba(130,255,31,0.08)', border: '1px solid rgba(130,255,31,0.25)', color: '#82ff1f', fontSize: '13px', fontFamily: 'var(--ff-body)' }}>
-          ✓ Logged!
         </div>
       )}
 
@@ -872,5 +972,6 @@ export default function AdminForm({
         {submitting ? (isEdit ? 'Saving…' : 'Logging…') : (isEdit ? 'Save changes' : '+ Log Entry')}
       </button>
     </form>
+    </>
   )
 }

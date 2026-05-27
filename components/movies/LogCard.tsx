@@ -1,9 +1,11 @@
 'use client'
 import { useState } from 'react'
 import { Share2, Trash2, Pencil, RefreshCw } from 'lucide-react'
+import { toast } from 'sonner'
 import type { MovieLog } from '@/lib/movies.types'
 import { VIBES, PLATFORMS } from '@/lib/movies.types'
 import StoryCardModal from './StoryCardModal'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 
 const TYPE_COLOR: Record<string, string> = {
   movie:   '#82ff1f',
@@ -39,6 +41,7 @@ function PlatformBadge({ platform }: { platform: string }) {
       display: 'inline-flex', alignItems: 'center', gap: '4px',
       fontSize: '9px', color: 'rgba(255,255,255,0.4)',
       fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em',
+      whiteSpace: 'nowrap',
     }}>
       {p.logo
         // eslint-disable-next-line @next/next/no-img-element
@@ -61,23 +64,33 @@ export default function LogCard({
   onDeleted?: (id: string) => void
   onEdit?:    (log: MovieLog) => void
 }) {
-  const [showStory, setShowStory] = useState(false)
-  const [deleting,  setDeleting]  = useState(false)
-  const [hovered,   setHovered]   = useState(false)
+  const [showStory,   setShowStory]   = useState(false)
+  const [deleting,    setDeleting]    = useState(false)
+  const [hovered,     setHovered]     = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
-  const seriesPrefix =
-    log.type === 'episode'
-      ? `S${String(log.season ?? '').padStart(2, '0')}E${String(log.episode ?? '').padStart(2, '0')}`
-      : null
+  // An episode-of-series = type 'episode' OR type 'series' with episode number filled
+  const isEpisodeLog = log.type === 'episode' || (log.type === 'series' && log.episode != null)
 
-  const subtitle =
-    log.type === 'episode' ? log.episode_title ?? '' : log.year?.toString() ?? ''
+  const seriesPrefix = isEpisodeLog
+    ? `S${String(log.season ?? '').padStart(2, '0')}E${String(log.episode ?? '').padStart(2, '0')}`
+    : null
 
-  async function handleDelete() {
-    if (!confirm(`Delete "${log.title}"?`)) return
+  const subtitle = isEpisodeLog
+    ? log.episode_title ?? ''
+    : log.year?.toString() ?? ''
+
+  async function confirmDelete() {
+    setConfirmOpen(false)
     setDeleting(true)
-    await fetch(`/api/movies/${log.id}`, { method: 'DELETE' })
-    onDeleted?.(log.id)
+    const res = await fetch(`/api/movies/${log.id}`, { method: 'DELETE' })
+    if (res.ok) {
+      toast.success('Entry deleted', { description: log.title })
+      onDeleted?.(log.id)
+    } else {
+      toast.error('Failed to delete — try again')
+      setDeleting(false)
+    }
   }
 
   return (
@@ -118,7 +131,7 @@ export default function LogCard({
             color: TYPE_COLOR[log.type],
             fontFamily: 'var(--ff-mono)', textTransform: 'uppercase',
           }}>
-            {log.source === 'letterboxd' ? '⬛ ' : ''}{TYPE_LABEL[log.type]}
+            {TYPE_LABEL[log.type]}
           </div>
 
           {/* Action buttons */}
@@ -150,7 +163,7 @@ export default function LogCard({
               </button>
             )}
             {isAdmin && (
-              <button onClick={handleDelete} disabled={deleting} title="Delete"
+              <button onClick={() => setConfirmOpen(true)} disabled={deleting} title="Delete"
                 style={{
                   background: 'rgba(5,5,5,0.82)', backdropFilter: 'blur(8px)',
                   border: '1px solid rgba(224,32,32,0.3)',
@@ -164,18 +177,19 @@ export default function LogCard({
             )}
           </div>
 
-          {/* Rewatch badge */}
+          {/* Rewatch badge — top-right (action buttons layer over it on hover) */}
           {log.rewatch && (
             <div style={{
-              position: 'absolute', bottom: '8px', right: '8px',
+              position: 'absolute', top: '8px', right: '8px',
               background: 'rgba(5,5,5,0.82)', backdropFilter: 'blur(8px)',
               border: '1px solid rgba(130,255,31,0.3)',
-              borderRadius: '100px', padding: '3px 8px',
-              fontSize: '9px', color: '#82ff1f',
-              fontFamily: 'var(--ff-mono)', letterSpacing: '0.12em',
-              display: 'flex', alignItems: 'center', gap: '4px',
+              borderRadius: '50%', padding: '5px',
+              color: '#82ff1f',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'opacity 0.18s',
+              opacity: hovered ? 0 : 1,
             }}>
-              <RefreshCw size={9} /> rewatch
+              <RefreshCw size={11} />
             </div>
           )}
 
@@ -241,12 +255,9 @@ export default function LogCard({
           )}
 
           {/* Platform + date */}
-          <div style={{ marginTop: 'auto', paddingTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
-            {log.platform
-              ? <PlatformBadge platform={log.platform} />
-              : <span />
-            }
-            <div style={{ fontSize: '10px', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)', flexShrink: 0 }}>
+          <div style={{ marginTop: 'auto', paddingTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {log.platform && <PlatformBadge platform={log.platform} />}
+            <div style={{ fontSize: '9px', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
               {new Date(log.watched_on).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </div>
           </div>
@@ -254,6 +265,16 @@ export default function LogCard({
       </div>
 
       {showStory && <StoryCardModal log={log} onClose={() => setShowStory(false)} />}
+
+      {confirmOpen && (
+        <ConfirmModal
+          title="Delete entry?"
+          description={`"${log.title}" will be permanently removed.`}
+          confirmLabel="Delete"
+          onConfirm={confirmDelete}
+          onCancel={() => setConfirmOpen(false)}
+        />
+      )}
     </>
   )
 }

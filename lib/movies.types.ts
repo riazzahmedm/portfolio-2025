@@ -13,7 +13,7 @@ export const VIBES: {
   color: string
 }[] = [
   { key: 'masterpiece', label: 'This is Cinema', emoji: '🏆', sub: 'One for the ages',      color: '#fbbf24' },
-  { key: 'loved',       label: 'Loved it',       emoji: '❤️',  sub: 'Genuinely great',       color: '#f87171' },
+  { key: 'loved',       label: 'Loved it',       emoji: '💜',  sub: 'Genuinely great',       color: '#b8a0ff' },
   { key: 'solid',       label: 'Mid',            emoji: '😑', sub: 'Perfectly middle ground', color: '#82ff1f' },
   { key: 'fine',        label: 'Boring',         emoji: '😐', sub: 'Has its moments',        color: '#b8a0ff' },
   { key: 'painful',     label: 'Painful',        emoji: '💀', sub: 'Genuinely bad',          color: '#e02020' },
@@ -141,6 +141,21 @@ export interface TMDBEpisode {
   air_date:       string
   overview:       string
   runtime:        number | null
+}
+
+// ── Watch Later ──────────────────────────────────────────────────────────────
+export interface WatchlistItem {
+  id:          string
+  tmdb_id:     number | null
+  type:        'movie' | 'series'
+  title:       string
+  poster_url:  string | null
+  backdrop_url:string | null
+  year:        number | null
+  overview:    string | null
+  genres:      string[]
+  tmdb_rating: number | null
+  added_at:    string
 }
 
 // ── Letterboxd CSV row ───────────────────────────────────────────────────────
