@@ -7,6 +7,12 @@ interface TMDBPersonRaw {
   id: number; name: string; role: string; profile_path: string | null; dept: string
 }
 
+interface WatchProvider {
+  provider_id:   number
+  provider_name: string
+  logo_path:     string
+}
+
 interface Details {
   genres:               string[]
   runtime:              number | null
@@ -27,6 +33,12 @@ interface Details {
   networks:             string[]
   production_companies: string[]
   people:               TMDBPersonRaw[]
+  providers?: {
+    flatrate: WatchProvider[]
+    rent:     WatchProvider[]
+    buy:      WatchProvider[]
+    link:     string | null
+  }
 }
 
 function fmt(n: number) {
@@ -350,6 +362,52 @@ export default function TMDBPreviewModal({
                   )}
                 </div>
               </Section>
+
+              {/* Where to Watch */}
+              {details.providers && (details.providers.flatrate.length > 0 || details.providers.rent.length > 0 || details.providers.buy.length > 0) && (
+                <Section title="Where to watch">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {details.providers.flatrate.length > 0 && (
+                      <div>
+                        <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--ff-mono)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '8px' }}>Stream</div>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          {details.providers.flatrate.map(p => (
+                            <div key={p.provider_id} title={p.provider_name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} alt={p.provider_name}
+                                style={{ width: '36px', height: '36px', borderRadius: '8px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
+                              <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--ff-mono)', maxWidth: '40px', textAlign: 'center', lineHeight: 1.2, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' } as React.CSSProperties}>
+                                {p.provider_name}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {details.providers.rent.length > 0 && (
+                      <div>
+                        <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--ff-mono)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '8px' }}>Rent</div>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          {details.providers.rent.map(p => (
+                            <div key={p.provider_id} title={p.provider_name}>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} alt={p.provider_name}
+                                style={{ width: '30px', height: '30px', borderRadius: '6px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.08)', opacity: 0.7 }} />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {details.providers.link && (
+                      <a href={details.providers.link} target="_blank" rel="noopener noreferrer"
+                        onClick={e => e.stopPropagation()}
+                        style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--ff-mono)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        Full availability on JustWatch ↗
+                      </a>
+                    )}
+                  </div>
+                </Section>
+              )}
 
               {/* Keywords */}
               {details.keywords.length > 0 && (

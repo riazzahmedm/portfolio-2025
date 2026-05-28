@@ -32,6 +32,12 @@ const SECTION: React.CSSProperties = {
 }
 
 // ── Types ────────────────────────────────────────────────────────────────────
+interface WatchProvider {
+  provider_id:   number
+  provider_name: string
+  logo_path:     string
+}
+
 interface TMDBPersonRaw {
   id: number; name: string; role: string; profile_path: string | null; dept: string
 }
@@ -265,6 +271,62 @@ function PersonGrid({
   )
 }
 
+// ── Watch providers row ──────────────────────────────────────────────────────
+function WatchProviderRow({ providers }: {
+  providers: { flatrate: WatchProvider[]; rent: WatchProvider[]; buy: WatchProvider[]; link: string | null }
+}) {
+  const all = [
+    ...providers.flatrate.map(p => ({ ...p, tag: 'stream' })),
+    ...providers.rent.map(p => ({ ...p, tag: 'rent' })),
+  ]
+  if (!all.length) return null
+
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', gap: '8px',
+      padding: '12px 14px',
+      background: 'rgba(255,255,255,0.03)',
+      border: '1px solid rgba(255,255,255,0.08)',
+      borderRadius: '10px',
+    }}>
+      <div style={{ fontSize: '10px', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--ff-mono)' }}>
+        Where to watch
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+        {providers.flatrate.length > 0 && (
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <span style={{ fontSize: '9px', color: 'rgba(130,255,31,0.5)', fontFamily: 'var(--ff-mono)', letterSpacing: '0.12em' }}>STREAM</span>
+            {providers.flatrate.map(p => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={p.provider_id} src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} alt={p.provider_name} title={p.provider_name}
+                style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
+            ))}
+          </div>
+        )}
+        {providers.flatrate.length > 0 && providers.rent.length > 0 && (
+          <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.08)' }} />
+        )}
+        {providers.rent.length > 0 && (
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--ff-mono)', letterSpacing: '0.12em' }}>RENT</span>
+            {providers.rent.map(p => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={p.provider_id} src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} alt={p.provider_name} title={p.provider_name}
+                style={{ width: '24px', height: '24px', borderRadius: '5px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.08)', opacity: 0.65 }} />
+            ))}
+          </div>
+        )}
+        {providers.link && (
+          <a href={providers.link} target="_blank" rel="noopener noreferrer"
+            style={{ marginLeft: 'auto', fontSize: '10px', color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--ff-mono)', textDecoration: 'none', flexShrink: 0 }}>
+            JustWatch ↗
+          </a>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Main form ────────────────────────────────────────────────────────────────
 export default function AdminForm({
   onSuccess,
@@ -304,6 +366,7 @@ export default function AdminForm({
   const [previewItem,      setPreviewItem]      = useState<TMDBResult | null>(null)
   const [submitting,       setSubmitting]       = useState(false)
   const [error,            setError]            = useState('')
+  const [providers,        setProviders]        = useState<{ flatrate: WatchProvider[]; rent: WatchProvider[]; buy: WatchProvider[]; link: string | null } | null>(null)
   const debounce    = useRef<ReturnType<typeof setTimeout> | null>(null)
   const editDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -418,6 +481,28 @@ export default function AdminForm({
       .then(d => { setPeople(d); setLoadingPeople(false) })
       .catch(() => setLoadingPeople(false))
   }, [selected, tmdbType])
+
+  // Fetch providers for new-mode selected title
+  useEffect(() => {
+    if (isEdit || !selected) { if (!isEdit) setProviders(null); return }
+    fetch(`/api/tmdb/providers?id=${selected.id}&type=${tmdbType}`)
+      .then(r => r.json())
+      .then(setProviders)
+      .catch(() => setProviders(null))
+  }, [isEdit, selected, tmdbType])
+
+  // Fetch providers for edit mode (on mount + when TMDB override changes)
+  useEffect(() => {
+    if (!isEdit) return
+    const tmdbId = editTmdbOverride?.id ?? initialLog?.tmdb_id
+    if (!tmdbId) return
+    const t = type === 'movie' ? 'movie' : 'tv'
+    fetch(`/api/tmdb/providers?id=${tmdbId}&type=${t}`)
+      .then(r => r.json())
+      .then(setProviders)
+      .catch(() => setProviders(null))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEdit, editTmdbOverride, type])
 
   function pick(r: TMDBResult) {
     setSelected(r); setQuery(r.title ?? r.name ?? ''); setResults([])
@@ -628,6 +713,11 @@ export default function AdminForm({
               })}
             </div>
           </div>
+          {/* Providers for edit mode */}
+          {providers && (providers.flatrate.length > 0 || providers.rent.length > 0) && (
+            <WatchProviderRow providers={providers} />
+          )}
+
           {/* TMDB title search for edit mode */}
           <div style={{ position: 'relative' }}>
             <SectionLabel>Wrong title? Search TMDB to replace</SectionLabel>
@@ -809,6 +899,11 @@ export default function AdminForm({
               </div>
               <Check size={16} color="#82ff1f" style={{ marginTop: '2px', flexShrink: 0 }} />
             </div>
+          )}
+
+          {/* Providers for new mode */}
+          {selected && providers && (providers.flatrate.length > 0 || providers.rent.length > 0) && (
+            <WatchProviderRow providers={providers} />
           )}
         </>
       )}

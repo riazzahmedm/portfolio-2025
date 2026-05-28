@@ -220,3 +220,45 @@ export async function enrichTV(tmdbId: number): Promise<TMDBMeta> {
 export async function enrich(tmdbId: number, type: 'movie' | 'series' | 'episode'): Promise<TMDBMeta> {
   return type === 'movie' ? enrichMovie(tmdbId) : enrichTV(tmdbId)
 }
+
+// ── Watch providers ───────────────────────────────────────────────────────────
+
+export interface WatchProvider {
+  provider_id:   number
+  provider_name: string
+  logo_path:     string
+}
+
+export interface WatchProviders {
+  flatrate: WatchProvider[]   // streaming
+  rent:     WatchProvider[]
+  buy:      WatchProvider[]
+  link:     string | null     // JustWatch deep link
+}
+
+/**
+ * Fetch streaming / rent / buy availability.
+ * Tries each region in order and returns the first hit.
+ * Default: IN (India) then US fallback.
+ */
+export async function getWatchProviders(
+  id:      number,
+  type:    'movie' | 'tv',
+  regions = ['IN', 'US'],
+): Promise<WatchProviders> {
+  const res  = await fetch(url(`/${type}/${id}/watch/providers`))
+  const data = await res.json()
+  const results = data.results ?? {}
+
+  for (const region of regions) {
+    const r = results[region]
+    if (r) return {
+      flatrate: r.flatrate ?? [],
+      rent:     r.rent     ?? [],
+      buy:      r.buy      ?? [],
+      link:     r.link     ?? null,
+    }
+  }
+
+  return { flatrate: [], rent: [], buy: [], link: null }
+}
