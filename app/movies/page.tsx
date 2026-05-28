@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Film, Tv, PlaySquare, X, Search, ChevronDown, Bookmark } from 'lucide-react'
+import { ArrowLeft, Plus, Film, Tv, X, Search, ChevronDown, Bookmark } from 'lucide-react'
 import type { MovieLog, WatchlistItem } from '@/lib/movies.types'
 import { VIBES } from '@/lib/movies.types'
 import LogCard from '@/components/movies/LogCard'
@@ -164,21 +164,17 @@ export default function MoviesPage() {
     fetch('/api/auth/movies').then(r => r.json()).then(d => setIsAdmin(d.authed))
   }, [fetchLogs, fetchWatchlist])
 
-  // ── Counts for FilterTabs (raw type counts) ──
+  // ── Counts for FilterTabs ──
   const counts: Record<LogFilter, number> = {
-    all:     logs.length,
-    movie:   logs.filter(l => l.type === 'movie').length,
-    series:  logs.filter(l => l.type === 'series').length,
-    episode: logs.filter(l => l.type === 'episode').length,
+    all:    logs.length,
+    movie:  logs.filter(l => l.type === 'movie').length,
+    series: logs.filter(l => l.type === 'series').length,
   }
 
-  // ── Unique series + episode counts for stat tiles ──
+  // ── Unique series count for stat tile ──
   const uniqueSeriesCount = new Set(
     logs.filter(l => l.type === 'series').map(l => l.tmdb_id ?? l.title)
   ).size
-  const episodesWatched = logs.filter(l =>
-    l.type === 'episode' || (l.type === 'series' && l.episode != null)
-  ).length
 
   // ── Derive filter options from loaded logs ──
   const availableYears = Array.from(
@@ -371,10 +367,9 @@ export default function MoviesPage() {
       {/* ── Stats ── */}
       {!loading && logs.length > 0 && (
         <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '28px 24px 0' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-            <Stat icon={<Film size={16} />}      value={counts.movie}      label="Movies"   />
-            <Stat icon={<Tv size={16} />}         value={uniqueSeriesCount} label="Series"   />
-            <Stat icon={<PlaySquare size={16} />} value={episodesWatched}   label="Episodes" />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+            <Stat icon={<Film size={16} />} value={counts.movie}      label="Movies" />
+            <Stat icon={<Tv size={16} />}   value={uniqueSeriesCount} label="Series" />
           </div>
         </div>
       )}

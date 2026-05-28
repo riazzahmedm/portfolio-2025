@@ -1,9 +1,10 @@
 'use client'
 import { useState } from 'react'
-import { Trash2, PlayCircle } from 'lucide-react'
+import { Trash2, PlayCircle, Eye } from 'lucide-react'
 import { toast } from 'sonner'
-import type { WatchlistItem } from '@/lib/movies.types'
+import type { WatchlistItem, TMDBResult } from '@/lib/movies.types'
 import ConfirmModal from '@/components/ui/ConfirmModal'
+import TMDBPreviewModal from '@/components/movies/TMDBPreviewModal'
 
 export default function WatchlistCard({
   item,
@@ -19,6 +20,7 @@ export default function WatchlistCard({
   const [hovered,     setHovered]     = useState(false)
   const [deleting,    setDeleting]    = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [preview,     setPreview]     = useState(false)
 
   async function confirmRemove() {
     setConfirmOpen(false)
@@ -31,6 +33,20 @@ export default function WatchlistCard({
       toast.error('Failed to remove — try again')
       setDeleting(false)
     }
+  }
+
+  // Shape WatchlistItem into a TMDBResult for the preview modal
+  const tmdbResult: TMDBResult = {
+    id:           item.tmdb_id ?? 0,
+    title:        item.type === 'movie' ? item.title : undefined,
+    name:         item.type === 'series' ? item.title : undefined,
+    poster_path:  item.poster_url  ? item.poster_url.replace('https://image.tmdb.org/t/p/w500', '')  : null,
+    backdrop_path:item.backdrop_url ? item.backdrop_url.replace('https://image.tmdb.org/t/p/w1280', '') : null,
+    release_date:  item.type === 'movie'  && item.year ? `${item.year}-01-01` : undefined,
+    first_air_date:item.type === 'series' && item.year ? `${item.year}-01-01` : undefined,
+    genre_ids:    [],
+    overview:     item.overview ?? '',
+    vote_average: item.tmdb_rating ?? 0,
   }
 
   return (
@@ -74,6 +90,19 @@ export default function WatchlistCard({
           display: 'flex', flexDirection: 'column', gap: '6px',
           opacity: hovered ? 1 : 0, transition: 'opacity 0.18s',
         }}>
+          {/* View detail — always visible to everyone */}
+          {item.tmdb_id && (
+            <button onClick={() => setPreview(true)} title="View details"
+              style={{
+                background: 'rgba(5,5,5,0.82)', backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(184,160,255,0.35)',
+                borderRadius: '50%', width: '32px', height: '32px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', color: '#b8a0ff',
+              }}>
+              <Eye size={13} />
+            </button>
+          )}
           {isAdmin && (
             <button onClick={() => onLog(item)} title="Log it now"
               style={{
@@ -152,6 +181,15 @@ export default function WatchlistCard({
         confirmLabel="Remove"
         onConfirm={confirmRemove}
         onCancel={() => setConfirmOpen(false)}
+      />
+    )}
+
+    {preview && item.tmdb_id && (
+      <TMDBPreviewModal
+        result={tmdbResult}
+        mediaType={item.type === 'movie' ? 'movie' : 'tv'}
+        onClose={() => setPreview(false)}
+        onPick={() => setPreview(false)}
       />
     )}
     </>

@@ -45,7 +45,6 @@ interface TMDBPersonRaw {
 interface FormState {
   vibe:     string
   review:   string
-  overview: string
   watchedOn:string
   status:   LogStatus
   platform: string
@@ -54,7 +53,7 @@ interface FormState {
 }
 
 const blank: FormState = {
-  vibe: '', review: '', overview: '',
+  vibe: '', review: '',
   watchedOn: new Date().toISOString().split('T')[0],
   status: 'watched', platform: '', draws: [], rewatch: false,
 }
@@ -353,7 +352,6 @@ export default function AdminForm({
   const [form,            setForm]            = useState<FormState>(initialLog ? {
     vibe:      initialLog.vibe ?? '',
     review:    initialLog.review ?? '',
-    overview:  initialLog.overview ?? '',
     watchedOn: initialLog.watched_on,
     status:    initialLog.status,
     platform:  initialLog.platform ?? '',
@@ -538,7 +536,6 @@ export default function AdminForm({
         } : {}),
         vibe:            form.vibe || null,
         review:          form.review.trim() || null,
-        overview:        form.overview.trim() || null,
         watched_on:      form.watchedOn,
         platform:        form.platform || null,
         favorite_person: favPerson ?? null,
@@ -626,7 +623,6 @@ export default function AdminForm({
             setEditTmdbOverride(r)
             setEditQuery(r.title ?? r.name ?? '')
             setEditResults([])
-            if (r.overview) setField('overview', r.overview)
           } else {
             pick(r)
           }
@@ -753,7 +749,6 @@ export default function AdminForm({
                           setEditTmdbOverride(r)
                           setEditQuery(r.title ?? r.name ?? '')
                           setEditResults([])
-                          if (r.overview) setField('overview', r.overview)
                         }}
                         style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', color: '#fff' }}
                         onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
@@ -1003,17 +998,6 @@ export default function AdminForm({
         <SectionLabel>What drew you to it? (pick all that apply)</SectionLabel>
         <DrawsSelector value={form.draws} onChange={v => setField('draws', v)} />
       </div>
-
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {/* ── Synopsis (edit mode only) ── */}
-      {isEdit && (
-        <div style={SECTION}>
-          <SectionLabel>Synopsis</SectionLabel>
-          <textarea value={form.overview} onChange={e => setField('overview', e.target.value)} rows={4}
-            placeholder="Plot summary…"
-            style={{ ...INPUT, resize: 'vertical', lineHeight: 1.55 }} />
-        </div>
-      )}
 
       {/* ── Review ── */}
       <div style={SECTION}>

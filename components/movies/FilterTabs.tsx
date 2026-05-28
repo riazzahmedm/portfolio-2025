@@ -1,12 +1,11 @@
 'use client'
 
-export type LogFilter = 'all' | 'movie' | 'series' | 'episode'
+export type LogFilter = 'all' | 'movie' | 'series'
 
 const TABS: { key: LogFilter; label: string }[] = [
-  { key: 'all',     label: 'All'      },
-  { key: 'movie',   label: 'Movies'   },
-  { key: 'series',  label: 'Series'   },
-  { key: 'episode', label: 'Episodes' },
+  { key: 'all',    label: 'All'    },
+  { key: 'movie',  label: 'Movies' },
+  { key: 'series', label: 'Series' },
 ]
 
 export default function FilterTabs({
