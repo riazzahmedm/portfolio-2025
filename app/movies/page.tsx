@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Film, Tv, X, Search, ChevronDown, Bookmark } from 'lucide-react'
+import { ArrowLeft, Plus, Film, Tv, X, Search, ChevronDown, Bookmark, Sparkles } from 'lucide-react'
 import type { MovieLog, WatchlistItem } from '@/lib/movies.types'
 import { VIBES } from '@/lib/movies.types'
 import LogCard from '@/components/movies/LogCard'
@@ -304,6 +304,18 @@ export default function MoviesPage() {
 
           {/* Right — actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+            <Link href="/movies/wrapped" style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '8px 12px', borderRadius: '100px', cursor: 'pointer',
+              border: '1px solid rgba(130,255,31,0.2)',
+              background: 'rgba(130,255,31,0.06)',
+              color: 'rgba(130,255,31,0.7)',
+              fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em',
+              textDecoration: 'none', transition: 'all 0.18s', whiteSpace: 'nowrap',
+            }}>
+              <Sparkles size={12} />
+              <span className="wl-log-label">Wrapped</span>
+            </Link>
             <button
               onClick={() => { setView(v => v === 'later' ? 'log' : 'later'); clearFilters(); setFilter('all') }}
               style={{
