@@ -344,6 +344,39 @@ export default function AdminForm({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editTmdbOverride])
 
+  // In edit mode, fetch seasons when type is series
+  useEffect(() => {
+    if (!isEdit || type === 'movie') { if (isEdit) { setSeasons([]); setEpisodes([]) } return }
+    const tmdbId = editTmdbOverride?.id ?? initialLog?.tmdb_id
+    if (!tmdbId) return
+    fetch(`/api/tmdb/season?id=${tmdbId}`)
+      .then(r => r.json())
+      .then(d => {
+        const count = d.number_of_seasons ?? 1
+        setSeasons(Array.from({ length: count }, (_, i) => i + 1))
+      })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEdit, type, editTmdbOverride])
+
+  // In edit mode, fetch episodes when a season is selected
+  useEffect(() => {
+    if (!isEdit || type === 'movie' || !selectedSeason) { if (isEdit) setEpisodes([]); return }
+    const tmdbId = editTmdbOverride?.id ?? initialLog?.tmdb_id
+    if (!tmdbId) return
+    fetch(`/api/tmdb/season?id=${tmdbId}&season=${selectedSeason}`)
+      .then(r => r.json())
+      .then(d => {
+        const eps: TMDBEpisode[] = d.episodes ?? []
+        setEpisodes(eps)
+        // Pre-select the stored episode number on initial load
+        if (initialLog?.episode && !selectedEpisode) {
+          const match = eps.find(ep => ep.episode_number === initialLog.episode)
+          if (match) setSelectedEpisode(match)
+        }
+      })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEdit, type, selectedSeason, editTmdbOverride])
+
   const tmdbType = type === 'movie' ? 'movie' : 'tv'
 
   // Debounced TMDB search
@@ -574,35 +607,13 @@ export default function AdminForm({
             </div>
             <Check size={16} color="#82ff1f" style={{ marginTop: '2px', flexShrink: 0 }} />
           </div>
-          {/* Episode info — read-only pill when season/episode is stored */}
-          {initialLog!.season != null && initialLog!.episode != null && (
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '8px',
-              background: 'rgba(184,160,255,0.06)',
-              border: '1px solid rgba(184,160,255,0.18)',
-              borderRadius: '10px', padding: '10px 14px',
-            }}>
-              <span style={{
-                fontSize: '11px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.14em',
-                color: '#b8a0ff', fontWeight: 700,
-              }}>
-                S{String(initialLog!.season).padStart(2, '0')}E{String(initialLog!.episode).padStart(2, '0')}
-              </span>
-              {initialLog!.episode_title && (
-                <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)', fontFamily: 'var(--ff-body)' }}>
-                  {initialLog!.episode_title}
-                </span>
-              )}
-            </div>
-          )}
-
           <div>
             <SectionLabel>Type</SectionLabel>
             <div style={{ display: 'flex', gap: '8px' }}>
-              {(['movie', 'series', 'episode'] as LogType[]).map(t => {
+              {(['movie', 'series'] as LogType[]).map(t => {
                 const on = type === t
                 return (
-                  <button key={t} type="button" onClick={() => setType(t)}
+                  <button key={t} type="button" onClick={() => { setType(t); setSelectedSeason(null); setSelectedEpisode(null); setSeasons([]); setEpisodes([]) }}
                     style={{
                       padding: '8px 18px', borderRadius: '100px', cursor: 'pointer',
                       border: `1px solid ${on ? 'rgba(184,160,255,0.45)' : 'rgba(255,255,255,0.08)'}`,
@@ -803,7 +814,7 @@ export default function AdminForm({
       )}
 
       {/* ── Season ── */}
-      {type !== 'movie' && selected && seasons.length > 0 && (
+      {type !== 'movie' && (selected || isEdit) && seasons.length > 0 && (
         <div>
           <SectionLabel>Season</SectionLabel>
           <div style={{ position: 'relative' }}>
@@ -818,13 +829,13 @@ export default function AdminForm({
       )}
 
       {/* ── Episode ── */}
-      {type !== 'movie' && episodes.length > 0 && (
+      {type !== 'movie' && (selected || isEdit) && episodes.length > 0 && (
         <div>
           <SectionLabel>Episode</SectionLabel>
           <div style={{ position: 'relative' }}>
             <select value={selectedEpisode?.episode_number ?? ''} onChange={e => setSelectedEpisode(episodes.find(ep => ep.episode_number === Number(e.target.value)) ?? null)}
               style={{ ...INPUT, appearance: 'none', paddingRight: '36px' }}>
-              <option value="">— pick an episode —</option>
+              <option value="">— none / full season —</option>
               {episodes.map(ep => (
                 <option key={ep.episode_number} value={ep.episode_number}>
                   E{String(ep.episode_number).padStart(2, '0')} — {ep.name}
