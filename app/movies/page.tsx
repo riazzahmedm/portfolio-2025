@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { toast } from 'sonner'
 import Link from 'next/link'
 import { ArrowLeft, Plus, Film, Tv, X, Search, ChevronDown, Bookmark } from 'lucide-react'
 import type { MovieLog, WatchlistItem } from '@/lib/movies.types'
@@ -144,18 +145,28 @@ export default function MoviesPage() {
   const [genreFilter, setGenreFilter] = useState('')
 
   const fetchLogs = useCallback(async () => {
-    const res  = await fetch('/api/movies')
-    const data = await res.json()
-    setLogs(Array.isArray(data) ? data : [])
-    setLoading(false)
+    try {
+      const res  = await fetch('/api/movies')
+      const data = await res.json()
+      setLogs(Array.isArray(data) ? data : [])
+    } catch {
+      toast.error('Failed to load logs — check your connection')
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   const fetchWatchlist = useCallback(async () => {
     setWatchlistLoad(true)
-    const res  = await fetch('/api/watchlist')
-    const data = await res.json()
-    setWatchlist(Array.isArray(data) ? data : [])
-    setWatchlistLoad(false)
+    try {
+      const res  = await fetch('/api/watchlist')
+      const data = await res.json()
+      setWatchlist(Array.isArray(data) ? data : [])
+    } catch {
+      // watchlist is non-critical — fail silently
+    } finally {
+      setWatchlistLoad(false)
+    }
   }, [])
 
   useEffect(() => {
@@ -212,7 +223,7 @@ export default function MoviesPage() {
     <div style={{ minHeight: '100dvh', background: 'var(--bg)', color: 'var(--text-primary)', fontFamily: 'var(--ff-body)' }}>
 
       {/* ── Log-from-watchlist drawer ── */}
-      {loggingItem && (
+      {loggingItem && loggingItem.tmdb_id !== null && (
         <>
           <div onClick={() => setLoggingItem(null)} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }} />
           <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 101, width: 'min(520px, 100vw)', background: 'var(--bg)', borderLeft: '1px solid rgba(255,255,255,0.08)', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
@@ -228,7 +239,7 @@ export default function MoviesPage() {
             <div style={{ padding: '28px 24px 60px' }}>
               <AdminForm
                 preSelectedTmdb={{
-                  id:         loggingItem.tmdb_id!,
+                  id:         loggingItem.tmdb_id,
                   title:      loggingItem.title,
                   poster_url: loggingItem.poster_url,
                   type:       loggingItem.type,
@@ -294,7 +305,7 @@ export default function MoviesPage() {
           {/* Right — actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
             <button
-              onClick={() => setView(v => v === 'later' ? 'log' : 'later')}
+              onClick={() => { setView(v => v === 'later' ? 'log' : 'later'); clearFilters(); setFilter('all') }}
               style={{
                 display: 'flex', alignItems: 'center', gap: '6px',
                 padding: '8px 12px', borderRadius: '100px', cursor: 'pointer',

@@ -1,4 +1,10 @@
+import { cookies } from 'next/headers'
 import { supabase } from '@/lib/supabase'
+
+async function isAdmin() {
+  const jar = await cookies()
+  return jar.get('movies-admin')?.value === 'true'
+}
 
 export async function GET() {
   const { data, error } = await supabase
@@ -10,6 +16,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  if (!(await isAdmin())) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  }
   const body = await req.json()
   const { data, error } = await supabase
     .from('watchlist')

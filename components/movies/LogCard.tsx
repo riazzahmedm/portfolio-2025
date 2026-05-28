@@ -258,7 +258,7 @@ export default function LogCard({
           <div style={{ marginTop: 'auto', paddingTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
             {log.platform && <PlatformBadge platform={log.platform} />}
             <div style={{ fontSize: '9px', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
-              {new Date(log.watched_on).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              {new Date(log.watched_on + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </div>
           </div>
         </div>

@@ -374,8 +374,13 @@ export default function AdminForm({
     if (editDebounce.current) clearTimeout(editDebounce.current)
     const tmdbType = type === 'movie' ? 'movie' : 'tv'
     editDebounce.current = setTimeout(async () => {
-      const res = await fetch(`/api/tmdb/search?q=${encodeURIComponent(editQuery)}&type=${tmdbType}`)
-      setEditResults(await res.json())
+      try {
+        const res  = await fetch(`/api/tmdb/search?q=${encodeURIComponent(editQuery)}&type=${tmdbType}`)
+        const data = await res.json()
+        setEditResults(Array.isArray(data) ? data : [])
+      } catch {
+        setEditResults([])
+      }
     }, 380)
     return () => { if (editDebounce.current) clearTimeout(editDebounce.current) }
   }, [isEdit, editQuery, editTmdbOverride, type])
@@ -445,8 +450,13 @@ export default function AdminForm({
     if (!query || selected) { setResults([]); return }
     if (debounce.current) clearTimeout(debounce.current)
     debounce.current = setTimeout(async () => {
-      const res = await fetch(`/api/tmdb/search?q=${encodeURIComponent(query)}&type=${tmdbType}`)
-      setResults(await res.json())
+      try {
+        const res  = await fetch(`/api/tmdb/search?q=${encodeURIComponent(query)}&type=${tmdbType}`)
+        const data = await res.json()
+        setResults(Array.isArray(data) ? data : [])
+      } catch {
+        setResults([])
+      }
     }, 380)
     return () => { if (debounce.current) clearTimeout(debounce.current) }
   }, [query, tmdbType, selected])
@@ -552,7 +562,10 @@ export default function AdminForm({
         body: JSON.stringify(patch),
       })
       if (res.ok) {
-        toast.success('Entry updated', { description: patch.title as string })
+        const toastTitle = editTmdbOverride
+          ? (editTmdbOverride.title ?? editTmdbOverride.name)
+          : initialLog!.title
+        toast.success('Entry updated', { description: toastTitle })
         onSuccess()
       } else {
         const d = await res.json()
