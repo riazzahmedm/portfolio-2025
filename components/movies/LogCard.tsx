@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { Share2, Trash2, Pencil, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
+import Link from 'next/link'
 import type { MovieLog } from '@/lib/movies.types'
 import { VIBES, PLATFORMS } from '@/lib/movies.types'
 import StoryCardModal from './StoryCardModal'
@@ -224,14 +225,16 @@ export default function LogCard({
             </div>
           )}
 
-          <div style={{
-            fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)',
-            lineHeight: 1.3, fontFamily: 'var(--ff-body)',
-            overflow: 'hidden', display: '-webkit-box',
-            WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-          } as React.CSSProperties}>
-            {log.title}
-          </div>
+          <Link href={`/movies/${log.id}`} style={{ textDecoration: 'none' }}>
+            <div style={{
+              fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)',
+              lineHeight: 1.3, fontFamily: 'var(--ff-body)',
+              overflow: 'hidden', display: '-webkit-box',
+              WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+            } as React.CSSProperties}>
+              {log.title}
+            </div>
+          </Link>
 
           {subtitle && (
             <div style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>

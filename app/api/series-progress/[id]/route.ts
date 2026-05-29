@@ -1,20 +1,9 @@
 import { cookies } from 'next/headers'
 import { supabase } from '@/lib/supabase'
-import { enrich }   from '@/lib/tmdb'
 
 async function isAdmin() {
   const jar = await cookies()
   return jar.get('movies-admin')?.value === 'true'
-}
-
-export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params
-  const { data, error } = await supabase.from('logs').select('*').eq('id', id).single()
-  if (error) return Response.json({ error: error.message }, { status: 404 })
-  return Response.json(data)
 }
 
 export async function PATCH(
@@ -23,18 +12,11 @@ export async function PATCH(
 ) {
   if (!(await isAdmin())) return Response.json({ error: 'Unauthorized' }, { status: 401 })
   const { id } = await params
-  const body   = await req.json()
-
-  // If a new tmdb_id is being set, re-enrich with full TMDB metadata
-  if (body.tmdb_id) {
-    try {
-      const meta = await enrich(body.tmdb_id, body.type ?? 'movie')
-      Object.assign(body, meta)
-    } catch { /* non-fatal */ }
-  }
-
+  const body = await req.json()
   const { data, error } = await supabase
-    .from('logs').update(body).eq('id', id).select().single()
+    .from('series_progress')
+    .update({ ...body, last_updated: new Date().toISOString() })
+    .eq('id', id).select().single()
   if (error) return Response.json({ error: error.message }, { status: 500 })
   return Response.json(data)
 }
@@ -45,7 +27,7 @@ export async function DELETE(
 ) {
   if (!(await isAdmin())) return Response.json({ error: 'Unauthorized' }, { status: 401 })
   const { id } = await params
-  const { error } = await supabase.from('logs').delete().eq('id', id)
+  const { error } = await supabase.from('series_progress').delete().eq('id', id)
   if (error) return Response.json({ error: error.message }, { status: 500 })
   return Response.json({ ok: true })
 }

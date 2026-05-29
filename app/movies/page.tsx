@@ -1,8 +1,8 @@
 'use client'
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Film, Tv, X, Search, ChevronDown, Bookmark, Sparkles } from 'lucide-react'
+import { ArrowLeft, Plus, Film, Tv, X, Search, ChevronDown, Bookmark, Sparkles, LayoutGrid, CalendarDays, List, Radio } from 'lucide-react'
 import type { MovieLog, WatchlistItem } from '@/lib/movies.types'
 import { VIBES } from '@/lib/movies.types'
 import LogCard from '@/components/movies/LogCard'
@@ -126,6 +126,155 @@ function Skeleton() {
   )
 }
 
+// ── Calendar Heatmap ──────────────────────────────────────────────────────────
+const INTENSITY_COLORS = ['transparent', 'rgba(130,255,31,0.18)', 'rgba(130,255,31,0.38)', 'rgba(130,255,31,0.62)', 'rgba(130,255,31,0.88)']
+
+function CalendarHeatmap({ logs }: { logs: MovieLog[] }) {
+  const [tooltip, setTooltip] = useState<{ date: string; count: number; x: number; y: number } | null>(null)
+
+  const dateMap = useMemo(() => {
+    const m: Record<string, number> = {}
+    logs.forEach(l => { m[l.watched_on] = (m[l.watched_on] ?? 0) + 1 })
+    return m
+  }, [logs])
+
+  const maxCount = useMemo(() => Math.max(1, ...Object.values(dateMap)), [dateMap])
+
+  // Build 53-week grid ending today
+  const today   = new Date(); today.setHours(12, 0, 0, 0)
+  const endDate = new Date(today)
+  const startDate = new Date(today); startDate.setDate(startDate.getDate() - 52 * 7)
+  // Align start to Sunday
+  startDate.setDate(startDate.getDate() - startDate.getDay())
+
+  const weeks: { date: Date; iso: string }[][] = []
+  let current = new Date(startDate)
+  while (current <= endDate) {
+    const week: { date: Date; iso: string }[] = []
+    for (let d = 0; d < 7; d++) {
+      week.push({ date: new Date(current), iso: current.toISOString().slice(0, 10) })
+      current.setDate(current.getDate() + 1)
+    }
+    weeks.push(week)
+  }
+
+  const MONTH_LABELS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const totalThisYear = Object.entries(dateMap).filter(([k]) => k.startsWith(String(new Date().getFullYear()))).reduce((a, [, v]) => a + v, 0)
+
+  function intensityFor(count: number) {
+    if (count === 0) return 0
+    if (count === 1) return 1
+    if (count <= 2)  return 2
+    if (count <= 4)  return 3
+    return 4
+  }
+
+  return (
+    <div>
+      {/* Legend + count */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+        <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '11px', color: 'var(--text-dim)', letterSpacing: '0.12em' }}>
+          {totalThisYear} watches in {new Date().getFullYear()}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.25)', marginRight: '4px' }}>Less</span>
+          {INTENSITY_COLORS.map((c, i) => (
+            <div key={i} style={{ width: '11px', height: '11px', borderRadius: '2px', background: i === 0 ? 'rgba(255,255,255,0.06)' : c, border: '1px solid rgba(255,255,255,0.06)' }} />
+          ))}
+          <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.25)', marginLeft: '4px' }}>More</span>
+        </div>
+      </div>
+
+      {/* Grid wrapper — horizontal scroll on small screens */}
+      <div style={{ overflowX: 'auto', paddingBottom: '8px' }}>
+        <div style={{ display: 'flex', gap: '3px', minWidth: 'max-content' }}>
+          {/* Day labels */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '18px' }}>
+            {['', 'Mon', '', 'Wed', '', 'Fri', ''].map((d, i) => (
+              <div key={i} style={{ height: '11px', fontSize: '9px', fontFamily: 'var(--ff-mono)', color: 'rgba(255,255,255,0.2)', lineHeight: '11px', width: '22px', textAlign: 'right', paddingRight: '4px' }}>
+                {d}
+              </div>
+            ))}
+          </div>
+
+          {/* Weeks */}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {/* Month labels */}
+            <div style={{ display: 'flex', gap: '3px', marginBottom: '4px', height: '14px' }}>
+              {weeks.map((week, wi) => {
+                const first = week.find(c => c.date.getDate() <= 7)
+                const label = first && first.date.getDate() <= 7 ? MONTH_LABELS[first.date.getMonth()] : ''
+                return (
+                  <div key={wi} style={{ width: '11px', fontSize: '9px', fontFamily: 'var(--ff-mono)', color: 'rgba(255,255,255,0.3)', lineHeight: '14px', overflow: 'visible', whiteSpace: 'nowrap' }}>
+                    {label}
+                  </div>
+                )
+              })}
+            </div>
+            {/* Day cells — render column by column */}
+            <div style={{ display: 'flex', gap: '3px' }}>
+              {weeks.map((week, wi) => (
+                <div key={wi} style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  {week.map(({ date, iso }) => {
+                    const count = dateMap[iso] ?? 0
+                    const isFuture = date > today
+                    const intensity = isFuture ? 0 : intensityFor(count)
+                    return (
+                      <div
+                        key={iso}
+                        onMouseEnter={e => {
+                          if (!isFuture) {
+                            const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect()
+                            setTooltip({ date: iso, count, x: rect.left + rect.width / 2, y: rect.top - 8 })
+                          }
+                        }}
+                        onMouseLeave={() => setTooltip(null)}
+                        style={{
+                          width: '11px', height: '11px', borderRadius: '2px',
+                          background: intensity === 0 ? 'rgba(255,255,255,0.05)' : INTENSITY_COLORS[intensity],
+                          border: `1px solid ${count > 0 ? 'rgba(130,255,31,0.15)' : 'rgba(255,255,255,0.05)'}`,
+                          cursor: count > 0 ? 'pointer' : 'default',
+                          transition: 'transform 0.1s',
+                          opacity: isFuture ? 0.2 : 1,
+                        }}
+                        onMouseOver={e => { if (count > 0) (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.3)' }}
+                        onMouseOut={e => { (e.currentTarget as HTMLDivElement).style.transform = 'scale(1)' }}
+                      />
+                    )
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tooltip */}
+      {tooltip && (
+        <div style={{
+          position: 'fixed', zIndex: 999,
+          left: tooltip.x, top: tooltip.y,
+          transform: 'translate(-50%, -100%)',
+          background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.12)',
+          borderRadius: '8px', padding: '6px 10px',
+          pointerEvents: 'none',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+        }}>
+          <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '11px', color: '#fff', whiteSpace: 'nowrap' }}>
+            {tooltip.count > 0
+              ? <><span style={{ color: '#82ff1f' }}>{tooltip.count}</span> watch{tooltip.count !== 1 ? 'es' : ''}</>
+              : <span style={{ color: 'rgba(255,255,255,0.4)' }}>No watches</span>
+            }
+          </div>
+          <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.35)', marginTop: '2px' }}>
+            {new Date(tooltip.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function MoviesPage() {
   const [logs,          setLogs]          = useState<MovieLog[]>([])
@@ -139,10 +288,13 @@ export default function MoviesPage() {
   const [loggingItem,   setLoggingItem]   = useState<WatchlistItem | null>(null)
 
   // ── Filter state ──
-  const [search,      setSearch]      = useState('')
-  const [vibeFilter,  setVibeFilter]  = useState('')
-  const [yearFilter,  setYearFilter]  = useState('')
-  const [genreFilter, setGenreFilter] = useState('')
+  const [search,          setSearch]          = useState('')
+  const [vibeFilter,      setVibeFilter]      = useState('')
+  const [yearFilter,      setYearFilter]      = useState('')
+  const [genreFilter,     setGenreFilter]     = useState('')
+  const [directorFilter,  setDirectorFilter]  = useState('')
+  const [actorFilter,     setActorFilter]     = useState('')
+  const [logDisplayMode,  setLogDisplayMode]  = useState<'grid' | 'calendar'>('grid')
 
   const fetchLogs = useCallback(async () => {
     try {
@@ -196,18 +348,29 @@ export default function MoviesPage() {
     new Set(logs.flatMap(l => l.genres ?? []))
   ).filter(Boolean).sort().map(g => ({ key: g, label: g }))
 
+  const availableDirectors = Array.from(
+    new Set(logs.map(l => l.director).filter(Boolean) as string[])
+  ).sort().map(d => ({ key: d, label: d }))
+
+  const availableActors = Array.from(
+    new Set(logs.flatMap(l => l.cast_names ?? []).filter(Boolean))
+  ).sort().map(a => ({ key: a, label: a }))
+
   // ── Apply all filters ──
   const filtered = logs
     .filter(l => filter === 'all' || l.type === filter)
-    .filter(l => !search || l.title.toLowerCase().includes(search.toLowerCase()))
-    .filter(l => !vibeFilter  || l.vibe === vibeFilter)
-    .filter(l => !yearFilter  || l.year === Number(yearFilter))
-    .filter(l => !genreFilter || (l.genres ?? []).includes(genreFilter))
+    .filter(l => !search         || l.title.toLowerCase().includes(search.toLowerCase()))
+    .filter(l => !vibeFilter     || l.vibe === vibeFilter)
+    .filter(l => !yearFilter     || l.year === Number(yearFilter))
+    .filter(l => !genreFilter    || (l.genres ?? []).includes(genreFilter))
+    .filter(l => !directorFilter || l.director === directorFilter)
+    .filter(l => !actorFilter    || (l.cast_names ?? []).includes(actorFilter))
 
-  const hasFilters = !!(search || vibeFilter || yearFilter || genreFilter)
+  const hasFilters = !!(search || vibeFilter || yearFilter || genreFilter || directorFilter || actorFilter)
 
   function clearFilters() {
     setSearch(''); setVibeFilter(''); setYearFilter(''); setGenreFilter('')
+    setDirectorFilter(''); setActorFilter('')
   }
 
   function handleDeleted(id: string) { setLogs(prev => prev.filter(l => l.id !== id)) }
@@ -304,6 +467,30 @@ export default function MoviesPage() {
 
           {/* Right — actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+            <Link href="/movies/lists" style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '8px 12px', borderRadius: '100px', cursor: 'pointer',
+              border: '1px solid rgba(255,255,255,0.1)',
+              background: 'transparent',
+              color: 'rgba(255,255,255,0.4)',
+              fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em',
+              textDecoration: 'none', transition: 'all 0.18s', whiteSpace: 'nowrap',
+            }}>
+              <List size={12} />
+              <span className="wl-log-label">Lists</span>
+            </Link>
+            <Link href="/movies/tracker" style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '8px 12px', borderRadius: '100px', cursor: 'pointer',
+              border: '1px solid rgba(255,255,255,0.1)',
+              background: 'transparent',
+              color: 'rgba(255,255,255,0.4)',
+              fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em',
+              textDecoration: 'none', transition: 'all 0.18s', whiteSpace: 'nowrap',
+            }}>
+              <Radio size={12} />
+              <span className="wl-log-label">Tracker</span>
+            </Link>
             <Link href="/movies/wrapped" style={{
               display: 'flex', alignItems: 'center', gap: '6px',
               padding: '8px 12px', borderRadius: '100px', cursor: 'pointer',
@@ -317,7 +504,7 @@ export default function MoviesPage() {
               <span className="wl-log-label">Wrapped</span>
             </Link>
             <button
-              onClick={() => { setView(v => v === 'later' ? 'log' : 'later'); clearFilters(); setFilter('all') }}
+              onClick={() => { setView(v => v === 'later' ? 'log' : 'later'); clearFilters(); setFilter('all'); setLogDisplayMode('grid') }}
               style={{
                 display: 'flex', alignItems: 'center', gap: '6px',
                 padding: '8px 12px', borderRadius: '100px', cursor: 'pointer',
@@ -479,10 +666,12 @@ export default function MoviesPage() {
               })}
             </div>
 
-            {/* Year / Genre dropdowns — separate row, NO overflow:hidden so popups aren't clipped */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
-              <FilterDropdown label="Year"  value={yearFilter}  options={availableYears}  onChange={setYearFilter}  />
-              <FilterDropdown label="Genre" value={genreFilter} options={availableGenres} onChange={setGenreFilter} />
+            {/* Filter dropdowns + view toggle row */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <FilterDropdown label="Year"     value={yearFilter}      options={availableYears}      onChange={setYearFilter}      />
+              <FilterDropdown label="Genre"    value={genreFilter}     options={availableGenres}     onChange={setGenreFilter}     />
+              <FilterDropdown label="Director" value={directorFilter}  options={availableDirectors}  onChange={setDirectorFilter}  />
+              <FilterDropdown label="Actor"    value={actorFilter}     options={availableActors}     onChange={setActorFilter}     />
               {hasFilters && (
                 <button type="button" onClick={clearFilters}
                   style={{
@@ -496,6 +685,33 @@ export default function MoviesPage() {
                   <X size={11} /> Clear
                 </button>
               )}
+              {/* Spacer */}
+              <div style={{ flex: 1 }} />
+              {/* Grid / Calendar toggle */}
+              <div style={{ display: 'flex', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', flexShrink: 0 }}>
+                {([
+                  { mode: 'grid'     as const, icon: <LayoutGrid  size={12} />, label: 'Grid'     },
+                  { mode: 'calendar' as const, icon: <CalendarDays size={12} />, label: 'Calendar' },
+                ] as const).map(({ mode, icon, label }) => {
+                  const on = logDisplayMode === mode
+                  return (
+                    <button key={mode} type="button" onClick={() => setLogDisplayMode(mode)}
+                      title={label}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '5px',
+                        padding: '7px 13px', cursor: 'pointer',
+                        background: on ? 'rgba(184,160,255,0.12)' : 'transparent',
+                        border: 'none', borderRight: mode === 'grid' ? '1px solid rgba(255,255,255,0.1)' : 'none',
+                        color: on ? '#b8a0ff' : 'rgba(255,255,255,0.35)',
+                        fontSize: '11px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em',
+                        transition: 'all 0.18s',
+                      }}>
+                      {icon}
+                      <span className="wl-log-label">{label}</span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
 
             {/* Type tabs + entry count */}
@@ -510,6 +726,13 @@ export default function MoviesPage() {
 
             {loading ? (
               <Skeleton />
+            ) : logDisplayMode === 'calendar' ? (
+              <div style={{
+                background: 'var(--surface)', border: '1px solid var(--border-card)',
+                borderRadius: '16px', padding: '24px',
+              }}>
+                <CalendarHeatmap logs={filtered} />
+              </div>
             ) : filtered.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)', fontSize: '14px' }}>
                 {hasFilters ? 'No results. Try different filters.' : 'Nothing logged yet.'}

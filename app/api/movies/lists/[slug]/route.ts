@@ -1,6 +1,5 @@
 import { cookies } from 'next/headers'
 import { supabase } from '@/lib/supabase'
-import { enrich }   from '@/lib/tmdb'
 
 async function isAdmin() {
   const jar = await cookies()
@@ -9,43 +8,39 @@ async function isAdmin() {
 
 export async function GET(
   _req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
-  const { id } = await params
-  const { data, error } = await supabase.from('logs').select('*').eq('id', id).single()
+  const { slug } = await params
+  const { data, error } = await supabase
+    .from('movie_lists')
+    .select('*, movie_list_items(*)')
+    .eq('slug', slug)
+    .order('rank', { referencedTable: 'movie_list_items', ascending: true })
+    .single()
   if (error) return Response.json({ error: error.message }, { status: 404 })
   return Response.json(data)
 }
 
 export async function PATCH(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   if (!(await isAdmin())) return Response.json({ error: 'Unauthorized' }, { status: 401 })
-  const { id } = await params
-  const body   = await req.json()
-
-  // If a new tmdb_id is being set, re-enrich with full TMDB metadata
-  if (body.tmdb_id) {
-    try {
-      const meta = await enrich(body.tmdb_id, body.type ?? 'movie')
-      Object.assign(body, meta)
-    } catch { /* non-fatal */ }
-  }
-
+  const { slug } = await params
+  const body = await req.json()
   const { data, error } = await supabase
-    .from('logs').update(body).eq('id', id).select().single()
+    .from('movie_lists').update(body).eq('slug', slug).select().single()
   if (error) return Response.json({ error: error.message }, { status: 500 })
   return Response.json(data)
 }
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   if (!(await isAdmin())) return Response.json({ error: 'Unauthorized' }, { status: 401 })
-  const { id } = await params
-  const { error } = await supabase.from('logs').delete().eq('id', id)
+  const { slug } = await params
+  const { error } = await supabase.from('movie_lists').delete().eq('slug', slug)
   if (error) return Response.json({ error: error.message }, { status: 500 })
   return Response.json({ ok: true })
 }

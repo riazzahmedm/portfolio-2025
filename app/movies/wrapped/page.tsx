@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState, useMemo, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Film, Tv, Clock, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Film, Tv, Clock, RefreshCw, Share2, Flame, CalendarDays, BarChart2, Download } from 'lucide-react'
 import type { MovieLog, FavoritePerson } from '@/lib/movies.types'
 import { VIBES, PLATFORMS, DRAWS } from '@/lib/movies.types'
 
@@ -184,6 +184,225 @@ function BarRow({ label, value, max, color = '#b8a0ff', emoji, rank, animate = f
   )
 }
 
+// ── Share Card Modal ─────────────────────────────────────────────────────────
+// Renders a styled 9:16 card and offers canvas-based download
+function ShareCardModal({
+  stats, scopeLabel, yearScope, onClose,
+}: {
+  stats:      NonNullable<ReturnType<typeof computeStats>>
+  scopeLabel: string
+  yearScope:  string
+  onClose:    () => void
+}) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const topGenreName = stats.topGenre?.[0] ?? null
+  const topVibe      = VIBES.find(v => v.key === stats.vibeCounts[0]?.[0])
+  const peakDow      = [...stats.dayOfWeekCounts].sort((a, b) => b.count - a.count)[0]
+
+  function downloadCanvas() {
+    const canvas  = document.createElement('canvas')
+    const W = 1080, H = 1920
+    canvas.width  = W
+    canvas.height = H
+    const ctx = canvas.getContext('2d')!
+
+    // Background
+    ctx.fillStyle = '#050505'
+    ctx.fillRect(0, 0, W, H)
+
+    // Gradient overlay
+    const grd = ctx.createLinearGradient(0, 0, W, H)
+    grd.addColorStop(0, 'rgba(184,160,255,0.18)')
+    grd.addColorStop(1, 'rgba(130,255,31,0.10)')
+    ctx.fillStyle = grd
+    ctx.fillRect(0, 0, W, H)
+
+    // Top label
+    ctx.font = '32px monospace'
+    ctx.fillStyle = 'rgba(184,160,255,0.6)'
+    ctx.letterSpacing = '8px'
+    ctx.textAlign = 'center'
+    ctx.fillText(yearScope === 'all' ? 'YOUR ARCHIVE' : `${yearScope} WRAPPED`, W / 2, 140)
+
+    // Big number
+    ctx.font = 'bold 280px serif'
+    ctx.fillStyle = '#ffffff'
+    ctx.fillText(String(stats.total), W / 2, 460)
+
+    // Sub label
+    ctx.font = '36px monospace'
+    ctx.fillStyle = 'rgba(255,255,255,0.4)'
+    ctx.letterSpacing = '4px'
+    ctx.fillText('FILMS & SERIES WATCHED', W / 2, 540)
+
+    // Divider
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)'
+    ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(80, 620); ctx.lineTo(W - 80, 620); ctx.stroke()
+
+    // Stats grid
+    const statItems = [
+      { val: String(stats.movies),           label: 'MOVIES' },
+      { val: String(stats.series),           label: 'SERIES' },
+      { val: `~${stats.totalHrs}h`,          label: 'WATCHED' },
+      { val: topGenreName ?? '—',            label: 'TOP GENRE' },
+      { val: topVibe ? `${topVibe.emoji} ${topVibe.label}` : '—', label: 'TOP VIBE' },
+      { val: peakDow?.label ?? '—',          label: 'PEAK DAY' },
+    ]
+    statItems.forEach((s, i) => {
+      const col = i % 2
+      const row = Math.floor(i / 2)
+      const x   = col === 0 ? 180 : W - 180
+      const y   = 760 + row * 220
+      ctx.textAlign = col === 0 ? 'left' : 'right'
+      ctx.font = 'bold 64px serif'
+      ctx.fillStyle = '#ffffff'
+      ctx.letterSpacing = '0px'
+      ctx.fillText(s.val, x, y)
+      ctx.font = '26px monospace'
+      ctx.fillStyle = 'rgba(255,255,255,0.35)'
+      ctx.letterSpacing = '4px'
+      ctx.fillText(s.label, x, y + 42)
+    })
+
+    // Watermark
+    ctx.textAlign = 'center'
+    ctx.font = '28px monospace'
+    ctx.fillStyle = 'rgba(255,255,255,0.15)'
+    ctx.letterSpacing = '3px'
+    ctx.fillText('riaz.xyz/movies', W / 2, H - 80)
+
+    // Download
+    const link = document.createElement('a')
+    link.download = `wrapped-${scopeLabel.replace(/\s/g, '-')}.png`
+    link.href = canvas.toDataURL('image/png')
+    link.click()
+  }
+
+  const topGenreColor = topGenreName ? (GENRE_COLORS[topGenreName] ?? '#b8a0ff') : '#b8a0ff'
+
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 400,
+      background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(24px)',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      padding: '24px 16px', gap: '20px',
+    }}>
+      {/* Card preview */}
+      <div
+        ref={cardRef}
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: '100%', maxWidth: '340px',
+          aspectRatio: '9/16',
+          borderRadius: '24px', overflow: 'hidden',
+          background: '#050505',
+          border: '1px solid rgba(255,255,255,0.1)',
+          position: 'relative',
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          justifyContent: 'space-between', padding: '32px 28px',
+          boxShadow: '0 40px 100px rgba(0,0,0,0.8)',
+        }}
+      >
+        {/* Gradient bg */}
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none',
+          background: `linear-gradient(135deg, rgba(184,160,255,0.12) 0%, ${topGenreColor}12 50%, rgba(130,255,31,0.08) 100%)`,
+        }} />
+
+        <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+          <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '9px', letterSpacing: '0.28em', color: '#b8a0ff', textTransform: 'uppercase' }}>
+            {yearScope === 'all' ? 'Your Archive' : `${yearScope} Wrapped`}
+          </div>
+        </div>
+
+        <div style={{ position: 'relative', textAlign: 'center' }}>
+          <div style={{
+            fontFamily: 'var(--ff-display)', fontWeight: 400,
+            fontSize: 'clamp(4rem, 22vw, 8rem)', lineHeight: 0.9, letterSpacing: '-0.02em',
+            background: 'linear-gradient(135deg, #fff 0%, rgba(184,160,255,0.9) 60%, rgba(130,255,31,0.7) 100%)',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+          } as React.CSSProperties}>
+            {stats.total}
+          </div>
+          <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '9px', letterSpacing: '0.22em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', marginTop: '10px' }}>
+            films &amp; series
+          </div>
+        </div>
+
+        {/* Stats grid */}
+        <div style={{ position: 'relative', width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+          {[
+            { val: stats.movies,                                            label: 'Movies' },
+            { val: stats.series,                                            label: 'Series' },
+            { val: `~${stats.totalHrs}h`,                                   label: 'Watched' },
+            { val: topGenreName ?? '—',                                     label: 'Top genre' },
+            ...(topVibe ? [{ val: `${topVibe.emoji} ${topVibe.label}`, label: 'Top vibe' }] : []),
+            ...(peakDow ? [{ val: peakDow.label,                        label: 'Peak day' }]  : []),
+          ].map((s, i) => (
+            <div key={i} style={{
+              padding: '10px 12px', borderRadius: '10px',
+              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)',
+              display: 'flex', flexDirection: 'column', gap: '3px',
+            }}>
+              <div style={{ fontFamily: 'var(--ff-display)', fontSize: '20px', fontWeight: 400, color: '#fff', letterSpacing: '-0.01em', lineHeight: 1 }}>
+                {s.val}
+              </div>
+              <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '8px', letterSpacing: '0.16em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>
+                {s.label}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ position: 'relative', fontFamily: 'var(--ff-mono)', fontSize: '8px', letterSpacing: '0.16em', color: 'rgba(255,255,255,0.15)', textTransform: 'uppercase' }}>
+          riaz.xyz/movies
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: '10px' }}>
+        <button onClick={downloadCanvas} style={{
+          display: 'flex', alignItems: 'center', gap: '7px',
+          padding: '11px 22px', borderRadius: '100px', cursor: 'pointer',
+          border: '1px solid rgba(130,255,31,0.4)',
+          background: 'rgba(130,255,31,0.1)', color: '#82ff1f',
+          fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em', textTransform: 'uppercase',
+        }}>
+          <Download size={12} /> Download
+        </button>
+        <button onClick={onClose} style={{
+          padding: '11px 22px', borderRadius: '100px', cursor: 'pointer',
+          border: '1px solid rgba(255,255,255,0.1)',
+          background: 'transparent', color: 'rgba(255,255,255,0.4)',
+          fontSize: '12px', fontFamily: 'var(--ff-mono)',
+        }}>
+          Close
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// helper so ShareCardModal can reference the return type
+function computeStats(filteredLogs: import('@/lib/movies.types').MovieLog[], sectionFilter: 'all' | 'movie' | 'series') {
+  if (!filteredLogs.length) return null
+  // (mirrored shape — actual computation is in the useMemo above)
+  return {} as {
+    total: number; movies: number; series: number; rewatches: number; totalHrs: number
+    topGenres: [string, number][]; topGenre: [string, number] | null
+    vibeCounts: [string, number][]; vibeTotal: number
+    topPeople: { person: import('@/lib/movies.types').FavoritePerson; count: number }[]
+    monthEntries: [string, number][]; peakMonth: [string, number]
+    platformCounts: [string, number][]; drawCounts: [string, number][]
+    topActors: [string, number][]; topDirectors: [string, number][]
+    dayOfWeekCounts: { label: string; count: number }[]
+    decadeCounts: [string, number][]
+    streak: { days: number; from: string; to: string }
+    vibeVsRating: { vibe: string; avgRating: number; count: number }[]
+  }
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function WrappedPage() {
   const [logs,      setLogs]      = useState<MovieLog[]>([])
@@ -191,25 +410,29 @@ export default function WrappedPage() {
   const [yearScope,    setYearScope]    = useState<string>('all')
   const [sectionFilter, setSectionFilter] = useState<'all' | 'movie' | 'series'>('all')
 
+  const [shareOpen, setShareOpen] = useState(false)
+
   // Per-section visibility — drives bar fill animations
   const [genreVisible,    setGenreVisible]    = useState(false)
   const [vibeVisible,     setVibeVisible]     = useState(false)
   const [timelineVisible, setTimelineVisible] = useState(false)
   const [platformVisible, setPlatformVisible] = useState(false)
   const [drawsVisible,    setDrawsVisible]    = useState(false)
+  const [dowVisible,      setDowVisible]      = useState(false)
+  const [decadeVisible,   setDecadeVisible]   = useState(false)
+  const [ratingVisible,   setRatingVisible]   = useState(false)
 
   // Reset bar animations when section filter changes so they re-play.
-  // We set to false (bars snap to 0) then immediately re-set to true
-  // so the CSS width transition replays with the new data.
-  // AnimSection.fired is not reset here — the section itself stays visible.
   useEffect(() => {
     setGenreVisible(false)
     setVibeVisible(false)
     setTimelineVisible(false)
+    setRatingVisible(false)
     const t = setTimeout(() => {
       setGenreVisible(true)
       setVibeVisible(true)
       setTimelineVisible(true)
+      setRatingVisible(true)
     }, 80)
     return () => clearTimeout(t)
   }, [sectionFilter])
@@ -294,6 +517,69 @@ export default function WrappedPage() {
     const allDirectors = trustedLogs.map(l => l.director).filter(Boolean) as string[]
     const topDirectors = count(allDirectors).slice(0, 3)
 
+    // ── Day-of-week heatmap ──
+    const DOW_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    const dayMap: Record<number, number> = { 0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0 }
+    filteredLogs.forEach(l => {
+      const d = new Date(l.watched_on + 'T12:00:00').getDay()
+      dayMap[d] = (dayMap[d] ?? 0) + 1
+    })
+    const dayOfWeekCounts = DOW_LABELS.map((label, i) => ({ label, count: dayMap[i] }))
+
+    // ── Decade breakdown (by release year) ──
+    const decadeMap: Record<string, number> = {}
+    filteredLogs.forEach(l => {
+      if (!l.year) return
+      const d = l.year < 1970 ? 'Pre‑70s' : `${Math.floor(l.year / 10) * 10}s`
+      decadeMap[d] = (decadeMap[d] ?? 0) + 1
+    })
+    const decadeCounts = Object.entries(decadeMap).sort((a, b) => {
+      if (a[0] === 'Pre‑70s') return -1
+      if (b[0] === 'Pre‑70s') return 1
+      return Number(a[0]) - Number(b[0])
+    })
+
+    // ── Longest consecutive watch streak ──
+    const uniqueDates = [...new Set(filteredLogs.map(l => l.watched_on))].sort()
+    let longestStreak = uniqueDates.length > 0 ? 1 : 0
+    let currentStreak = 1
+    let streakStart   = uniqueDates[0] ?? ''
+    let bestStart     = uniqueDates[0] ?? ''
+    let bestEnd       = uniqueDates[0] ?? ''
+    for (let i = 1; i < uniqueDates.length; i++) {
+      const prev = new Date(uniqueDates[i - 1] + 'T12:00:00')
+      const curr = new Date(uniqueDates[i]     + 'T12:00:00')
+      const diff = (curr.getTime() - prev.getTime()) / 86_400_000
+      if (diff === 1) {
+        currentStreak++
+        if (currentStreak > longestStreak) {
+          longestStreak = currentStreak
+          bestStart     = streakStart
+          bestEnd       = uniqueDates[i]
+        }
+      } else {
+        currentStreak = 1
+        streakStart   = uniqueDates[i]
+      }
+    }
+    const streak = { days: longestStreak, from: bestStart, to: bestEnd }
+
+    // ── TMDB rating vs vibe ──
+    const vibeRatingMap: Record<string, number[]> = {}
+    sectionLogs.forEach(l => {
+      if (!l.vibe || !l.tmdb_rating) return
+      if (!vibeRatingMap[l.vibe]) vibeRatingMap[l.vibe] = []
+      vibeRatingMap[l.vibe].push(l.tmdb_rating)
+    })
+    const VIBE_ORDER = ['masterpiece', 'loved', 'liked', 'fine', 'meh', 'bad']
+    const vibeVsRating = Object.entries(vibeRatingMap)
+      .map(([vibe, ratings]) => ({
+        vibe,
+        avgRating: Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10,
+        count: ratings.length,
+      }))
+      .sort((a, b) => VIBE_ORDER.indexOf(a.vibe) - VIBE_ORDER.indexOf(b.vibe))
+
     return {
       total: filteredLogs.length,
       movies: movies.length,
@@ -311,6 +597,10 @@ export default function WrappedPage() {
       drawCounts,
       topActors,
       topDirectors,
+      dayOfWeekCounts,
+      decadeCounts,
+      streak,
+      vibeVsRating,
     }
   }, [filteredLogs, sectionFilter])
 
@@ -356,6 +646,20 @@ export default function WrappedPage() {
           }}>
             <ArrowLeft size={13} /> Watchlog
           </Link>
+
+          {stats && (
+            <button onClick={() => setShareOpen(true)} style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '6px 14px', borderRadius: '100px', cursor: 'pointer',
+              border: '1px solid rgba(184,160,255,0.35)',
+              background: 'rgba(184,160,255,0.08)',
+              color: '#b8a0ff',
+              fontSize: '11px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+            }}>
+              <Share2 size={11} /> Share
+            </button>
+          )}
 
           {/* Year toggle */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', scrollbarWidth: 'none' } as React.CSSProperties}>
@@ -417,6 +721,7 @@ export default function WrappedPage() {
                   { icon: <Tv size={15} />,   value: stats.series,  label: 'Series' },
                   ...(stats.totalHrs > 0 ? [{ icon: <Clock size={15} />, value: `~${stats.totalHrs}h`, label: 'Watched' }] : []),
                   ...(stats.rewatches > 0 ? [{ icon: <RefreshCw size={15} />, value: stats.rewatches, label: 'Rewatches' }] : []),
+                  ...(stats.streak.days > 1 ? [{ icon: <Flame size={15} />, value: `${stats.streak.days}d`, label: 'Best streak' }] : []),
                 ].map((s, i) => (
                   <div key={i} style={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
@@ -637,6 +942,54 @@ export default function WrappedPage() {
               </AnimSection>
             )}
 
+            {/* ── TMDB Rating vs Your Vibe ── */}
+            {stats.vibeVsRating.length > 1 && (
+              <AnimSection delay={0} style={{ marginBottom: '80px' }} onVisible={() => setRatingVisible(true)}>
+                <SectionLabel>Did Critics Agree With You?</SectionLabel>
+                <div style={{
+                  background: 'var(--surface)', border: '1px solid var(--border-card)',
+                  borderRadius: '20px', padding: '36px 32px',
+                  display: 'flex', flexDirection: 'column', gap: '14px',
+                }}>
+                  <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.25)', letterSpacing: '0.14em', marginBottom: '4px' }}>
+                    Average TMDB score per feeling
+                  </div>
+                  {stats.vibeVsRating.map((row, i) => {
+                    const vibe = VIBES.find(v => v.key === row.vibe)
+                    if (!vibe) return null
+                    const pct = ratingVisible ? (row.avgRating / 10) * 100 : 0
+                    const barDelay = i * 80
+                    return (
+                      <div key={row.vibe} style={{
+                        display: 'flex', alignItems: 'center', gap: '12px',
+                        opacity: ratingVisible ? 1 : 0,
+                        transform: ratingVisible ? 'translateX(0)' : 'translateX(-8px)',
+                        transition: `opacity 0.4s ease ${barDelay}ms, transform 0.4s ease ${barDelay}ms`,
+                      }}>
+                        <span style={{ fontSize: '16px', flexShrink: 0 }}>{vibe.emoji}</span>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                            <span style={{ fontFamily: 'var(--ff-body)', fontSize: '13px', color: 'rgba(255,255,255,0.8)' }}>{vibe.label}</span>
+                            <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '11px', color: '#fbbf24', flexShrink: 0 }}>★ {row.avgRating}</span>
+                          </div>
+                          <div style={{ height: '3px', borderRadius: '2px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                            <div style={{
+                              height: '100%', width: `${pct}%`, borderRadius: '2px',
+                              background: `linear-gradient(90deg, ${vibe.color}80, ${vibe.color})`,
+                              transition: `width 0.9s cubic-bezier(0.4,0,0.2,1) ${barDelay + 100}ms`,
+                            }} />
+                          </div>
+                        </div>
+                        <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.2)', flexShrink: 0, width: '40px', textAlign: 'right' }}>
+                          {row.count} rated
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </AnimSection>
+            )}
+
             {/* ── Favourite Person ── */}
             {stats.topPeople.length > 0 && (
               <AnimSection delay={0} style={{ marginBottom: '80px' }}>
@@ -747,6 +1100,82 @@ export default function WrappedPage() {
                       )
                     })}
                   </div>
+                </div>
+              </AnimSection>
+            )}
+
+            {/* ── Day-of-Week Heatmap ── */}
+            {stats.dayOfWeekCounts.some(d => d.count > 0) && (
+              <AnimSection delay={0} style={{ marginBottom: '80px' }} onVisible={() => setDowVisible(true)}>
+                <SectionLabel>Your Watching Rhythm</SectionLabel>
+                <div style={{
+                  background: 'var(--surface)', border: '1px solid var(--border-card)',
+                  borderRadius: '20px', padding: '36px 32px',
+                }}>
+                  {/* Peak day callout */}
+                  {(() => {
+                    const peak = [...stats.dayOfWeekCounts].sort((a, b) => b.count - a.count)[0]
+                    return (
+                      <div style={{ marginBottom: '28px', display: 'flex', alignItems: 'baseline', gap: '12px' }}>
+                        <span style={{ fontFamily: 'var(--ff-display)', fontSize: '42px', fontWeight: 400, letterSpacing: '-0.01em', color: '#82ff1f', lineHeight: 1 }}>
+                          {peak.label}
+                        </span>
+                        <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)' }}>
+                          Your most active day · {peak.count} {peak.count === 1 ? 'watch' : 'watches'}
+                        </span>
+                      </div>
+                    )
+                  })()}
+                  {/* 7-bar chart */}
+                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', height: '80px' }}>
+                    {stats.dayOfWeekCounts.map((day, i) => {
+                      const maxCount = Math.max(...stats.dayOfWeekCounts.map(d => d.count))
+                      const pct = dowVisible && maxCount > 0 ? (day.count / maxCount) * 100 : 0
+                      const isPeak = day.count === maxCount
+                      return (
+                        <div key={day.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', height: '100%', justifyContent: 'flex-end' }}>
+                          <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '9px', color: isPeak ? '#82ff1f' : 'rgba(255,255,255,0.2)' }}>
+                            {day.count}
+                          </span>
+                          <div style={{ width: '100%', borderRadius: '4px 4px 0 0', background: isPeak ? '#82ff1f' : 'rgba(184,160,255,0.35)', height: `${pct}%`, minHeight: day.count > 0 ? '4px' : '0', transition: `height 0.8s cubic-bezier(0.4,0,0.2,1) ${i * 60}ms` }} />
+                          <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '10px', color: isPeak ? '#82ff1f' : 'rgba(255,255,255,0.3)', letterSpacing: '0.06em' }}>
+                            {day.label}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </AnimSection>
+            )}
+
+            {/* ── Decade Breakdown ── */}
+            {stats.decadeCounts.length > 0 && (
+              <AnimSection delay={0} style={{ marginBottom: '80px' }} onVisible={() => setDecadeVisible(true)}>
+                <SectionLabel>Through The Decades</SectionLabel>
+                <div style={{
+                  background: 'var(--surface)', border: '1px solid var(--border-card)',
+                  borderRadius: '20px', padding: '36px 32px',
+                  display: 'flex', flexDirection: 'column', gap: '12px',
+                }}>
+                  {stats.decadeCounts.map(([decade, cnt], i) => {
+                    const maxCnt = stats.decadeCounts[0]?.[1] ?? 1
+                    const current = new Date().getFullYear()
+                    const isThisDecade = decade !== 'Pre‑70s' && Math.floor(current / 10) * 10 === Number(decade.replace('s', ''))
+                    const color = isThisDecade ? '#82ff1f' : `hsl(${260 + i * 15}, 60%, 70%)`
+                    return (
+                      <BarRow
+                        key={decade}
+                        rank={i + 1}
+                        label={decade + (isThisDecade ? ' ← now' : '')}
+                        value={cnt}
+                        max={maxCnt}
+                        color={color}
+                        animate={decadeVisible}
+                        staggerIndex={i}
+                      />
+                    )
+                  })}
                 </div>
               </AnimSection>
             )}
@@ -941,6 +1370,16 @@ export default function WrappedPage() {
                   ))}
                 </div>
               </AnimSection>
+            )}
+
+            {/* ── Share card modal ── */}
+            {shareOpen && stats && (
+              <ShareCardModal
+                stats={stats}
+                scopeLabel={scopeLabel}
+                yearScope={yearScope}
+                onClose={() => setShareOpen(false)}
+              />
             )}
 
             {/* ── Footer signature ── */}
