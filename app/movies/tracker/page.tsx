@@ -305,7 +305,7 @@ export default function TrackerPage() {
           </div>
         ) : items.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px 0' }}>
-            <div style={{ marginBottom: '16px' }}><Tv size={40} color="rgba(255,255,255,0.1)" /></div>
+            <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}><Tv size={40} color="rgba(255,255,255,0.1)" /></div>
             <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '13px', color: 'rgba(255,255,255,0.3)', marginBottom: '20px' }}>No series being tracked yet.</div>
             {isAdmin && (
               <button onClick={() => setShowAdd(true)} style={{

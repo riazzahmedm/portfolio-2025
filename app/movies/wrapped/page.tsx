@@ -194,17 +194,33 @@ function ShareCardModal({
   yearScope:  string
   onClose:    () => void
 }) {
-  const cardRef = useRef<HTMLDivElement>(null)
+  const cardRef      = useRef<HTMLDivElement>(null)
   const topGenreName = stats.topGenre?.[0] ?? null
   const topVibe      = VIBES.find(v => v.key === stats.vibeCounts[0]?.[0])
   const peakDow      = [...stats.dayOfWeekCounts].sort((a, b) => b.count - a.count)[0]
+  const topGenres3   = stats.topGenres.slice(0, 3)
+  const maxGenreCount = topGenres3[0]?.[1] ?? 1
+  const topDecade    = [...stats.decadeCounts].sort((a, b) => b[1] - a[1])[0]
+  const topGenreColor = topGenreName ? (GENRE_COLORS[topGenreName] ?? '#b8a0ff') : '#b8a0ff'
+  const movieRatio   = stats.total > 0 ? (stats.movies / stats.total) * 100 : 50
 
   function downloadCanvas() {
-    const canvas  = document.createElement('canvas')
+    const canvas = document.createElement('canvas')
     const W = 1080, H = 1920
     canvas.width  = W
     canvas.height = H
     const ctx = canvas.getContext('2d')!
+
+    // ── helpers ──
+    function rr(x: number, y: number, w: number, h: number, r: number) {
+      ctx.beginPath()
+      ctx.moveTo(x + r, y)
+      ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r)
+      ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h)
+      ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r)
+      ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y)
+      ctx.closePath(); ctx.fill()
+    }
 
     // Background
     ctx.fillStyle = '#050505'
@@ -212,65 +228,146 @@ function ShareCardModal({
 
     // Gradient overlay
     const grd = ctx.createLinearGradient(0, 0, W, H)
-    grd.addColorStop(0, 'rgba(184,160,255,0.18)')
+    grd.addColorStop(0, 'rgba(184,160,255,0.15)')
+    grd.addColorStop(0.5, `${topGenreColor}18`)
     grd.addColorStop(1, 'rgba(130,255,31,0.10)')
     ctx.fillStyle = grd
     ctx.fillRect(0, 0, W, H)
 
-    // Top label
-    ctx.font = '32px monospace'
-    ctx.fillStyle = 'rgba(184,160,255,0.6)'
+    const PAD = 90
+
+    // ── Scope label ──
+    ctx.font = '600 30px monospace'
+    ctx.fillStyle = 'rgba(184,160,255,0.7)'
     ctx.letterSpacing = '8px'
     ctx.textAlign = 'center'
-    ctx.fillText(yearScope === 'all' ? 'YOUR ARCHIVE' : `${yearScope} WRAPPED`, W / 2, 140)
+    ctx.fillText(yearScope === 'all' ? 'YOUR ARCHIVE' : `${yearScope} WRAPPED`, W / 2, 120)
 
-    // Big number
-    ctx.font = 'bold 280px serif'
+    // ── Big number ──
+    ctx.font = 'bold 260px sans-serif'
     ctx.fillStyle = '#ffffff'
-    ctx.fillText(String(stats.total), W / 2, 460)
+    ctx.letterSpacing = '-6px'
+    ctx.fillText(String(stats.total), W / 2, 400)
 
-    // Sub label
-    ctx.font = '36px monospace'
-    ctx.fillStyle = 'rgba(255,255,255,0.4)'
-    ctx.letterSpacing = '4px'
-    ctx.fillText('FILMS & SERIES WATCHED', W / 2, 540)
+    ctx.font = '30px monospace'
+    ctx.fillStyle = 'rgba(255,255,255,0.35)'
+    ctx.letterSpacing = '6px'
+    ctx.fillText('FILMS & SERIES WATCHED', W / 2, 460)
 
-    // Divider
-    ctx.strokeStyle = 'rgba(255,255,255,0.08)'
-    ctx.lineWidth = 1
-    ctx.beginPath(); ctx.moveTo(80, 620); ctx.lineTo(W - 80, 620); ctx.stroke()
+    // ── Movies / Series ratio bar ──
+    const barY = 530, barH = 12, barW = W - PAD * 2
+    ctx.fillStyle = 'rgba(255,255,255,0.08)'
+    rr(PAD, barY, barW, barH, 6)
+    const movieW = Math.round((stats.movies / stats.total) * barW)
+    const grMovie = ctx.createLinearGradient(PAD, 0, PAD + movieW, 0)
+    grMovie.addColorStop(0, '#82ff1f')
+    grMovie.addColorStop(1, '#b8a0ff')
+    ctx.fillStyle = grMovie
+    rr(PAD, barY, movieW, barH, 6)
 
-    // Stats grid
-    const statItems = [
-      { val: String(stats.movies),           label: 'MOVIES' },
-      { val: String(stats.series),           label: 'SERIES' },
-      { val: `~${stats.totalHrs}h`,          label: 'WATCHED' },
-      { val: topGenreName ?? '—',            label: 'TOP GENRE' },
-      { val: topVibe ? `${topVibe.emoji} ${topVibe.label}` : '—', label: 'TOP VIBE' },
-      { val: peakDow?.label ?? '—',          label: 'PEAK DAY' },
-    ]
-    statItems.forEach((s, i) => {
-      const col = i % 2
-      const row = Math.floor(i / 2)
-      const x   = col === 0 ? 180 : W - 180
-      const y   = 760 + row * 220
-      ctx.textAlign = col === 0 ? 'left' : 'right'
-      ctx.font = 'bold 64px serif'
+    ctx.textAlign = 'left'
+    ctx.font = '26px monospace'
+    ctx.fillStyle = '#82ff1f'
+    ctx.letterSpacing = '2px'
+    ctx.fillText(`${stats.movies} MOVIES`, PAD, barY + barH + 38)
+    ctx.textAlign = 'right'
+    ctx.fillStyle = '#b8a0ff'
+    ctx.fillText(`${stats.series} SERIES`, W - PAD, barY + barH + 38)
+
+    // ── Divider ──
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)'
+    ctx.lineWidth = 1.5
+    ctx.beginPath(); ctx.moveTo(PAD, 650); ctx.lineTo(W - PAD, 650); ctx.stroke()
+
+    // ── Top Genres ──
+    ctx.textAlign = 'left'
+    ctx.font = '22px monospace'
+    ctx.fillStyle = 'rgba(255,255,255,0.25)'
+    ctx.letterSpacing = '5px'
+    ctx.fillText('TOP GENRES', PAD, 710)
+
+    topGenres3.forEach(([genre, cnt], i) => {
+      const gy   = 770 + i * 110
+      const gBar = W - PAD * 2
+      const gPct = maxGenreCount > 0 ? cnt / maxGenreCount : 0
+      const gCol = GENRE_COLORS[genre] ?? '#b8a0ff'
+
+      // Track bg
+      ctx.fillStyle = 'rgba(255,255,255,0.06)'
+      rr(PAD, gy + 40, gBar, 8, 4)
+      // Fill
+      ctx.fillStyle = gCol
+      rr(PAD, gy + 40, Math.round(gBar * gPct), 8, 4)
+
+      // Label
+      ctx.textAlign = 'left'
+      ctx.font = 'bold 32px sans-serif'
       ctx.fillStyle = '#ffffff'
       ctx.letterSpacing = '0px'
-      ctx.fillText(s.val, x, y)
+      ctx.fillText(genre, PAD, gy + 32)
+      ctx.textAlign = 'right'
       ctx.font = '26px monospace'
       ctx.fillStyle = 'rgba(255,255,255,0.35)'
-      ctx.letterSpacing = '4px'
-      ctx.fillText(s.label, x, y + 42)
+      ctx.letterSpacing = '2px'
+      ctx.fillText(String(cnt), W - PAD, gy + 32)
     })
 
-    // Watermark
+    // ── Divider ──
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)'
+    ctx.beginPath(); ctx.moveTo(PAD, 1130); ctx.lineTo(W - PAD, 1130); ctx.stroke()
+
+    // ── 3-tile row: hours | streak | decade ──
+    const tileW = (W - PAD * 2 - 24) / 3
+    const tileH = 180
+    const tileY = 1170
+    const tiles3 = [
+      { val: `~${stats.totalHrs}h`, label: 'WATCHED',    color: '#fff' },
+      { val: `${stats.streak.days}d`, label: 'STREAK',   color: '#fbbf24' },
+      { val: topDecade?.[0] ?? '—',   label: 'TOP DECADE', color: '#38bdf8' },
+    ]
+    tiles3.forEach((t, i) => {
+      const tx = PAD + i * (tileW + 12)
+      ctx.fillStyle = 'rgba(255,255,255,0.04)'
+      rr(tx, tileY, tileW, tileH, 18)
+      ctx.font = 'bold 52px sans-serif'
+      ctx.fillStyle = t.color
+      ctx.textAlign = 'center'
+      ctx.letterSpacing = '-1px'
+      ctx.fillText(t.val, tx + tileW / 2, tileY + 72)
+      ctx.font = '22px monospace'
+      ctx.fillStyle = 'rgba(255,255,255,0.3)'
+      ctx.letterSpacing = '3px'
+      ctx.fillText(t.label, tx + tileW / 2, tileY + 112)
+    })
+
+    // ── 2-tile row: vibe + peak day ──
+    const tile2W = (W - PAD * 2 - 16) / 2
+    const tile2Y = tileY + tileH + 20
+    const tiles2 = [
+      { val: topVibe ? `${topVibe.label}` : '—', label: 'TOP VIBE',  color: topVibe ? '#fff' : '#fff' },
+      { val: peakDow?.label ?? '—',              label: 'PEAK DAY',  color: '#fff' },
+    ]
+    tiles2.forEach((t, i) => {
+      const tx = PAD + i * (tile2W + 16)
+      ctx.fillStyle = 'rgba(255,255,255,0.04)'
+      rr(tx, tile2Y, tile2W, 160, 18)
+      ctx.font = 'bold 52px sans-serif'
+      ctx.fillStyle = '#fff'
+      ctx.textAlign = 'center'
+      ctx.letterSpacing = '-1px'
+      ctx.fillText(t.val, tx + tile2W / 2, tile2Y + 66)
+      ctx.font = '22px monospace'
+      ctx.fillStyle = 'rgba(255,255,255,0.3)'
+      ctx.letterSpacing = '3px'
+      ctx.fillText(t.label, tx + tile2W / 2, tile2Y + 108)
+    })
+
+    // ── URL watermark ──
     ctx.textAlign = 'center'
-    ctx.font = '28px monospace'
+    ctx.font = '24px monospace'
     ctx.fillStyle = 'rgba(255,255,255,0.15)'
-    ctx.letterSpacing = '3px'
-    ctx.fillText('riaz.xyz/movies', W / 2, H - 80)
+    ctx.letterSpacing = '2px'
+    ctx.fillText('riazz-portfolio.vercel.app/movies', W / 2, H - 70)
 
     // Download
     const link = document.createElement('a')
@@ -279,89 +376,130 @@ function ShareCardModal({
     link.click()
   }
 
-  const topGenreColor = topGenreName ? (GENRE_COLORS[topGenreName] ?? '#b8a0ff') : '#b8a0ff'
-
   return (
     <div onClick={onClose} style={{
       position: 'fixed', inset: 0, zIndex: 400,
       background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(24px)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      padding: '24px 16px', gap: '20px',
+      padding: '16px', gap: '16px', overflowY: 'auto',
     }}>
       {/* Card preview */}
       <div
         ref={cardRef}
         onClick={e => e.stopPropagation()}
         style={{
-          width: '100%', maxWidth: '340px',
+          width: '100%', maxWidth: '300px',
           aspectRatio: '9/16',
-          borderRadius: '24px', overflow: 'hidden',
+          borderRadius: '22px', overflow: 'hidden',
           background: '#050505',
           border: '1px solid rgba(255,255,255,0.1)',
           position: 'relative',
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          justifyContent: 'space-between', padding: '32px 28px',
+          display: 'flex', flexDirection: 'column',
+          justifyContent: 'space-between', padding: '22px 18px 18px',
           boxShadow: '0 40px 100px rgba(0,0,0,0.8)',
+          flexShrink: 0,
         }}
       >
         {/* Gradient bg */}
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: `linear-gradient(135deg, rgba(184,160,255,0.12) 0%, ${topGenreColor}12 50%, rgba(130,255,31,0.08) 100%)`,
+          background: `linear-gradient(135deg, rgba(184,160,255,0.12) 0%, ${topGenreColor}10 50%, rgba(130,255,31,0.07) 100%)`,
         }} />
 
-        <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-          <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '9px', letterSpacing: '0.28em', color: '#b8a0ff', textTransform: 'uppercase' }}>
+        {/* Scope label */}
+        <div style={{ position: 'relative', textAlign: 'center' }}>
+          <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '8px', letterSpacing: '0.28em', color: '#b8a0ff', textTransform: 'uppercase' }}>
             {yearScope === 'all' ? 'Your Archive' : `${yearScope} Wrapped`}
           </div>
         </div>
 
+        {/* Hero number */}
         <div style={{ position: 'relative', textAlign: 'center' }}>
           <div style={{
             fontFamily: 'var(--ff-display)', fontWeight: 400,
-            fontSize: 'clamp(4rem, 22vw, 8rem)', lineHeight: 0.9, letterSpacing: '-0.02em',
+            fontSize: 'clamp(3rem, 18vw, 7rem)', lineHeight: 0.88, letterSpacing: '-0.02em',
             background: 'linear-gradient(135deg, #fff 0%, rgba(184,160,255,0.9) 60%, rgba(130,255,31,0.7) 100%)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
           } as React.CSSProperties}>
             {stats.total}
           </div>
-          <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '9px', letterSpacing: '0.22em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', marginTop: '10px' }}>
-            films &amp; series
+          <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '7px', letterSpacing: '0.2em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', marginTop: '6px' }}>
+            films &amp; series watched
           </div>
         </div>
 
-        {/* Stats grid */}
-        <div style={{ position: 'relative', width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+        {/* Movies vs Series ratio bar */}
+        <div style={{ position: 'relative', width: '100%' }}>
+          <div style={{ height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.07)', overflow: 'hidden', marginBottom: '5px' }}>
+            <div style={{
+              height: '100%', borderRadius: '2px',
+              width: `${movieRatio}%`,
+              background: 'linear-gradient(90deg, #82ff1f, #b8a0ff)',
+            }} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '8px', color: '#82ff1f', letterSpacing: '0.1em' }}>{stats.movies} movies</span>
+            <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '8px', color: '#b8a0ff', letterSpacing: '0.1em' }}>{stats.series} series</span>
+          </div>
+        </div>
+
+        {/* Top 3 genres */}
+        <div style={{ position: 'relative', width: '100%' }}>
+          <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '7px', letterSpacing: '0.2em', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', marginBottom: '7px' }}>Top Genres</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+            {topGenres3.map(([genre, cnt]) => {
+              const pct = maxGenreCount > 0 ? (cnt / maxGenreCount) * 100 : 0
+              const gc  = GENRE_COLORS[genre] ?? '#b8a0ff'
+              return (
+                <div key={genre}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
+                    <span style={{ fontFamily: 'var(--ff-body)', fontSize: '10px', fontWeight: 500, color: '#fff' }}>{genre}</span>
+                    <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '8px', color: 'rgba(255,255,255,0.3)' }}>{cnt}</span>
+                  </div>
+                  <div style={{ height: '2px', borderRadius: '1px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${pct}%`, background: gc, borderRadius: '1px' }} />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* 3-tile row */}
+        <div style={{ position: 'relative', width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '5px' }}>
           {[
-            { val: stats.movies,                                            label: 'Movies' },
-            { val: stats.series,                                            label: 'Series' },
-            { val: `~${stats.totalHrs}h`,                                   label: 'Watched' },
-            { val: topGenreName ?? '—',                                     label: 'Top genre' },
-            ...(topVibe ? [{ val: `${topVibe.emoji} ${topVibe.label}`, label: 'Top vibe' }] : []),
-            ...(peakDow ? [{ val: peakDow.label,                        label: 'Peak day' }]  : []),
-          ].map((s, i) => (
-            <div key={i} style={{
-              padding: '10px 12px', borderRadius: '10px',
-              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)',
-              display: 'flex', flexDirection: 'column', gap: '3px',
-            }}>
-              <div style={{ fontFamily: 'var(--ff-display)', fontSize: '20px', fontWeight: 400, color: '#fff', letterSpacing: '-0.01em', lineHeight: 1 }}>
-                {s.val}
-              </div>
-              <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '8px', letterSpacing: '0.16em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>
-                {s.label}
-              </div>
+            { val: `~${stats.totalHrs}h`, label: 'Watched',    color: '#fff' },
+            { val: `${stats.streak.days}d`, label: 'Streak',   color: '#fbbf24' },
+            { val: topDecade?.[0] ?? '—',  label: 'Top decade', color: '#38bdf8' },
+          ].map((t, i) => (
+            <div key={i} style={{ padding: '7px 6px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', textAlign: 'center' }}>
+              <div style={{ fontFamily: 'var(--ff-display)', fontSize: '14px', fontWeight: 400, color: t.color, lineHeight: 1 }}>{t.val}</div>
+              <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '6px', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', marginTop: '3px' }}>{t.label}</div>
             </div>
           ))}
         </div>
 
-        <div style={{ position: 'relative', fontFamily: 'var(--ff-mono)', fontSize: '8px', letterSpacing: '0.16em', color: 'rgba(255,255,255,0.15)', textTransform: 'uppercase' }}>
-          riaz.xyz/movies
+        {/* 2-tile row: vibe + peak day */}
+        <div style={{ position: 'relative', width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px' }}>
+          {[
+            { val: topVibe ? `${topVibe.emoji} ${topVibe.label}` : '—', label: 'Top vibe' },
+            { val: peakDow?.label ?? '—',                               label: 'Peak day'  },
+          ].map((t, i) => (
+            <div key={i} style={{ padding: '7px 8px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <div style={{ fontFamily: 'var(--ff-display)', fontSize: '13px', fontWeight: 400, color: '#fff', lineHeight: 1 }}>{t.val}</div>
+              <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '6px', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', marginTop: '3px' }}>{t.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* URL */}
+        <div style={{ position: 'relative', textAlign: 'center', fontFamily: 'var(--ff-mono)', fontSize: '7px', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.15)', textTransform: 'lowercase' }}>
+          riazz-portfolio.vercel.app/movies
         </div>
       </div>
 
       {/* Actions */}
-      <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: '10px' }}>
+      <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
         <button onClick={downloadCanvas} style={{
           display: 'flex', alignItems: 'center', gap: '7px',
           padding: '11px 22px', borderRadius: '100px', cursor: 'pointer',

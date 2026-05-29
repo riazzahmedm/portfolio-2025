@@ -42,3 +42,8 @@ create table if not exists series_progress (
   last_updated     timestamptz default now(),
   created_at       timestamptz default now()
 );
+
+-- ── Disable RLS (all writes go through server-side API routes) ────────────────
+alter table movie_lists       disable row level security;
+alter table movie_list_items  disable row level security;
+alter table series_progress   disable row level security;

@@ -424,73 +424,58 @@ export default function MoviesPage() {
 
       {/* ── Header ── */}
       <style>{`
-        .wl-header-inner   { padding: 14px 24px; }
-        .wl-back-label     { display: inline; }
-        .wl-divider        { display: block; }
-        .wl-title          { display: inline; }
-        .wl-later-label    { display: inline; }
-        .wl-log-label      { display: inline; }
+        .wl-header-inner { padding: 14px 24px; }
         @media (max-width: 480px) {
           .wl-header-inner { padding: 12px 16px; }
-          .wl-back-label   { display: none; }
-          .wl-divider      { display: none; }
-          .wl-title        { display: none; }
-          .wl-later-label  { display: none; }
-          .wl-log-label    { display: none; }
         }
       `}</style>
       <header style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(5,5,5,0.88)', backdropFilter: 'blur(18px)' }}>
         <div className="wl-header-inner" style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
 
-          {/* Left — back + title */}
+          {/* Left — back */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
             <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', textDecoration: 'none', fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em', flexShrink: 0 }}>
               <ArrowLeft size={13} />
-              <span className="wl-back-label">Portfolio</span>
             </Link>
-            <div className="wl-divider" style={{ width: '1px', height: '14px', background: 'var(--border)', flexShrink: 0 }} />
-            <span className="wl-title" style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'var(--ff-body)', whiteSpace: 'nowrap' }}>Watched</span>
           </div>
 
           {/* Right — actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-            <Link href="/movies/lists" style={{
+            <Link href="/movies/lists" title="Lists" style={{
               display: 'flex', alignItems: 'center', gap: '6px',
               padding: '8px 12px', borderRadius: '100px', cursor: 'pointer',
               border: '1px solid rgba(255,255,255,0.1)',
               background: 'transparent',
               color: 'rgba(255,255,255,0.4)',
               fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em',
-              textDecoration: 'none', transition: 'all 0.18s', whiteSpace: 'nowrap',
+              textDecoration: 'none', transition: 'all 0.18s',
             }}>
               <List size={12} />
-              <span className="wl-log-label">Lists</span>
             </Link>
-            <Link href="/movies/tracker" style={{
+            <Link href="/movies/tracker" title="Series Tracker" style={{
               display: 'flex', alignItems: 'center', gap: '6px',
               padding: '8px 12px', borderRadius: '100px', cursor: 'pointer',
               border: '1px solid rgba(255,255,255,0.1)',
               background: 'transparent',
               color: 'rgba(255,255,255,0.4)',
               fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em',
-              textDecoration: 'none', transition: 'all 0.18s', whiteSpace: 'nowrap',
+              textDecoration: 'none', transition: 'all 0.18s',
             }}>
               <Radio size={12} />
-              <span className="wl-log-label">Tracker</span>
             </Link>
-            <Link href="/movies/wrapped" style={{
+            <Link href="/movies/wrapped" title="Wrapped" style={{
               display: 'flex', alignItems: 'center', gap: '6px',
               padding: '8px 12px', borderRadius: '100px', cursor: 'pointer',
               border: '1px solid rgba(130,255,31,0.2)',
               background: 'rgba(130,255,31,0.06)',
               color: 'rgba(130,255,31,0.7)',
               fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em',
-              textDecoration: 'none', transition: 'all 0.18s', whiteSpace: 'nowrap',
+              textDecoration: 'none', transition: 'all 0.18s',
             }}>
               <Sparkles size={12} />
-              <span className="wl-log-label">Wrapped</span>
             </Link>
             <button
+              title={view === 'later' ? 'Back to log' : 'Watch Later'}
               onClick={() => { setView(v => v === 'later' ? 'log' : 'later'); clearFilters(); setFilter('all'); setLogDisplayMode('grid') }}
               style={{
                 display: 'flex', alignItems: 'center', gap: '6px',
@@ -499,11 +484,10 @@ export default function MoviesPage() {
                 background: view === 'later' ? 'rgba(184,160,255,0.12)' : 'transparent',
                 color: view === 'later' ? '#b8a0ff' : 'rgba(255,255,255,0.45)',
                 fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em',
-                transition: 'all 0.18s', whiteSpace: 'nowrap',
+                transition: 'all 0.18s',
               }}
             >
               <Bookmark size={13} />
-              <span className="wl-later-label">Later</span>
               {watchlist.length > 0 && (
                 <span style={{ fontSize: '10px', background: 'rgba(184,160,255,0.2)', borderRadius: '100px', padding: '1px 6px', lineHeight: 1.6 }}>
                   {watchlist.length}
@@ -511,9 +495,8 @@ export default function MoviesPage() {
               )}
             </button>
             {isAdmin && (
-              <Link href="/movies/admin" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '100px', border: '1px solid rgba(184,160,255,0.28)', background: 'rgba(184,160,255,0.08)', color: '#b8a0ff', textDecoration: 'none', fontSize: '12px', letterSpacing: '0.1em', fontFamily: 'var(--ff-mono)', whiteSpace: 'nowrap' }}>
+              <Link href="/movies/admin" title="Log a film" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '100px', border: '1px solid rgba(184,160,255,0.28)', background: 'rgba(184,160,255,0.08)', color: '#b8a0ff', textDecoration: 'none', fontSize: '12px', letterSpacing: '0.1em', fontFamily: 'var(--ff-mono)' }}>
                 <Plus size={13} />
-                <span className="wl-log-label">Log</span>
               </Link>
             )}
           </div>
