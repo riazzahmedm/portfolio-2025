@@ -109,6 +109,16 @@ export interface TMDBMeta {
   revenue:              number | null       // USD
   networks:             string[]            // TV: ['Netflix', 'HBO']
   production_companies: string[]
+  // TV-only
+  number_of_seasons?:  number | null
+  number_of_episodes?: number | null
+  seasons?: {
+    season_number: number
+    name:          string
+    episode_count: number
+    air_date:      string | null
+    poster_path:   string | null
+  }[]
 }
 
 /**
@@ -213,6 +223,20 @@ export async function enrichTV(tmdbId: number): Promise<TMDBMeta> {
     revenue:              null,
     networks:             (data.networks ?? []).map((n: { name: string }) => n.name),
     production_companies: (data.production_companies ?? []).map((c: { name: string }) => c.name),
+    number_of_seasons:    data.number_of_seasons  ?? null,
+    number_of_episodes:   data.number_of_episodes ?? null,
+    seasons: ((data.seasons ?? []) as {
+      season_number: number; name: string
+      episode_count: number; air_date: string | null; poster_path: string | null
+    }[])
+      .filter(s => s.season_number > 0 || s.episode_count > 0) // keep specials only if non-empty
+      .map(s => ({
+        season_number: s.season_number,
+        name:          s.name,
+        episode_count: s.episode_count,
+        air_date:      s.air_date ?? null,
+        poster_path:   s.poster_path ?? null,
+      })),
   }
 }
 

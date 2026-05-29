@@ -13,6 +13,14 @@ interface WatchProvider {
   logo_path:     string
 }
 
+interface TMDBSeason {
+  season_number: number
+  name:          string
+  episode_count: number
+  air_date:      string | null
+  poster_path:   string | null
+}
+
 interface Details {
   genres:               string[]
   runtime:              number | null
@@ -33,6 +41,10 @@ interface Details {
   networks:             string[]
   production_companies: string[]
   people:               TMDBPersonRaw[]
+  // TV-only
+  number_of_seasons?:   number | null
+  number_of_episodes?:  number | null
+  seasons?:             TMDBSeason[]
   providers?: {
     flatrate: WatchProvider[]
     rent:     WatchProvider[]
@@ -251,6 +263,56 @@ export default function TMDBPreviewModal({
                   <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.7, color: 'rgba(255,255,255,0.65)', fontFamily: 'var(--ff-body)' }}>
                     {details.overview}
                   </p>
+                </Section>
+              )}
+
+              {/* Seasons & Episodes — TV only */}
+              {mediaType === 'tv' && details.seasons && details.seasons.length > 0 && (
+                <Section title={`Seasons · ${details.number_of_episodes ?? '?'} episodes total`}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    {details.seasons.map((s, i) => {
+                      const year = s.air_date ? s.air_date.slice(0, 4) : null
+                      const isSpecial = s.season_number === 0
+                      return (
+                        <div key={s.season_number} style={{
+                          display: 'flex', alignItems: 'center', gap: '10px',
+                          padding: '10px 14px',
+                          background: i % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.015)',
+                        }}>
+                          {/* Poster thumbnail */}
+                          <div style={{
+                            width: '30px', height: '44px', borderRadius: '5px', overflow: 'hidden',
+                            background: '#111', flexShrink: 0,
+                            border: '1px solid rgba(255,255,255,0.08)',
+                          }}>
+                            {s.poster_path
+                              // eslint-disable-next-line @next/next/no-img-element
+                              ? <img src={`https://image.tmdb.org/t/p/w92${s.poster_path}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>📺</div>
+                            }
+                          </div>
+                          {/* Name + year */}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: '12px', fontWeight: 600, color: isSpecial ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.8)', fontFamily: 'var(--ff-body)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {s.name}
+                            </div>
+                            {year && (
+                              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--ff-mono)', marginTop: '2px' }}>
+                                {year}
+                              </div>
+                            )}
+                          </div>
+                          {/* Episode count */}
+                          <div style={{
+                            fontFamily: 'var(--ff-mono)', fontSize: '11px', flexShrink: 0,
+                            color: isSpecial ? 'rgba(255,255,255,0.25)' : '#b8a0ff',
+                          }}>
+                            {s.episode_count} ep{s.episode_count !== 1 ? 's' : ''}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </Section>
               )}
 
