@@ -13,7 +13,7 @@ create table if not exists movie_lists (
 create table if not exists movie_list_items (
   id          uuid primary key default gen_random_uuid(),
   list_id     uuid references movie_lists(id) on delete cascade not null,
-  log_id      uuid references logs(id) on delete set null,   -- optional link to a log entry
+  log_id      uuid,                                          -- optional soft-link to a logs row (no FK to avoid cross-table dep)
   tmdb_id     integer,
   title       text not null,
   poster_url  text,
