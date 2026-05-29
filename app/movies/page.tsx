@@ -199,11 +199,11 @@ function CalendarHeatmap({ logs }: { logs: MovieLog[] }) {
 
           {/* Weeks */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {/* Month labels */}
+            {/* Month labels — only show for the week that contains the 1st of each month */}
             <div style={{ display: 'flex', gap: '3px', marginBottom: '4px', height: '14px' }}>
               {weeks.map((week, wi) => {
-                const first = week.find(c => c.date.getDate() <= 7)
-                const label = first && first.date.getDate() <= 7 ? MONTH_LABELS[first.date.getMonth()] : ''
+                const firstOfMonth = week.find(c => c.date.getDate() === 1)
+                const label = firstOfMonth ? MONTH_LABELS[firstOfMonth.date.getMonth()] : ''
                 return (
                   <div key={wi} style={{ width: '11px', fontSize: '9px', fontFamily: 'var(--ff-mono)', color: 'rgba(255,255,255,0.3)', lineHeight: '14px', overflow: 'visible', whiteSpace: 'nowrap' }}>
                     {label}
@@ -292,8 +292,6 @@ export default function MoviesPage() {
   const [vibeFilter,      setVibeFilter]      = useState('')
   const [yearFilter,      setYearFilter]      = useState('')
   const [genreFilter,     setGenreFilter]     = useState('')
-  const [directorFilter,  setDirectorFilter]  = useState('')
-  const [actorFilter,     setActorFilter]     = useState('')
   const [logDisplayMode,  setLogDisplayMode]  = useState<'grid' | 'calendar'>('grid')
 
   const fetchLogs = useCallback(async () => {
@@ -334,7 +332,7 @@ export default function MoviesPage() {
     series: logs.filter(l => l.type === 'series').length,
   }
 
-  // ── Unique series count for stat tile ──
+  // ── Unique series count (deduped by tmdb_id — one show = one count) ──
   const uniqueSeriesCount = new Set(
     logs.filter(l => l.type === 'series').map(l => l.tmdb_id ?? l.title)
   ).size
@@ -348,13 +346,6 @@ export default function MoviesPage() {
     new Set(logs.flatMap(l => l.genres ?? []))
   ).filter(Boolean).sort().map(g => ({ key: g, label: g }))
 
-  const availableDirectors = Array.from(
-    new Set(logs.map(l => l.director).filter(Boolean) as string[])
-  ).sort().map(d => ({ key: d, label: d }))
-
-  const availableActors = Array.from(
-    new Set(logs.flatMap(l => l.cast_names ?? []).filter(Boolean))
-  ).sort().map(a => ({ key: a, label: a }))
 
   // ── Apply all filters ──
   const filtered = logs
@@ -363,14 +354,10 @@ export default function MoviesPage() {
     .filter(l => !vibeFilter     || l.vibe === vibeFilter)
     .filter(l => !yearFilter     || l.year === Number(yearFilter))
     .filter(l => !genreFilter    || (l.genres ?? []).includes(genreFilter))
-    .filter(l => !directorFilter || l.director === directorFilter)
-    .filter(l => !actorFilter    || (l.cast_names ?? []).includes(actorFilter))
-
-  const hasFilters = !!(search || vibeFilter || yearFilter || genreFilter || directorFilter || actorFilter)
+  const hasFilters = !!(search || vibeFilter || yearFilter || genreFilter)
 
   function clearFilters() {
     setSearch(''); setVibeFilter(''); setYearFilter(''); setGenreFilter('')
-    setDirectorFilter(''); setActorFilter('')
   }
 
   function handleDeleted(id: string) { setLogs(prev => prev.filter(l => l.id !== id)) }
@@ -558,7 +545,7 @@ export default function MoviesPage() {
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
         } as React.CSSProperties}>
-          Watch<br />log
+          Watchlog
         </h1>
 
         {/* Tagline */}
@@ -573,16 +560,6 @@ export default function MoviesPage() {
           Films watched. Feelings logged.
         </p>
       </div>
-
-      {/* ── Stats ── */}
-      {!loading && logs.length > 0 && (
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '28px 24px 0' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
-            <Stat icon={<Film size={16} />} value={counts.movie}      label="Movies" />
-            <Stat icon={<Tv size={16} />}   value={uniqueSeriesCount} label="Series" />
-          </div>
-        </div>
-      )}
 
       {/* ── Filters + Grid ── */}
       <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '28px 24px 60px' }}>
@@ -668,10 +645,8 @@ export default function MoviesPage() {
 
             {/* Filter dropdowns + view toggle row */}
             <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
-              <FilterDropdown label="Year"     value={yearFilter}      options={availableYears}      onChange={setYearFilter}      />
-              <FilterDropdown label="Genre"    value={genreFilter}     options={availableGenres}     onChange={setGenreFilter}     />
-              <FilterDropdown label="Director" value={directorFilter}  options={availableDirectors}  onChange={setDirectorFilter}  />
-              <FilterDropdown label="Actor"    value={actorFilter}     options={availableActors}     onChange={setActorFilter}     />
+              <FilterDropdown label="Year"  value={yearFilter}  options={availableYears}  onChange={setYearFilter}  />
+              <FilterDropdown label="Genre" value={genreFilter} options={availableGenres} onChange={setGenreFilter} />
               {hasFilters && (
                 <button type="button" onClick={clearFilters}
                   style={{
