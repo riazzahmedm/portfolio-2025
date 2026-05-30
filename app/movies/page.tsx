@@ -323,7 +323,18 @@ export default function MoviesPage() {
     fetchLogs()
     fetchWatchlist()
     fetch('/api/auth/movies').then(r => r.json()).then(d => setIsAdmin(d.authed))
+    // Save scroll on unmount (navigating away)
+    return () => { sessionStorage.setItem('movies-scroll', String(window.scrollY)) }
   }, [fetchLogs, fetchWatchlist])
+
+  // Restore scroll after data finishes loading
+  useEffect(() => {
+    if (loading) return
+    const saved = sessionStorage.getItem('movies-scroll')
+    if (!saved) return
+    sessionStorage.removeItem('movies-scroll')
+    requestAnimationFrame(() => window.scrollTo({ top: parseInt(saved), behavior: 'instant' as ScrollBehavior }))
+  }, [loading])
 
   // ── Counts for FilterTabs ──
   const counts: Record<LogFilter, number> = {

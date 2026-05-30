@@ -1,12 +1,13 @@
 'use client'
 import { useState } from 'react'
-import { Share2, Trash2, Pencil, RefreshCw } from 'lucide-react'
+import { Share2, Trash2, Pencil, RefreshCw, Eye } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import type { MovieLog } from '@/lib/movies.types'
+import type { MovieLog, TMDBResult } from '@/lib/movies.types'
 import { VIBES, PLATFORMS } from '@/lib/movies.types'
 import StoryCardModal from './StoryCardModal'
 import ConfirmModal from '@/components/ui/ConfirmModal'
+import TMDBPreviewModal from './TMDBPreviewModal'
 
 const TYPE_COLOR: Record<string, string> = {
   movie:   '#82ff1f',
@@ -66,9 +67,24 @@ export default function LogCard({
   onEdit?:    (log: MovieLog) => void
 }) {
   const [showStory,   setShowStory]   = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
   const [deleting,    setDeleting]    = useState(false)
   const [hovered,     setHovered]     = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
+
+  // Shape MovieLog into TMDBResult for the preview modal
+  const tmdbResult: TMDBResult | null = log.tmdb_id ? {
+    id:            log.tmdb_id,
+    title:         log.type === 'movie' ? log.title : undefined,
+    name:          log.type !== 'movie' ? log.title : undefined,
+    poster_path:   log.poster_url   ? log.poster_url.replace(/^https:\/\/image\.tmdb\.org\/t\/p\/\w+/, '')   : null,
+    backdrop_path: log.backdrop_url ? log.backdrop_url.replace(/^https:\/\/image\.tmdb\.org\/t\/p\/\w+/, '') : null,
+    release_date:   log.type === 'movie' && log.year ? `${log.year}-01-01` : undefined,
+    first_air_date: log.type !== 'movie' && log.year ? `${log.year}-01-01` : undefined,
+    genre_ids:     [],
+    overview:      log.overview ?? '',
+    vote_average:  log.tmdb_rating ?? 0,
+  } : null
 
   // An episode-of-series = type 'episode' OR type 'series' with episode number filled
   const isEpisodeLog = log.type === 'episode' || (log.type === 'series' && log.episode != null)
@@ -141,6 +157,18 @@ export default function LogCard({
             display: 'flex', flexDirection: 'column', gap: '6px',
             opacity: hovered ? 1 : 0, transition: 'opacity 0.18s',
           }}>
+            {tmdbResult && (
+              <button onClick={() => setShowPreview(true)} title="Quick preview"
+                style={{
+                  background: 'rgba(5,5,5,0.82)', backdropFilter: 'blur(8px)',
+                  border: '1px solid rgba(184,160,255,0.35)',
+                  borderRadius: '50%', width: '32px', height: '32px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', color: '#b8a0ff',
+                }}>
+                <Eye size={13} />
+              </button>
+            )}
             <button onClick={() => setShowStory(true)} title="Share to Instagram Story"
               style={{
                 background: 'rgba(5,5,5,0.82)', backdropFilter: 'blur(8px)',
@@ -268,6 +296,15 @@ export default function LogCard({
       </div>
 
       {showStory && <StoryCardModal log={log} onClose={() => setShowStory(false)} />}
+
+      {showPreview && tmdbResult && (
+        <TMDBPreviewModal
+          result={tmdbResult}
+          mediaType={log.type === 'movie' ? 'movie' : 'tv'}
+          onClose={() => setShowPreview(false)}
+          onPick={() => setShowPreview(false)}
+        />
+      )}
 
       {confirmOpen && (
         <ConfirmModal

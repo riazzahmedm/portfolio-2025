@@ -97,12 +97,19 @@ export default function MovieDetailPage() {
       </div>
 
       {/* ── Main content ── */}
-      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 24px 80px' }}>
+      <style>{`
+        @media (max-width: 640px) {
+          .detail-main   { padding: 0 16px 80px !important; }
+          .detail-hero-row { gap: 16px !important; margin-top: -60px !important; margin-bottom: 24px !important; }
+          .detail-poster { width: 90px !important; border-radius: 10px !important; }
+        }
+      `}</style>
+      <div className="detail-main" style={{ maxWidth: '800px', margin: '0 auto', padding: '0 24px 80px' }}>
 
         {/* Poster + title row */}
-        <div style={{ display: 'flex', gap: '24px', marginTop: '-80px', alignItems: 'flex-end', marginBottom: '32px' }}>
+        <div className="detail-hero-row" style={{ display: 'flex', gap: '24px', marginTop: '-80px', alignItems: 'flex-end', marginBottom: '32px' }}>
           {/* Poster */}
-          <div style={{
+          <div className="detail-poster" style={{
             width: '120px', flexShrink: 0,
             aspectRatio: '2/3', borderRadius: '12px', overflow: 'hidden',
             border: '2px solid rgba(255,255,255,0.12)',
