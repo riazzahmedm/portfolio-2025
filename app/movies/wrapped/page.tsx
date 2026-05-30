@@ -1428,10 +1428,10 @@ export default function WrappedPage() {
               </AnimSection>
             )}
 
-            {/* ── Actors You Loved — loved/masterpiece movies, no rewatches ── */}
+            {/* ── Frequent Faces — top actors across all watches ── */}
             {stats.topActors.length > 0 && (
               <AnimSection delay={0} style={{ marginBottom: '80px' }}>
-                <SectionLabel>Actors You Loved</SectionLabel>
+                <SectionLabel>Frequent Faces</SectionLabel>
                 <div style={{
                   display: 'flex', flexDirection: 'column', gap: '1px',
                   border: '1px solid var(--border-card)', borderRadius: '20px', overflow: 'hidden',

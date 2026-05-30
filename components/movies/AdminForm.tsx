@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { Search, X, ChevronDown, Check, RefreshCw, Eye } from 'lucide-react'
+import { Search, X, ChevronDown, Check, RefreshCw, Eye, Users, BookOpen, Clapperboard, Building2, Layers, Tag, Music, Sparkles, Flame, MessageCircle, Trophy, Tv, Clock, Telescope } from 'lucide-react'
 import { toast } from 'sonner'
 import type { LogType, LogStatus, TMDBResult, TMDBEpisode, FavoritePerson, MovieLog } from '@/lib/movies.types'
 import DatePicker from './DatePicker'
@@ -58,6 +58,24 @@ const blank: FormState = {
   status: 'watched', platform: '', draws: [], rewatch: false,
 }
 
+// ── Draw icons (Lucide) ──────────────────────────────────────────────────────
+const DRAW_ICONS: Record<string, React.ReactNode> = {
+  cast:           <Users size={13} />,
+  story:          <BookOpen size={13} />,
+  director:       <Clapperboard size={13} />,
+  studio:         <Building2 size={13} />,
+  franchise:      <Layers size={13} />,
+  genre:          <Tag size={13} />,
+  soundtrack:     <Music size={13} />,
+  visuals:        <Sparkles size={13} />,
+  hype:           <Flame size={13} />,
+  recommendation: <MessageCircle size={13} />,
+  awards:         <Trophy size={13} />,
+  binge:          <Tv size={13} />,
+  nostalgia:      <Clock size={13} />,
+  curiosity:      <Telescope size={13} />,
+}
+
 // ── Sub-components ───────────────────────────────────────────────────────────
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -72,6 +90,7 @@ function VibeSelector({ value, onChange }: { value: string; onChange: (v: string
         return (
           <button
             key={v.key} type="button"
+            className="af-vibe-btn"
             title={v.sub}
             onClick={() => onChange(on ? '' : v.key)}
             style={{
@@ -95,12 +114,13 @@ function VibeSelector({ value, onChange }: { value: string; onChange: (v: string
 
 function PlatformSelector({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
       {PLATFORMS.map(p => {
         const on = value === p.key
         return (
           <button
             key={p.key} type="button"
+            className="af-platform-btn"
             title={p.label}
             onClick={() => onChange(on ? '' : p.key)}
             style={{
@@ -109,7 +129,7 @@ function PlatformSelector({ value, onChange }: { value: string; onChange: (v: st
               width:      p.logo ? '56px' : 'auto',
               minWidth:   p.logo ? '56px' : '64px',
               height:     '56px',
-              padding:    p.logo ? '0' : '0 14px',
+              padding:    p.logo ? '0' : '0 12px',
               borderRadius: '12px', cursor: 'pointer',
               border:     `1px solid ${on ? 'rgba(184,160,255,0.5)' : 'rgba(255,255,255,0.08)'}`,
               background: on ? 'rgba(184,160,255,0.14)' : 'rgba(255,255,255,0.03)',
@@ -118,14 +138,9 @@ function PlatformSelector({ value, onChange }: { value: string; onChange: (v: st
           >
             {p.logo ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={p.logo} alt={p.label} style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'contain' }} />
+              <img src={p.logo} alt={p.label} className="af-platform-img" style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'contain' }} />
             ) : (
-              <>
-                <span style={{ fontSize: '18px', lineHeight: 1 }}>{p.emoji}</span>
-                <span style={{ fontSize: '9px', color: on ? '#b8a0ff' : 'rgba(255,255,255,0.4)', fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>
-                  {p.label.toUpperCase()}
-                </span>
-              </>
+              <span style={{ fontSize: '22px', lineHeight: 1 }}>{p.emoji}</span>
             )}
           </button>
         )
@@ -145,6 +160,7 @@ function DrawsSelector({ value, onChange }: { value: string[]; onChange: (v: str
         return (
           <button
             key={d.key} type="button"
+            className="af-draws-btn"
             onClick={() => toggle(d.key)}
             style={{
               display:    'flex', alignItems: 'center', gap: '5px',
@@ -156,7 +172,7 @@ function DrawsSelector({ value, onChange }: { value: string[]; onChange: (v: str
               transition: 'all 0.18s',
             }}
           >
-            <span>{d.emoji}</span>
+            {DRAW_ICONS[d.key]}
             <span>{d.label}</span>
           </button>
         )
@@ -332,7 +348,7 @@ export default function AdminForm({
   initialLog,
   preSelectedTmdb,
 }: {
-  onSuccess:        () => void
+  onSuccess:        (updated?: MovieLog) => void
   initialLog?:      MovieLog
   preSelectedTmdb?: { id: number; title: string; poster_url: string | null; type: 'movie' | 'series' }
 }) {
@@ -562,11 +578,12 @@ export default function AdminForm({
         body: JSON.stringify(patch),
       })
       if (res.ok) {
+        const updated = await res.json()
         const toastTitle = editTmdbOverride
           ? (editTmdbOverride.title ?? editTmdbOverride.name)
           : initialLog!.title
         toast.success('Entry updated', { description: toastTitle })
-        onSuccess()
+        onSuccess(updated)
       } else {
         const d = await res.json()
         const msg = d.error ?? 'Something went wrong'
@@ -670,7 +687,17 @@ export default function AdminForm({
         }}
       />
     )}
-    <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <style>{`
+      @media (max-width: 640px) {
+        .af-vibe-btn      { padding: 7px 11px !important; font-size: 12px !important; }
+        .af-platform-btn  { width: 46px !important; min-width: 46px !important; height: 46px !important; border-radius: 10px !important; }
+        .af-platform-img  { width: 22px !important; height: 22px !important; }
+        .af-draws-btn     { padding: 6px 10px !important; font-size: 11px !important; }
+        .af-form          { gap: 18px !important; }
+        .af-section       { padding-top: 16px !important; }
+      }
+    `}</style>
+    <form onSubmit={submit} className="af-form" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
       {/* ── In edit mode: locked title preview + type selector ── */}
       {isEdit ? (
@@ -952,19 +979,19 @@ export default function AdminForm({
 
       {/* ═══════════════════════════════════════════════════════════════════ */}
       {/* ── Vibe ── */}
-      <div style={SECTION}>
+      <div className="af-section" style={SECTION}>
         <SectionLabel>How was it?</SectionLabel>
         <VibeSelector value={form.vibe} onChange={v => setField('vibe', v)} />
       </div>
 
       {/* ── Platform ── */}
-      <div style={SECTION}>
+      <div className="af-section" style={SECTION}>
         <SectionLabel>Watched on</SectionLabel>
         <PlatformSelector value={form.platform} onChange={v => setField('platform', v)} />
       </div>
 
       {/* ── Favorite person ── */}
-      <div style={SECTION}>
+      <div className="af-section" style={SECTION}>
         <SectionLabel>
           {loadingPeople ? 'Loading cast & crew…' : selected ? 'Who was your favourite?' : 'Select a title to pick your favourite'}
         </SectionLabel>
@@ -1007,13 +1034,13 @@ export default function AdminForm({
       </div>
 
       {/* ── What drew you ── */}
-      <div style={SECTION}>
+      <div className="af-section" style={SECTION}>
         <SectionLabel>What drew you to it? (pick all that apply)</SectionLabel>
         <DrawsSelector value={form.draws} onChange={v => setField('draws', v)} />
       </div>
 
       {/* ── Review ── */}
-      <div style={SECTION}>
+      <div className="af-section" style={SECTION}>
         <SectionLabel>Your take (optional)</SectionLabel>
         <textarea value={form.review} onChange={e => setField('review', e.target.value)} rows={3}
           placeholder="Thoughts, feelings, spoilers…"

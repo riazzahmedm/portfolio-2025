@@ -142,22 +142,17 @@ export default function AdminPage() {
         borderBottom: '1px solid var(--border)',
         background: 'rgba(5,5,5,0.88)', backdropFilter: 'blur(18px)',
       }}>
-        <div style={{
+        <div className="admin-header" style={{
           maxWidth: '720px', margin: '0 auto',
           padding: '14px 24px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
-            <Link href="/movies" style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              color: 'var(--text-dim)', textDecoration: 'none',
-              fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em',
-            }}>
-              <ArrowLeft size={13} /> Watchlog
-            </Link>
-            <div style={{ width: '1px', height: '14px', background: 'var(--border)' }} />
-            <span style={{ fontSize: '14px', fontWeight: 600 }}>Admin</span>
-          </div>
+          <Link href="/movies" style={{
+            display: 'flex', alignItems: 'center',
+            color: 'var(--text-dim)', textDecoration: 'none',
+          }}>
+            <ArrowLeft size={16} />
+          </Link>
           <button onClick={logout} style={{
             display: 'flex', alignItems: 'center', gap: '6px',
             background: 'none', border: '1px solid rgba(255,255,255,0.08)',
@@ -171,19 +166,27 @@ export default function AdminPage() {
       </header>
 
       {/* ── Content ── */}
-      <main style={{ maxWidth: '720px', margin: '0 auto', padding: '40px 24px 80px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '32px' }}>
+      <style>{`
+        @media (max-width: 640px) {
+          .admin-main { padding: 20px 16px 80px !important; }
+          .admin-header { padding: 12px 16px !important; }
+        }
+      `}</style>
+      <main className="admin-main" style={{ maxWidth: '720px', margin: '0 auto', padding: '40px 24px 80px' }}>
+        <div style={{ marginBottom: '32px' }}>
+          <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '10px', letterSpacing: '0.28em', textTransform: 'uppercase', color: '#b8a0ff', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ width: '18px', height: '1px', background: '#b8a0ff', display: 'inline-block' }} />
+            New Entry
+          </div>
           <h1 style={{
-            margin: 0, fontFamily: 'var(--ff-mono)', fontWeight: 400,
-            fontSize: 'clamp(1rem, 2.8vw, 1.25rem)',
-            letterSpacing: '0.22em', textTransform: 'uppercase',
-            display: 'flex', alignItems: 'center', gap: '14px', color: '#fff',
+            margin: '0 0 10px', fontFamily: 'var(--ff-display)', fontWeight: 400,
+            fontSize: 'clamp(2rem, 8vw, 3.5rem)', letterSpacing: '0.04em',
+            textTransform: 'uppercase', lineHeight: 1, color: '#fff',
           }}>
-            <span style={{ color: '#b8a0ff' }}>—</span>
             Log Entry
           </h1>
-          <p style={{ color: 'var(--text-dim)', fontSize: '12px', margin: 0, fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em' }}>
-            Add a movie or series to your watchlog.
+          <p style={{ margin: 0, fontSize: '13px', color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em' }}>
+            Add a film or series to your watchlog.
           </p>
         </div>
 

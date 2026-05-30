@@ -62,7 +62,7 @@ function FilterDropdown({ label, value, options, onChange }: {
           border:      `1px solid ${active ? 'rgba(184,160,255,0.45)' : 'rgba(255,255,255,0.1)'}`,
           background:  active ? 'rgba(184,160,255,0.1)' : 'rgba(255,255,255,0.04)',
           color:       active ? '#b8a0ff' : 'rgba(255,255,255,0.45)',
-          fontSize:    '12px', fontFamily: 'var(--ff-mono)',
+          fontSize:    '10px', fontFamily: 'var(--ff-mono)',
           letterSpacing: '0.12em', textTransform: 'uppercase',
           whiteSpace:  'nowrap', transition: 'all 0.18s',
         }}
@@ -361,7 +361,15 @@ export default function MoviesPage() {
   }
 
   function handleDeleted(id: string) { setLogs(prev => prev.filter(l => l.id !== id)) }
-  function handleEditSaved() { setEditingLog(null); fetchLogs() }
+  function handleEditSaved(updated?: MovieLog) {
+    setEditingLog(null)
+    if (updated) {
+      // Patch just the one item in-place — no refetch, no scroll reset
+      setLogs(prev => prev.map(l => l.id === updated.id ? updated : l))
+    } else {
+      fetchLogs()
+    }
+  }
   function handleWatchlistRemoved(id: string) { setWatchlist(prev => prev.filter(w => w.id !== id)) }
   function handleLoggedFromWatchlist() {
     setLoggingItem(null)
@@ -425,8 +433,17 @@ export default function MoviesPage() {
       {/* ── Header ── */}
       <style>{`
         .wl-header-inner { padding: 14px 24px; }
-        @media (max-width: 480px) {
-          .wl-header-inner { padding: 12px 16px; }
+        @media (max-width: 640px) {
+          .wl-header-inner    { padding: 12px 16px; }
+          .wl-hero            { padding: 20px 16px 0 !important; }
+          .wl-main            { padding: 14px 16px 60px !important; }
+          .wl-vibe-pill       { padding: 5px 10px !important; font-size: 11px !important; }
+          .wl-filter-row      { flex-wrap: nowrap !important; gap: 6px !important; margin-bottom: 10px !important; }
+          .wl-filter-row .wl-spacer { display: none !important; }
+          .wl-toggle-label    { display: none !important; }
+          .wl-search          { margin-bottom: 8px !important; }
+          .wl-vibe-row        { margin-bottom: 8px !important; }
+          .wl-tabs-row        { margin-bottom: 14px !important; }
         }
       `}</style>
       <header style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(5,5,5,0.88)', backdropFilter: 'blur(18px)' }}>
@@ -505,12 +522,12 @@ export default function MoviesPage() {
       </header>
 
       {/* ── Hero heading ── */}
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '48px 24px 0' }}>
+      <div className="wl-hero" style={{ maxWidth: '1280px', margin: '0 auto', padding: '48px 24px 0' }}>
         {/* Eyebrow */}
         <div style={{
-          display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px',
+          display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px',
         }}>
-          <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '11px', letterSpacing: '0.28em', textTransform: 'uppercase', color: '#b8a0ff' }}>Personal Archive</span>
+          <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '10px', letterSpacing: '0.28em', textTransform: 'uppercase', color: '#b8a0ff' }}>Personal Archive</span>
           <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, rgba(184,160,255,0.35), transparent)' }} />
         </div>
 
@@ -532,9 +549,9 @@ export default function MoviesPage() {
         </h1>
 
         {/* Tagline */}
-        <p style={{
-          margin: '16px 0 0',
-          fontFamily: 'var(--ff-mono)', fontSize: '12px',
+        <p className="wl-tagline" style={{
+          margin: '10px 0 0',
+          fontFamily: 'var(--ff-mono)', fontSize: '10px',
           letterSpacing: '0.14em', textTransform: 'uppercase',
           color: 'rgba(255,255,255,0.3)',
           display: 'flex', alignItems: 'center', gap: '10px',
@@ -545,7 +562,7 @@ export default function MoviesPage() {
       </div>
 
       {/* ── Filters + Grid ── */}
-      <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '28px 24px 60px' }}>
+      <main className="wl-main" style={{ maxWidth: '1280px', margin: '0 auto', padding: '28px 24px 60px' }}>
 
         {view === 'later' ? (
           /* ── Watch Later view ── */
@@ -580,7 +597,7 @@ export default function MoviesPage() {
           /* ── Watchlog view ── */
           <>
             {/* Search bar */}
-            <div style={{ position: 'relative', marginBottom: '12px' }}>
+            <div className="wl-search" style={{ position: 'relative', marginBottom: '12px' }}>
               <Search size={14} style={{ position: 'absolute', left: '13px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.28)', pointerEvents: 'none' }} />
               <input
                 value={search}
@@ -604,11 +621,12 @@ export default function MoviesPage() {
             </div>
 
             {/* Vibe filter pills — horizontal scroll row */}
-            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none', marginBottom: '10px', paddingBottom: '2px' } as React.CSSProperties}>
+            <div className="wl-vibe-row" style={{ display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none', marginBottom: '10px', paddingBottom: '2px' } as React.CSSProperties}>
               {VIBES.map(v => {
                 const on = vibeFilter === v.key
                 return (
                   <button key={v.key} type="button"
+                    className="wl-vibe-pill"
                     onClick={() => setVibeFilter(on ? '' : v.key)}
                     style={{
                       display: 'flex', alignItems: 'center', gap: '5px',
@@ -627,7 +645,7 @@ export default function MoviesPage() {
             </div>
 
             {/* Filter dropdowns + view toggle row */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <div className="wl-filter-row" style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
               <FilterDropdown label="Year"  value={yearFilter}  options={availableYears}  onChange={setYearFilter}  />
               <FilterDropdown label="Genre" value={genreFilter} options={availableGenres} onChange={setGenreFilter} />
               {hasFilters && (
@@ -644,7 +662,7 @@ export default function MoviesPage() {
                 </button>
               )}
               {/* Spacer */}
-              <div style={{ flex: 1 }} />
+              <div className="wl-spacer" style={{ flex: 1 }} />
               {/* Grid / Calendar toggle */}
               <div style={{ display: 'flex', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', flexShrink: 0 }}>
                 {([
@@ -665,7 +683,7 @@ export default function MoviesPage() {
                         transition: 'all 0.18s',
                       }}>
                       {icon}
-                      <span className="wl-log-label">{label}</span>
+                      <span className="wl-toggle-label">{label}</span>
                     </button>
                   )
                 })}
@@ -673,13 +691,13 @@ export default function MoviesPage() {
             </div>
 
             {/* Type tabs + entry count */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', gap: '12px' }}>
+            <div className="wl-tabs-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', gap: '12px', marginTop: '4rem' }}>
               <FilterTabs active={filter} counts={counts} onChange={setFilter} />
-              {!loading && (
+              {/* {!loading && (
                 <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)', flexShrink: 0 }}>
                   {filtered.length} {filtered.length === 1 ? 'entry' : 'entries'}
                 </span>
-              )}
+              )} */}
             </div>
 
             {loading ? (

@@ -31,7 +31,7 @@ export default function FilterTabs({
               border:       `1px solid ${on ? 'rgba(184,160,255,0.4)' : 'rgba(255,255,255,0.08)'}`,
               background:   on ? 'rgba(184,160,255,0.1)' : 'transparent',
               color:        on ? '#b8a0ff' : 'rgba(255,255,255,0.45)',
-              fontSize:     '12px',
+              fontSize:     '10px',
               letterSpacing:'0.14em',
               textTransform:'uppercase',
               cursor:       'pointer',

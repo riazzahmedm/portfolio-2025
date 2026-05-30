@@ -28,7 +28,10 @@ export async function POST(req: Request) {
   if (body.tmdb_id) {
     try {
       const meta = await enrich(body.tmdb_id, body.type)
-      Object.assign(body, meta)
+      // Strip TV-only fields that don't exist on the logs table
+      const { number_of_seasons, number_of_episodes, seasons, ...rest } = meta
+      void number_of_seasons; void number_of_episodes; void seasons
+      Object.assign(body, rest)
     } catch {
       // Non-fatal — store whatever we have
     }
