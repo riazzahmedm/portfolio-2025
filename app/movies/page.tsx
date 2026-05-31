@@ -279,7 +279,7 @@ function CalendarHeatmap({ logs }: { logs: MovieLog[] }) {
 export default function MoviesPage() {
   const [logs,          setLogs]          = useState<MovieLog[]>([])
   const [loading,       setLoading]       = useState(true)
-  const [filter,        setFilter]        = useState<LogFilter>('all')
+  const [filter,        setFilter]        = useState<LogFilter>('movie')
   const [isAdmin,       setIsAdmin]       = useState(false)
   const [editingLog,    setEditingLog]    = useState<MovieLog | null>(null)
   const [view,          setView]          = useState<'log' | 'later'>('log')
