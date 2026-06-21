@@ -17,21 +17,26 @@ export default function NotFound() {
             Error: 404
           </div>
           <h1 style={{ fontFamily: 'var(--ff-display)', fontSize: 'clamp(2rem,6vw,4rem)', color: 'white', marginBottom: '1rem', lineHeight: 1 }}>
-            PAGE NOT FOUND
+            WRONG TURN
           </h1>
           <p className="text-[11px] leading-relaxed mb-2 italic" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--ff-mono)' }}>
-            talent.js not found in other candidates
+            Looks like this page got pushed to a deleted branch.
           </p>
           <p className="text-[9px] tracking-[0.1em] mb-8" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--ff-mono)' }}>
-            {`// but you're in the right place`}
+            {`// the good stuff is one click away`}
           </p>
           <Link
             href="/"
             className="inline-block text-[10px] tracking-[0.2em] uppercase px-6 py-3 rounded-sm transition-all duration-200 hover:opacity-90"
             style={{ background: 'var(--red)', color: 'white', fontFamily: 'var(--ff-mono)' }}
           >
-            git checkout main
+            Head Back Home
           </Link>
+
+          <div style={{ marginTop: '24px', display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/blog"    className="not-found-link">/ blog</Link>
+            <Link href="/watched" className="not-found-link">/ watched</Link>
+          </div>
         </div>
       </div>
     </div>

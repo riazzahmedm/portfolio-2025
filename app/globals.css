@@ -365,3 +365,14 @@ html.light #testimonials .dot-grid {
   .ticker-inner, .ticker-inner-reverse, .ticker-inner-fast { animation: none; }
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+.not-found-link {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.not-found-link:hover { color: rgba(255,255,255,0.7); }

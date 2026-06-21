@@ -92,7 +92,7 @@ export default function BlogPage() {
       <div className="blog-hero" style={{ maxWidth: '1280px', margin: '0 auto', padding: '48px 24px 0' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
           <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '10px', letterSpacing: '0.28em', textTransform: 'uppercase', color: '#82ff1f' }}>
-            Personal Writing
+            Field Notes
           </span>
           <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, rgba(130,255,31,0.35), transparent)' }} />
         </div>
@@ -109,7 +109,7 @@ export default function BlogPage() {
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
         } as React.CSSProperties}>
-          Notes
+          Stories
         </h1>
         <p style={{
           margin: '10px 0 0',
@@ -119,7 +119,7 @@ export default function BlogPage() {
           display: 'flex', alignItems: 'center', gap: '10px',
         }}>
           <span style={{ width: '20px', height: '1px', background: 'rgba(255,255,255,0.2)', display: 'inline-block', flexShrink: 0 }} />
-          Thoughts written down.
+          Written in transit.
         </p>
       </div>
 
