@@ -1,9 +1,17 @@
 import type { Metadata } from 'next'
-import { Oswald, Space_Grotesk, Space_Mono } from 'next/font/google'
+import { Oswald, Space_Grotesk, Space_Mono, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/lib/theme'
 import CustomCursor from '@/components/ui/CustomCursor'
 import { Toaster } from 'sonner'
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  style: ['normal', 'italic'],
+  variable: '--ff-serif',
+  display: 'swap',
+})
 
 const oswald = Oswald({
   subsets: ['latin'],
@@ -38,7 +46,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${oswald.variable} ${spaceGrotesk.variable} ${spaceMono.variable}`}>
+    <html lang="en" className={`${oswald.variable} ${spaceGrotesk.variable} ${spaceMono.variable} ${playfair.variable}`}>
       <body style={{ background: 'var(--bg)', color: 'var(--text-primary)', fontFamily: 'var(--ff-body)' }}>
         <ThemeProvider>
           <CustomCursor />

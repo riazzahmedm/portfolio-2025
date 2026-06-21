@@ -85,3 +85,29 @@ create policy "Anon write"
 --   add column if not exists revenue              bigint,
 --   add column if not exists networks             text[]  default '{}',
 --   add column if not exists production_companies text[]  default '{}';
+
+
+-- ── Blog ───────────────────────────────────────────────────────────────────────
+-- Run in Supabase → SQL Editor → New query
+
+create table public.blog_posts (
+  id           uuid primary key default gen_random_uuid(),
+  title        text not null,
+  slug         text not null unique,
+  excerpt      text,
+  cover_image  text,
+  content      jsonb not null default '[]',
+  tags         text[] default '{}',
+  published    boolean default false,
+  published_at timestamptz,
+  created_at   timestamptz default now(),
+  updated_at   timestamptz default now()
+);
+
+alter table public.blog_posts enable row level security;
+
+create policy "Public read"
+  on public.blog_posts for select using (true);
+
+create policy "Anon write"
+  on public.blog_posts for all using (true) with check (true);
