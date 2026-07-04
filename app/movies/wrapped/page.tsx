@@ -641,6 +641,10 @@ function computeStats(filteredLogs: import('@/lib/movies.types').MovieLog[], sec
     decadeCounts: [string, number][]
     streak: { days: number; from: string; to: string }
     vibeVsRating: { vibe: string; avgRating: number; count: number }[]
+    topPlatform: string | null
+    topLanguage: string | null
+    hiddenGem: import('@/lib/movies.types').MovieLog | null
+    maxInOneDay: number
   }
 }
 
