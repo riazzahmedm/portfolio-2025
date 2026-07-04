@@ -22,10 +22,8 @@ export const VIBES: {
 // ── Platforms ────────────────────────────────────────────────────────────────
 export const PLATFORMS = [
   { key: 'theatre',    label: 'Theatre',     emoji: '🎭', logo: null },
-  { key: 'imax',       label: 'IMAX',        emoji: '🎬', logo: null },
   { key: 'netflix',    label: 'Netflix',     emoji: '🔴', logo: 'https://www.google.com/s2/favicons?domain=netflix.com&sz=64' },
   { key: 'prime',      label: 'Prime Video', emoji: '📦', logo: 'https://www.google.com/s2/favicons?domain=primevideo.com&sz=64' },
-  { key: 'disney',     label: 'Disney+',     emoji: '✨', logo: 'https://www.google.com/s2/favicons?domain=disneyplus.com&sz=64' },
   { key: 'apple',      label: 'Apple TV+',   emoji: '🍎', logo: 'https://www.google.com/s2/favicons?domain=tv.apple.com&sz=64' },
   { key: 'hotstar',    label: 'Hotstar',     emoji: '⭐', logo: 'https://www.google.com/s2/favicons?domain=hotstar.com&sz=64' },
   { key: 'mubi',       label: 'MUBI',        emoji: '🎞️', logo: 'https://www.google.com/s2/favicons?domain=mubi.com&sz=64' },

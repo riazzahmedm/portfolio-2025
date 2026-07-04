@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   const body = await req.json()
   const { data, error } = await supabase
     .from('watchlist')
-    .insert([body])
+    .upsert([body], { onConflict: 'tmdb_id', ignoreDuplicates: false })
     .select()
     .single()
   if (error) return Response.json({ error: error.message }, { status: 500 })

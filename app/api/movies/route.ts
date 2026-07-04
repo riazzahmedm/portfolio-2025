@@ -9,13 +9,25 @@ async function isAdmin() {
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
+
+  // ?all=true — returns every record (used by /wrapped stats page)
+  if (searchParams.get('all') === 'true') {
+    const { data, error } = await supabase
+      .from('logs')
+      .select('*')
+      .order('watched_on', { ascending: false })
+      .order('created_at', { ascending: false })
+    if (error) return Response.json({ error: error.message }, { status: 500 })
+    return Response.json(data ?? [])
+  }
+
   const page  = Math.max(1, parseInt(searchParams.get('page')  ?? '1'))
   const limit = Math.min(100, parseInt(searchParams.get('limit') ?? '20'))
   const from  = (page - 1) * limit
   const to    = from + limit - 1
 
   const [main, movies, series] = await Promise.all([
-    supabase.from('logs').select('*', { count: 'exact' }).order('watched_on', { ascending: false }).range(from, to),
+    supabase.from('logs').select('*', { count: 'exact' }).order('watched_on', { ascending: false }).order('created_at', { ascending: false }).range(from, to),
     supabase.from('logs').select('*', { count: 'exact', head: true }).eq('type', 'movie'),
     supabase.from('logs').select('*', { count: 'exact', head: true }).eq('type', 'series'),
   ])
