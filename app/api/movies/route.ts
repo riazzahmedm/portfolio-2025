@@ -7,14 +7,28 @@ async function isAdmin() {
   return jar.get('movies-admin')?.value === 'true'
 }
 
-export async function GET() {
-  const { data, error } = await supabase
-    .from('logs')
-    .select('*')
-    .order('watched_on', { ascending: false })
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url)
+  const page  = Math.max(1, parseInt(searchParams.get('page')  ?? '1'))
+  const limit = Math.min(100, parseInt(searchParams.get('limit') ?? '20'))
+  const from  = (page - 1) * limit
+  const to    = from + limit - 1
 
-  if (error) return Response.json({ error: error.message }, { status: 500 })
-  return Response.json(data)
+  const [main, movies, series] = await Promise.all([
+    supabase.from('logs').select('*', { count: 'exact' }).order('watched_on', { ascending: false }).range(from, to),
+    supabase.from('logs').select('*', { count: 'exact', head: true }).eq('type', 'movie'),
+    supabase.from('logs').select('*', { count: 'exact', head: true }).eq('type', 'series'),
+  ])
+
+  if (main.error) return Response.json({ error: main.error.message }, { status: 500 })
+  return Response.json({
+    data:         main.data,
+    total:        main.count   ?? 0,
+    movieTotal:   movies.count ?? 0,
+    seriesTotal:  series.count ?? 0,
+    page,
+    limit,
+  })
 }
 
 export async function POST(req: Request) {

@@ -279,6 +279,12 @@ function CalendarHeatmap({ logs }: { logs: MovieLog[] }) {
 export default function MoviesPage() {
   const [logs,          setLogs]          = useState<MovieLog[]>([])
   const [loading,       setLoading]       = useState(true)
+  const [loadingMore,   setLoadingMore]   = useState(false)
+  const [page,          setPage]          = useState(1)
+  const [hasMore,       setHasMore]       = useState(false)
+  const [total,         setTotal]         = useState(0)
+  const [movieTotal,    setMovieTotal]    = useState(0)
+  const [seriesTotal,   setSeriesTotal]   = useState(0)
   const [filter,        setFilter]        = useState<LogFilter>('movie')
   const [isAdmin,       setIsAdmin]       = useState(false)
   const [editingLog,    setEditingLog]    = useState<MovieLog | null>(null)
@@ -294,17 +300,87 @@ export default function MoviesPage() {
   const [genreFilter,     setGenreFilter]     = useState('')
   const [logDisplayMode,  setLogDisplayMode]  = useState<'grid' | 'calendar'>('grid')
 
+  const LIMIT       = 20
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  const loadingRef  = useRef(false)
+  const pageRef     = useRef(1)
+  const hasMoreRef  = useRef(false)
+
   const fetchLogs = useCallback(async () => {
     try {
-      const res  = await fetch('/api/movies')
-      const data = await res.json()
-      setLogs(Array.isArray(data) ? data : [])
+      const res  = await fetch(`/api/movies?page=1&limit=${LIMIT}`)
+      const json = await res.json()
+      const data = json.data ?? (Array.isArray(json) ? json : [])
+      const tot  = json.total ?? data.length
+      setLogs(data)
+      setTotal(tot)
+      setMovieTotal(json.movieTotal ?? 0)
+      setSeriesTotal(json.seriesTotal ?? 0)
+      const more = data.length < tot
+      setHasMore(more)
+      hasMoreRef.current = more
+      setPage(1)
+      pageRef.current = 1
     } catch {
       toast.error('Failed to load logs — check your connection')
     } finally {
       setLoading(false)
     }
   }, [])
+
+  const loadMore = useCallback(async () => {
+    if (loadingRef.current || !hasMoreRef.current) return
+    loadingRef.current = true
+    setLoadingMore(true)
+    try {
+      const nextPage = pageRef.current + 1
+      const res  = await fetch(`/api/movies?page=${nextPage}&limit=${LIMIT}`)
+      const json = await res.json()
+      const data = json.data ?? []
+      const tot  = json.total ?? 0
+      setLogs(prev => {
+        const next = [...prev, ...data]
+        const more = next.length < tot
+        setHasMore(more)
+        hasMoreRef.current = more
+        return next
+      })
+      setPage(nextPage)
+      pageRef.current = nextPage
+    } catch {
+      toast.error('Failed to load more')
+    } finally {
+      loadingRef.current = false
+      setLoadingMore(false)
+    }
+  }, [])
+
+  // Stable IntersectionObserver — loadMore reads refs, so this runs exactly once
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) loadMore() },
+      { rootMargin: '300px' }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // After initial load or each page completion: if the sentinel is still visible
+  // (page too short to scroll), keep fetching until it scrolls off-screen or all data is loaded.
+  useEffect(() => {
+    if (loading || loadingMore || !hasMore) return
+    const sentinel = sentinelRef.current
+    if (!sentinel) return
+    const { top } = sentinel.getBoundingClientRect()
+    if (top < window.innerHeight + 300) {
+      const t = setTimeout(() => loadMore(), 80)
+      return () => clearTimeout(t)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, loadingMore])
 
   const fetchWatchlist = useCallback(async () => {
     setWatchlistLoad(true)
@@ -336,11 +412,11 @@ export default function MoviesPage() {
     requestAnimationFrame(() => window.scrollTo({ top: parseInt(saved), behavior: 'instant' as ScrollBehavior }))
   }, [loading])
 
-  // ── Counts for FilterTabs ──
+  // ── Counts for FilterTabs — all come from API totals, not loaded items ──
   const counts: Record<LogFilter, number> = {
-    all:    logs.length,
-    movie:  logs.filter(l => l.type === 'movie').length,
-    series: logs.filter(l => l.type === 'series').length,
+    all:    total,
+    movie:  movieTotal,
+    series: seriesTotal,
   }
 
   // ── Unique series count (deduped by tmdb_id — one show = one count) ──
@@ -731,6 +807,13 @@ export default function MoviesPage() {
                 ))}
               </div>
             )}
+
+            {/* Sentinel — always in DOM so IntersectionObserver attaches at mount */}
+            <div ref={sentinelRef} style={{ height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '16px' }}>
+              {loadingMore && !hasFilters && (
+                <span style={{ fontSize: '11px', fontFamily: 'var(--ff-mono)', color: 'var(--text-dim)', letterSpacing: '0.1em' }}>Loading…</span>
+              )}
+            </div>
           </>
         )}
       </main>
