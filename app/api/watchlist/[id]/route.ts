@@ -1,12 +1,11 @@
-import { cookies } from 'next/headers'
 import { supabase } from '@/lib/supabase'
+import { isAdmin } from '@/lib/admin-auth'
 
 export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const jar = await cookies()
-  if (jar.get('movies-admin')?.value !== 'true') {
+  if (!(await isAdmin())) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const { id } = await params

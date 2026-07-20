@@ -5,10 +5,10 @@
  * For each row we search TMDB, build a log entry, and insert into Supabase.
  * Returns { inserted, skipped, errors }.
  */
-import { cookies } from 'next/headers'
 import { supabase } from '@/lib/supabase'
 import { matchMovie, tmdbImg, enrichMovie } from '@/lib/tmdb'
 import type { LetterboxdRow, Vibe } from '@/lib/movies.types'
+import { isAdmin } from '@/lib/admin-auth'
 
 /** Map Letterboxd 0.5–5 rating to a vibe */
 function ratingToVibe(raw: string): Vibe | null {
@@ -19,11 +19,6 @@ function ratingToVibe(raw: string): Vibe | null {
   if (n >= 3.5) return 'solid'        // 3.5     → No Notes
   if (n >= 2.5) return 'fine'         // 2.5, 3  → Needed Editing
   return 'painful'                    // ≤2      → Walk of Shame
-}
-
-async function isAdmin() {
-  const jar = await cookies()
-  return jar.get('movies-admin')?.value === 'true'
 }
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))

@@ -1,10 +1,5 @@
-import { cookies } from 'next/headers'
 import { supabase } from '@/lib/supabase'
-
-async function isAdmin() {
-  const jar = await cookies()
-  return jar.get('blog-admin')?.value === 'true'
-}
+import { isAdmin } from '@/lib/admin-auth'
 
 export async function GET(
   _req: Request,

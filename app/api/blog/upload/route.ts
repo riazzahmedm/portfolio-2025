@@ -1,11 +1,6 @@
-import { cookies } from 'next/headers'
 import { supabase } from '@/lib/supabase'
 import convert from 'heic-convert'
-
-async function isAdmin() {
-  const jar = await cookies()
-  return jar.get('blog-admin')?.value === 'true'
-}
+import { isAdmin } from '@/lib/admin-auth'
 
 const HEIC_EXTS = new Set(['heic', 'heif'])
 
