@@ -68,7 +68,21 @@ function BlogAdminContent() {
       {view === 'list' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {loading ? (
-            <div style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)', fontSize: '13px' }}>Loading…</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <style>{`.sk{background:var(--surface-raised);border-radius:6px;animation:pulse 1.6s ease-in-out infinite}`}</style>
+              {[0,1,2,3].map(i => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '14px 18px', background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '12px' }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div className="sk" style={{ width: '55%', height: '15px' }} />
+                    <div className="sk" style={{ width: '30%', height: '11px' }} />
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                    <div className="sk" style={{ width: '48px', height: '30px', borderRadius: '8px' }} />
+                    <div className="sk" style={{ width: '48px', height: '30px', borderRadius: '8px' }} />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : posts.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)', fontSize: '13px' }}>
               No posts yet. <button onClick={() => setView('new')} style={{ background: 'none', border: 'none', color: '#82ff1f', cursor: 'pointer', fontFamily: 'var(--ff-mono)', fontSize: '13px' }}>Write your first post →</button>

@@ -26,10 +26,11 @@ export default function OrdersAdmin() {
   const [orders,   setOrders]   = useState<ShopOrder[]>([])
   const [expanded, setExpanded] = useState<string | null>(null)
   const [filter,   setFilter]   = useState<string>('all')
+  const [loading,  setLoading]  = useState(true)
 
   function refresh() {
     const params = filter !== 'all' ? `?payment_status=${filter}` : ''
-    fetch(`/api/admin/shop/orders${params}`).then(r => r.json()).then(setOrders)
+    fetch(`/api/admin/shop/orders${params}`).then(r => r.json()).then(data => { setOrders(data); setLoading(false) })
   }
 
   useEffect(() => { refresh() }, [filter])
@@ -66,7 +67,26 @@ export default function OrdersAdmin() {
         </div>
       </div>
 
-      {orders.length === 0 && <p style={{ color: 'var(--text-dim)', fontSize: '13px', fontFamily: 'var(--ff-mono)' }}>No orders.</p>}
+      {loading && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <style>{`.sk{background:var(--surface-raised);border-radius:6px;animation:pulse 1.6s ease-in-out infinite}`}</style>
+          {[0,1,2,3].map(i => (
+            <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '14px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div className="sk" style={{ width: '140px', height: '12px' }} />
+                <div className="sk" style={{ width: '200px', height: '14px' }} />
+                <div className="sk" style={{ width: '160px', height: '11px' }} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end' }}>
+                <div className="sk" style={{ width: '80px', height: '11px' }} />
+                <div className="sk" style={{ width: '100px', height: '11px' }} />
+              </div>
+              <div className="sk" style={{ width: '20px', height: '20px', borderRadius: '4px' }} />
+            </div>
+          ))}
+        </div>
+      )}
+      {!loading && orders.length === 0 && <p style={{ color: 'var(--text-dim)', fontSize: '13px', fontFamily: 'var(--ff-mono)' }}>No orders.</p>}
 
       {orders.map(order => (
         <div key={order.id} style={{ background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '14px', overflow: 'hidden' }}>

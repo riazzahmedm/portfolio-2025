@@ -28,7 +28,20 @@ export default function AnalyticsAdmin() {
       .then(d => { setData(d); setLoading(false) })
   }, [days])
 
-  if (loading) return <div style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)', fontSize: '13px' }}>Loading analytics...</div>
+  if (loading) return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '36px', maxWidth: '680px' }}>
+      <style>{`.sk{background:var(--surface-raised);border-radius:6px;animation:pulse 1.6s ease-in-out infinite}`}</style>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="sk" style={{ width: '120px', height: '24px', borderRadius: '6px' }} />
+        <div className="sk" style={{ width: '120px', height: '32px', borderRadius: '8px', marginLeft: 'auto' }} />
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px,1fr))', gap: '12px' }}>
+        {[0,1,2].map(i => <div key={i} className="sk" style={{ height: '80px', borderRadius: '14px' }} />)}
+      </div>
+      <div className="sk" style={{ height: '200px', borderRadius: '14px' }} />
+      <div className="sk" style={{ height: '140px', borderRadius: '14px' }} />
+    </div>
+  )
   if (!data)   return null
 
   const funnelSteps = [

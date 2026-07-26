@@ -9,10 +9,13 @@ export default function CategoriesAdmin() {
   const [tags,       setTags]       = useState<ShopTag[]>([])
   const [newCat,     setNewCat]     = useState('')
   const [newTag,     setNewTag]     = useState('')
+  const [loading,    setLoading]    = useState(true)
 
   function refresh() {
-    fetch('/api/shop/categories').then(r => r.json()).then(setCategories)
-    fetch('/api/shop/tags').then(r => r.json()).then(setTags)
+    Promise.all([
+      fetch('/api/shop/categories').then(r => r.json()),
+      fetch('/api/shop/tags').then(r => r.json()),
+    ]).then(([cats, tgs]) => { setCategories(cats); setTags(tgs); setLoading(false) })
   }
 
   useEffect(() => { refresh() }, [])
@@ -51,15 +54,17 @@ export default function CategoriesAdmin() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '40px', maxWidth: '600px' }}>
-      <Section title="Categories" items={categories} newValue={newCat} onNewChange={setNewCat} onAdd={addCategory} onDelete={deleteCategory} placeholder="e.g. Stickers" />
-      <Section title="Tags" items={tags} newValue={newTag} onNewChange={setNewTag} onAdd={addTag} onDelete={deleteTag} placeholder="e.g. Marvel" />
+      <style>{`.sk{background:var(--surface-raised);border-radius:6px;animation:pulse 1.6s ease-in-out infinite}`}</style>
+      <Section title="Categories" items={categories} loading={loading} newValue={newCat} onNewChange={setNewCat} onAdd={addCategory} onDelete={deleteCategory} placeholder="e.g. Stickers" />
+      <Section title="Tags" items={tags} loading={loading} newValue={newTag} onNewChange={setNewTag} onAdd={addTag} onDelete={deleteTag} placeholder="e.g. Marvel" />
     </div>
   )
 }
 
-function Section({ title, items, newValue, onNewChange, onAdd, onDelete, placeholder }: {
+function Section({ title, items, loading, newValue, onNewChange, onAdd, onDelete, placeholder }: {
   title: string
   items: { id: string; name: string }[]
+  loading: boolean
   newValue: string
   onNewChange: (v: string) => void
   onAdd: () => void
@@ -80,15 +85,19 @@ function Section({ title, items, newValue, onNewChange, onAdd, onDelete, placeho
         </button>
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-        {items.map(item => (
-          <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '999px', fontSize: '13px' }}>
-            <span style={{ color: 'var(--text-primary)' }}>{item.name}</span>
-            <button onClick={() => onDelete(item.id)} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '0 0 0 2px', display: 'flex' }}>
-              <Trash2 size={13} />
-            </button>
-          </div>
-        ))}
-        {items.length === 0 && <span style={{ color: 'var(--text-dim)', fontSize: '13px', fontFamily: 'var(--ff-mono)' }}>None yet</span>}
+        {loading
+          ? [0,1,2,3].map(i => <div key={i} className="sk" style={{ width: `${60 + i * 20}px`, height: '32px', borderRadius: '999px' }} />)
+          : items.length === 0
+            ? <span style={{ color: 'var(--text-dim)', fontSize: '13px', fontFamily: 'var(--ff-mono)' }}>None yet</span>
+            : items.map(item => (
+                <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '999px', fontSize: '13px' }}>
+                  <span style={{ color: 'var(--text-primary)' }}>{item.name}</span>
+                  <button onClick={() => onDelete(item.id)} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '0 0 0 2px', display: 'flex' }}>
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              ))
+        }
       </div>
     </div>
   )

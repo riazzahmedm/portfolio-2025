@@ -11,9 +11,10 @@ export default function ProductsAdmin() {
   const [tags,       setTags]       = useState<ShopTag[]>([])
   const [expanded,   setExpanded]   = useState<string | null>(null)
   const [showForm,   setShowForm]   = useState(false)
+  const [loading,    setLoading]    = useState(true)
 
   function refresh() {
-    fetch('/api/shop/products').then(r => r.json()).then(setProducts)
+    fetch('/api/shop/products').then(r => r.json()).then(data => { setProducts(data); setLoading(false) })
   }
 
   useEffect(() => {
@@ -48,7 +49,23 @@ export default function ProductsAdmin() {
 
       {showForm && <ProductForm categories={categories} tags={tags} onSaved={() => { setShowForm(false); refresh() }} />}
 
-      {products.length === 0 && !showForm && (
+      {loading && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <style>{`.sk{background:var(--surface-raised);border-radius:6px;animation:pulse 1.6s ease-in-out infinite}`}</style>
+          {[0,1,2].map(i => (
+            <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '14px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div className="sk" style={{ width: '52px', height: '52px', borderRadius: '8px', flexShrink: 0 }} />
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div className="sk" style={{ width: '160px', height: '14px' }} />
+                <div className="sk" style={{ width: '110px', height: '11px' }} />
+              </div>
+              <div className="sk" style={{ width: '60px', height: '26px', borderRadius: '999px' }} />
+              <div className="sk" style={{ width: '20px', height: '20px', borderRadius: '4px' }} />
+            </div>
+          ))}
+        </div>
+      )}
+      {!loading && products.length === 0 && !showForm && (
         <p style={{ color: 'var(--text-dim)', fontSize: '13px', fontFamily: 'var(--ff-mono)' }}>No products yet.</p>
       )}
 

@@ -13,13 +13,13 @@ export const tmdbImg = (path: string | null, size = 'w500') =>
 // ── Search ───────────────────────────────────────────────────────────────────
 
 export async function searchMovies(query: string) {
-  const res  = await fetch(url('/search/movie', `&query=${encodeURIComponent(query)}&include_adult=false`))
+  const res  = await fetch(url('/search/movie', `&query=${encodeURIComponent(query)}`))
   const data = await res.json()
   return (data.results ?? []).slice(0, 8)
 }
 
 export async function searchTV(query: string) {
-  const res  = await fetch(url('/search/tv', `&query=${encodeURIComponent(query)}&include_adult=false`))
+  const res  = await fetch(url('/search/tv', `&query=${encodeURIComponent(query)}`))
   const data = await res.json()
   return (data.results ?? []).slice(0, 8)
 }

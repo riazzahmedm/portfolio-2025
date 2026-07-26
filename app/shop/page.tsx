@@ -98,7 +98,7 @@ export default function ShopPage() {
           </div>
           <h1 style={{ fontFamily: 'var(--ff-display)', fontSize: 'clamp(22px,6vw,56px)', letterSpacing: '-0.01em', textTransform: 'uppercase', margin: 0, lineHeight: 1, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
             Pixels › Prints ›{' '}
-            <span style={{ WebkitTextStroke: '1.5px var(--lavender)', WebkitTextFillColor: 'transparent', color: 'transparent' }}>
+            <span style={{ color: 'var(--lavender)' }}>
               Yours.
             </span>
           </h1>

@@ -97,7 +97,7 @@ export default function ShopSections() {
               color: 'var(--text-primary)', userSelect: 'none', marginBottom: '28px',
             }}>
               RIAZ<br />
-              <span style={{ WebkitTextStroke: '1px var(--lavender)', WebkitTextFillColor: 'transparent' }}>
+              <span style={{ color: 'var(--lavender)' }}>
                 AHMED
               </span>
             </div>
