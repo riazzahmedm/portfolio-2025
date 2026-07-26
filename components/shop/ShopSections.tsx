@@ -138,6 +138,7 @@ export default function ShopSections() {
                   height: 'auto',
                   display: 'block',
                   objectFit: 'contain',
+                  mixBlendMode: 'screen',
                 }}
               />
             </div>
