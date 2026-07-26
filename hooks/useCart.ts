@@ -36,20 +36,26 @@ export function applyBundleDeal(items: CartItem[], deals: ShopBundleDeal[]): {
 export function useCart() {
   const [items, setItems] = useState<CartItem[]>([])
 
-  useEffect(() => { setItems(readCart()) }, [])
+  useEffect(() => {
+    setItems(readCart())
+    const handler = () => setItems(readCart())
+    window.addEventListener('cart-updated', handler)
+    return () => window.removeEventListener('cart-updated', handler)
+  }, [])
 
   const sync = useCallback((next: CartItem[]) => {
     setItems(next)
     writeCart(next)
+    window.dispatchEvent(new Event('cart-updated'))
   }, [])
 
   const addItem = useCallback((item: CartItem) => {
     const current = readCart()
     const existing = current.findIndex(i => i.variantId === item.variantId)
     if (existing >= 0) {
-      current[existing].qty += item.qty
+      current[existing].qty = Math.min(current[existing].qty + item.qty, item.stock_qty)
     } else {
-      current.push(item)
+      current.push({ ...item, qty: Math.min(item.qty, item.stock_qty) })
     }
     sync(current)
   }, [sync])
@@ -59,7 +65,7 @@ export function useCart() {
     if (qty <= 0) {
       sync(current.filter(i => i.variantId !== variantId))
     } else {
-      sync(current.map(i => i.variantId === variantId ? { ...i, qty } : i))
+      sync(current.map(i => i.variantId === variantId ? { ...i, qty: Math.min(qty, i.stock_qty) } : i))
     }
   }, [sync])
 

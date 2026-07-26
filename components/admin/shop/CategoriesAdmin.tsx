@@ -75,7 +75,7 @@ function Section({ title, items, newValue, onNewChange, onAdd, onDelete, placeho
           onKeyDown={e => e.key === 'Enter' && onAdd()}
           style={{ flex: 1, padding: '9px 13px', background: 'var(--surface)', border: '1px solid var(--border-input)', borderRadius: '10px', color: 'var(--text-primary)', fontSize: '14px', fontFamily: 'var(--ff-body)', outline: 'none' }}
         />
-        <button onClick={onAdd} style={{ padding: '9px 14px', borderRadius: '10px', background: 'var(--lavender)', color: '#fff', border: 'none', cursor: 'pointer' }}>
+        <button onClick={onAdd} style={{ padding: '9px 14px', borderRadius: '10px', background: 'rgba(184,160,255,0.1)', color: 'var(--lavender)', border: '1px solid rgba(184,160,255,0.25)', cursor: 'pointer' }}>
           <Plus size={16} />
         </button>
       </div>

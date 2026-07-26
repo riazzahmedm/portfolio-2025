@@ -891,9 +891,51 @@ export default function WrappedPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100dvh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px', letterSpacing: '0.2em', color: 'rgba(255,255,255,0.3)' }}>
-          LOADING…
+      <div style={{ minHeight: '100dvh', background: 'var(--bg)' }}>
+        <style>{`.msk{background:rgba(255,255,255,0.07);border-radius:8px;animation:pulse 1.6s ease-in-out infinite}`}</style>
+        {/* Sticky header */}
+        <header style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(5,5,5,0.92)', backdropFilter: 'blur(18px)', padding: '14px 24px' }}>
+          <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="msk" style={{ width: '70px', height: '12px' }} />
+            <div className="msk" style={{ width: '100px', height: '28px', borderRadius: '100px' }} />
+          </div>
+        </header>
+        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '48px 24px 80px', display: 'flex', flexDirection: 'column', gap: '40px' }}>
+          {/* Hero big number */}
+          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+            <div className="msk" style={{ width: '120px', height: '80px', borderRadius: '12px' }} />
+            <div className="msk" style={{ width: '180px', height: '16px' }} />
+            <div className="msk" style={{ width: '120px', height: '12px' }} />
+          </div>
+          {/* Stat tiles grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+            {[0, 1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="msk" style={{ height: '90px', borderRadius: '14px' }} />
+            ))}
+          </div>
+          {/* Top titles list */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div className="msk" style={{ width: '120px', height: '13px', marginBottom: '6px' }} />
+            {[0, 1, 2, 3, 4].map(i => (
+              <div key={i} style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+                <div className="msk" style={{ width: '36px', height: '54px', borderRadius: '6px', flexShrink: 0 }} />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div className="msk" style={{ width: '50%', height: '14px' }} />
+                  <div className="msk" style={{ width: '30%', height: '11px' }} />
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Genre bars */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div className="msk" style={{ width: '100px', height: '13px', marginBottom: '6px' }} />
+            {[80, 60, 45, 30, 20].map((w, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div className="msk" style={{ width: '80px', height: '11px' }} />
+                <div className="msk" style={{ width: `${w}%`, height: '8px', borderRadius: '4px' }} />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     )

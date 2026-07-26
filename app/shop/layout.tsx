@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import CartIcon from '@/components/shop/CartIcon'
+import CartBanner from '@/components/shop/CartBanner'
 
 export const metadata: Metadata = {
-  title: 'Shop — Riaz Ahmed Art',
+  title: 'Shop — Art prints from Riaz',
   description: 'Original digital art prints — stickers, posters and more.',
 }
 
@@ -18,11 +19,8 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
         height: '56px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
-        <Link href="/shop" style={{
-          fontFamily: 'var(--ff-display)', fontSize: '18px', letterSpacing: '0.06em',
-          textTransform: 'uppercase', color: 'var(--text-primary)', textDecoration: 'none',
-        }}>
-          Riaz Ahmed Art
+        <Link href="/shop" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+          <img src="/shop-logo.png" alt="Art prints from Riaz" style={{ height: '44px', width: 'auto', display: 'block' }} />
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <Link href="/shop/orders" style={{ fontSize: '13px', color: 'var(--text-secondary)', textDecoration: 'none' }}>
@@ -31,6 +29,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
           <CartIcon />
         </div>
       </nav>
+      <CartBanner />
       {children}
     </div>
   )

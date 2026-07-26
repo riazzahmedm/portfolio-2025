@@ -258,8 +258,35 @@ export default function ListDetailPage() {
   }
 
   if (loading) return (
-    <div style={{ minHeight: '100dvh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px', letterSpacing: '0.2em', color: 'rgba(255,255,255,0.3)' }}>LOADING…</div>
+    <div style={{ minHeight: '100dvh', background: 'var(--bg)' }}>
+      <style>{`.msk{background:rgba(255,255,255,0.07);border-radius:8px;animation:pulse 1.6s ease-in-out infinite}`}</style>
+      {/* Sticky header */}
+      <header style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(5,5,5,0.92)', backdropFilter: 'blur(18px)', padding: '14px 24px' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <div className="msk" style={{ width: '60px', height: '12px' }} />
+        </div>
+      </header>
+      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '48px 24px 80px' }}>
+        {/* Title + description */}
+        <div style={{ marginBottom: '48px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div className="msk" style={{ width: '55%', height: '52px', borderRadius: '10px' }} />
+          <div className="msk" style={{ width: '80%', height: '14px' }} />
+          <div className="msk" style={{ width: '40px', height: '11px' }} />
+        </div>
+        {/* List rows */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border-card)' }}>
+          {[0, 1, 2, 3, 4].map(i => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '14px 18px', background: 'var(--surface)' }}>
+              <div className="msk" style={{ width: '20px', height: '12px', borderRadius: '4px', flexShrink: 0 }} />
+              <div className="msk" style={{ width: '44px', height: '66px', borderRadius: '6px', flexShrink: 0 }} />
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div className="msk" style={{ width: '50%', height: '14px' }} />
+                <div className="msk" style={{ width: '30%', height: '11px' }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 

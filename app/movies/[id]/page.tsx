@@ -39,8 +39,38 @@ export default function MovieDetailPage() {
   }, [id])
 
   if (loading) return (
-    <div style={{ minHeight: '100dvh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px', letterSpacing: '0.2em', color: 'rgba(255,255,255,0.3)' }}>LOADING…</div>
+    <div style={{ minHeight: '100dvh', background: 'var(--bg)' }}>
+      <style>{`.msk{background:rgba(255,255,255,0.07);border-radius:8px;animation:pulse 1.6s ease-in-out infinite}`}</style>
+      {/* Backdrop hero */}
+      <div style={{ height: 'min(50vh, 400px)', background: 'rgba(255,255,255,0.03)' }} />
+      {/* Content */}
+      <div style={{ maxWidth: '740px', margin: '0 auto', padding: '0 24px 80px' }}>
+        {/* Poster + title row */}
+        <div style={{ display: 'flex', gap: '24px', marginTop: '-60px', marginBottom: '32px', alignItems: 'flex-end' }}>
+          <div className="msk" style={{ width: '110px', height: '165px', borderRadius: '12px', flexShrink: 0 }} />
+          <div style={{ flex: 1, paddingBottom: '8px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div className="msk" style={{ width: '60%', height: '28px' }} />
+            <div className="msk" style={{ width: '40%', height: '14px' }} />
+            <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+              {[80, 70, 90].map((w, i) => <div key={i} className="msk" style={{ width: `${w}px`, height: '26px', borderRadius: '100px' }} />)}
+            </div>
+          </div>
+        </div>
+        {/* Chips row */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '28px', flexWrap: 'wrap' }}>
+          {[100, 80, 110, 90].map((w, i) => <div key={i} className="msk" style={{ width: `${w}px`, height: '32px', borderRadius: '100px' }} />)}
+        </div>
+        {/* Review block */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
+          <div className="msk" style={{ width: '100%', height: '14px' }} />
+          <div className="msk" style={{ width: '90%', height: '14px' }} />
+          <div className="msk" style={{ width: '70%', height: '14px' }} />
+        </div>
+        {/* Stat row */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+          {[0, 1, 2].map(i => <div key={i} className="msk" style={{ height: '80px', borderRadius: '14px' }} />)}
+        </div>
+      </div>
     </div>
   )
 

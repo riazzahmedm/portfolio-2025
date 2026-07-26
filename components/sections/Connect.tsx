@@ -382,7 +382,7 @@ export default function Connect() {
             style={{ display: 'inline-block', marginTop: 22 }}
           >
             <motion.div
-              whileHover={{ background: 'rgba(255,255,255,0.1)', scale: 1.04 }}
+              whileHover={{ background: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.4)', y: -2 }}
               whileTap={{ scale: 0.97 }}
               style={{
                 padding: '11px 30px', borderRadius: 999,
@@ -395,7 +395,7 @@ export default function Connect() {
                 letterSpacing: '0.04em',
               }}
             >
-              Follow me →
+              Follow me
             </motion.div>
           </a>
         </motion.div>

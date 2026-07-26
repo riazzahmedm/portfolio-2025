@@ -33,7 +33,7 @@ export default function Experience() {
               <div className="text-[9px] tracking-[0.16em] uppercase mb-0.5 flex items-center gap-1.5" style={{ color: j.current ? 'var(--lime)' : 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
                 {j.year}{j.current && <span className="w-1.5 h-1.5 rounded-full animate-pulse inline-block" style={{ background: 'var(--lime)' }} />}
               </div>
-              <div className="text-[12px] font-semibold whitespace-nowrap" style={{ color: selected === i ? 'var(--text-primary)' : 'var(--text-secondary)', fontFamily: 'var(--ff-body)' }}>
+              <div className="text-[12px] font-semibold whitespace-nowrap" style={{ color: 'var(--text-primary)', fontFamily: 'var(--ff-body)' }}>
                 {j.company}
               </div>
             </button>
@@ -72,7 +72,7 @@ export default function Experience() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.06 }}
                     className="flex gap-2.5 text-[13px] leading-relaxed"
-                    style={{ color: 'var(--text-muted)', fontFamily: 'var(--ff-body)' }}
+                    style={{ color: 'var(--text-secondary)', fontFamily: 'var(--ff-body)' }}
                   >
                     <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: 'var(--lavender)' }} />
                     {pt}
@@ -134,7 +134,7 @@ export default function Experience() {
                       </span>
                     )}
                   </div>
-                  <div className="text-[15px] font-semibold transition-colors duration-200" style={{ color: selected === i ? 'var(--text-primary)' : 'var(--text-secondary)', fontFamily: 'var(--ff-body)' }}>
+                  <div className="text-[15px] font-semibold transition-colors duration-200" style={{ color: 'var(--text-primary)', fontFamily: 'var(--ff-body)' }}>
                     {j.role}
                   </div>
                   <div className="text-[12px] tracking-[0.12em] uppercase mt-0.5" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
@@ -178,7 +178,7 @@ export default function Experience() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.08 }}
                     className="flex gap-3 text-[14px] leading-relaxed"
-                    style={{ color: 'var(--text-muted)', fontFamily: 'var(--ff-body)' }}
+                    style={{ color: 'var(--text-secondary)', fontFamily: 'var(--ff-body)' }}
                   >
                     <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: 'var(--lavender)' }} />
                     {pt}

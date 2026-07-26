@@ -49,13 +49,30 @@ export default function CartPage() {
   }
 
   if (items.length === 0) return (
-    <main style={{ maxWidth: '600px', margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
-      <div style={{ fontSize: '48px', marginBottom: '20px' }}>🛒</div>
-      <h2 style={{ fontFamily: 'var(--ff-display)', fontSize: '24px', letterSpacing: '0.04em', textTransform: 'uppercase', margin: '0 0 12px' }}>Your cart is empty</h2>
-      <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '28px' }}>Browse the shop to add some goodies.</p>
-      <Link href="/shop" style={{ display: 'inline-block', padding: '12px 28px', background: 'var(--lavender)', color: '#fff', borderRadius: '10px', textDecoration: 'none', fontWeight: 600 }}>
-        Browse shop
-      </Link>
+    <main style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+      <div style={{ width: '100%', maxWidth: '360px', textAlign: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+          <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="40" cy="40" r="40" fill="rgba(107,69,212,0.12)" />
+            <path d="M20 25h5l7 24h20l5-17H28" stroke="#6b45d4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="35" cy="55" r="2.5" fill="#e8ff00"/>
+            <circle cx="48" cy="55" r="2.5" fill="#e8ff00"/>
+            <path d="M37 37h13M39 43h9" stroke="rgba(107,69,212,0.5)" strokeWidth="1.75" strokeLinecap="round"/>
+          </svg>
+        </div>
+        <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#e8ff00', marginBottom: '10px' }}>
+          your wall is bare
+        </div>
+        <h2 style={{ fontFamily: 'var(--ff-display)', fontSize: '26px', letterSpacing: '0.04em', textTransform: 'uppercase', margin: '0 0 12px', color: 'var(--text-primary)' }}>
+          Nothing here yet
+        </h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.6, margin: '0 auto 28px', maxWidth: '300px' }}>
+          No prints, no magic. Go pick something worth framing.
+        </p>
+        <Link href="/shop" style={{ display: 'inline-flex', alignItems: 'center', padding: '13px 32px', background: '#6b45d4', color: '#fff', borderRadius: '12px', textDecoration: 'none', fontWeight: 600, fontSize: '15px', fontFamily: 'var(--ff-body)' }}>
+          Browse the shop
+        </Link>
+      </div>
     </main>
   )
 
@@ -76,12 +93,17 @@ export default function CartPage() {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{item.name}</div>
               <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'var(--ff-mono)', marginTop: '2px' }}>{item.size}</div>
+              {item.stock_qty <= 5 && (
+                <div style={{ fontSize: '10px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em', color: '#e8ff00', marginTop: '4px' }}>
+                  Only {item.stock_qty} left in stock
+                </div>
+              )}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--surface-raised)', borderRadius: '8px', padding: '4px 10px' }}>
                 <button onClick={() => updateQty(item.variantId, item.qty - 1)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '16px', padding: '0 2px' }}>−</button>
                 <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '13px', minWidth: '16px', textAlign: 'center' }}>{item.qty}</span>
-                <button onClick={() => updateQty(item.variantId, item.qty + 1)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '16px', padding: '0 2px' }}>+</button>
+                <button onClick={() => updateQty(item.variantId, item.qty + 1)} disabled={item.qty >= item.stock_qty} style={{ background: 'none', border: 'none', color: item.qty >= item.stock_qty ? 'var(--text-dim)' : 'var(--text-secondary)', cursor: item.qty >= item.stock_qty ? 'not-allowed' : 'pointer', fontSize: '16px', padding: '0 2px' }}>+</button>
               </div>
               <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--ff-mono)', minWidth: '56px', textAlign: 'right' }}>
                 ₹{(item.price * item.qty).toFixed(0)}
@@ -111,7 +133,7 @@ export default function CartPage() {
         <button
           onClick={validateCoupon}
           disabled={validating || !couponCode.trim() || !!couponApplied}
-          style={{ padding: '10px 20px', borderRadius: '10px', background: couponApplied ? 'var(--lime-dim)' : 'var(--lavender)', color: couponApplied ? 'var(--lime)' : '#fff', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 600, fontFamily: 'var(--ff-body)' }}
+          style={{ padding: '10px 20px', borderRadius: '10px', background: couponApplied ? 'var(--lime-dim)' : '#6b45d4', color: couponApplied ? 'var(--lime)' : '#fff', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 600, fontFamily: 'var(--ff-body)' }}
         >
           {couponApplied ? 'Applied' : validating ? '...' : 'Apply'}
         </button>
@@ -128,7 +150,7 @@ export default function CartPage() {
 
       <button
         onClick={goToCheckout}
-        style={{ width: '100%', padding: '14px', borderRadius: '12px', background: 'var(--lavender)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '15px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', fontFamily: 'var(--ff-body)' }}
+        style={{ width: '100%', padding: '14px', borderRadius: '12px', background: '#6b45d4', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '15px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', fontFamily: 'var(--ff-body)' }}
       >
         Proceed to checkout <ArrowRight size={18} />
       </button>

@@ -16,7 +16,7 @@ const colors: Record<string, string> = {
   cmd: 'var(--text-secondary)',
   out: 'var(--text-muted)',
   success: '#22cc44',
-  dim: 'var(--text-faint)',
+  dim: 'rgba(255,255,255,0.18)',
 }
 
 export default function TerminalBlock({ title = 'riaz@portfolio ~ zsh', lines }: Props) {

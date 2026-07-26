@@ -4,9 +4,10 @@ import { toast } from 'sonner'
 import type { ShopSettings } from '@/lib/shop.types'
 
 export default function SettingsAdmin() {
-  const [settings, setSettings] = useState<ShopSettings>({ upi_id: '', qr_code_url: '', store_name: '', store_tagline: '' })
-  const [saving,    setSaving]    = useState(false)
-  const [uploading, setUploading] = useState(false)
+  const [settings,        setSettings]        = useState<ShopSettings>({ upi_id: '', qr_code_url: '', store_name: '', store_tagline: '', artist_photo_url: '' })
+  const [saving,          setSaving]          = useState(false)
+  const [uploading,       setUploading]       = useState(false)
+  const [uploadingPhoto,  setUploadingPhoto]  = useState(false)
 
   useEffect(() => {
     fetch('/api/shop/settings').then(r => r.json()).then(setSettings)
@@ -66,13 +67,33 @@ export default function SettingsAdmin() {
           <img src={settings.qr_code_url} alt="QR" style={{ width: '120px', height: '120px', objectFit: 'contain', background: '#fff', borderRadius: '10px', padding: '6px' }} />
         )}
         <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '9px 16px', background: 'var(--surface)', border: '1px solid var(--border-input)', borderRadius: '10px', cursor: 'pointer', fontSize: '13px', color: 'var(--text-secondary)', fontFamily: 'var(--ff-body)', width: 'fit-content' }}>
-          {uploading ? 'Uploading...' : 'Upload QR image'}
+          {uploading ? 'Uploading...' : settings.qr_code_url ? 'Replace QR image' : 'Upload QR image'}
           <input type="file" accept="image/*" onChange={uploadQR} style={{ display: 'none' }} />
         </label>
       </div>
 
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <label style={{ fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>Artist photo</label>
+        {settings.artist_photo_url && (
+          <img src={settings.artist_photo_url} alt="Artist" style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '10px' }} />
+        )}
+        <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '9px 16px', background: 'var(--surface)', border: '1px solid var(--border-input)', borderRadius: '10px', cursor: 'pointer', fontSize: '13px', color: 'var(--text-secondary)', fontFamily: 'var(--ff-body)', width: 'fit-content' }}>
+          {uploadingPhoto ? 'Uploading...' : settings.artist_photo_url ? 'Replace artist photo' : 'Upload artist photo'}
+          <input type="file" accept="image/*" onChange={async e => {
+            const file = e.target.files?.[0]; if (!file) return
+            setUploadingPhoto(true)
+            const fd = new FormData(); fd.append('file', file)
+            const res = await fetch('/api/shop/upload', { method: 'POST', body: fd })
+            const data = await res.json()
+            if (data.url) { setSettings(s => ({ ...s, artist_photo_url: data.url })); toast.success('Photo uploaded') }
+            else toast.error(data.error ?? 'Upload failed')
+            setUploadingPhoto(false)
+          }} style={{ display: 'none' }} />
+        </label>
+      </div>
+
       <button onClick={save} disabled={saving}
-        style={{ padding: '12px 28px', borderRadius: '10px', background: 'var(--lavender)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: 600, fontFamily: 'var(--ff-body)', width: 'fit-content' }}>
+        style={{ padding: '12px 28px', borderRadius: '10px', background: 'rgba(184,160,255,0.1)', color: 'var(--lavender)', border: '1px solid rgba(184,160,255,0.25)', cursor: 'pointer', fontSize: '14px', fontWeight: 600, fontFamily: 'var(--ff-body)', width: 'fit-content' }}>
         {saving ? 'Saving...' : 'Save settings'}
       </button>
     </div>

@@ -599,7 +599,7 @@ export default function MoviesPage() {
               )}
             </button>
             {isAdmin && (
-              <Link href="/movies/admin" title="Log a film" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '100px', border: '1px solid rgba(184,160,255,0.28)', background: 'rgba(184,160,255,0.08)', color: '#b8a0ff', textDecoration: 'none', fontSize: '12px', letterSpacing: '0.1em', fontFamily: 'var(--ff-mono)' }}>
+              <Link href="/admin" title="Log a film" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '100px', border: '1px solid rgba(184,160,255,0.28)', background: 'rgba(184,160,255,0.08)', color: '#b8a0ff', textDecoration: 'none', fontSize: '12px', letterSpacing: '0.1em', fontFamily: 'var(--ff-mono)' }}>
                 <Plus size={13} />
               </Link>
             )}

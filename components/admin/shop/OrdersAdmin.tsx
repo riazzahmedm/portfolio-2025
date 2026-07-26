@@ -4,6 +4,21 @@ import { toast } from 'sonner'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import type { ShopOrder, OrderStatus } from '@/lib/shop.types'
 
+const PAYMENT_LABELS: Record<string, string> = {
+  unpaid: 'Unpaid',
+  submitted: 'Submitted',
+  verified: 'Verified',
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  pending_payment:   'Pending Payment',
+  payment_submitted: 'Payment Submitted',
+  confirmed:         'Confirmed',
+  shipped:           'Shipped',
+  delivered:         'Delivered',
+  cancelled:         'Cancelled',
+}
+
 const STATUS_OPTIONS: OrderStatus[] = ['pending_payment','payment_submitted','confirmed','shipped','delivered','cancelled']
 const PAYMENT_OPTIONS = ['unpaid','submitted','verified'] as const
 
@@ -85,20 +100,27 @@ export default function OrdersAdmin() {
                 {order.utr_reference && <div style={{ marginTop: '4px' }}>UTR: <strong style={{ fontFamily: 'var(--ff-mono)', color: 'var(--text-primary)' }}>{order.utr_reference}</strong></div>}
               </div>
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                <select
-                  value={order.payment_status}
-                  onChange={e => updateOrder(order.id, { payment_status: e.target.value })}
-                  style={{ padding: '8px 12px', background: 'var(--surface-raised)', border: '1px solid var(--border-input)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '13px', fontFamily: 'var(--ff-mono)', outline: 'none', cursor: 'pointer' }}
-                >
-                  {PAYMENT_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-                <select
-                  value={order.status}
-                  onChange={e => updateOrder(order.id, { status: e.target.value })}
-                  style={{ padding: '8px 12px', background: 'var(--surface-raised)', border: '1px solid var(--border-input)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '13px', fontFamily: 'var(--ff-mono)', outline: 'none', cursor: 'pointer' }}
-                >
-                  {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s.replace(/_/g,' ')}</option>)}
-                </select>
+                {[
+                  { value: order.payment_status, options: PAYMENT_OPTIONS.map(s => ({ value: s, label: PAYMENT_LABELS[s] ?? s })), key: 'payment_status' },
+                  { value: order.status,          options: STATUS_OPTIONS.map(s => ({ value: s, label: STATUS_LABELS[s] ?? s })),    key: 'status' },
+                ].map(({ value, options, key }) => (
+                  <div key={key} style={{ position: 'relative', flex: 1, minWidth: '160px' }}>
+                    <select
+                      value={value}
+                      onChange={e => updateOrder(order.id, { [key]: e.target.value })}
+                      style={{
+                        width: '100%', padding: '8px 32px 8px 12px',
+                        background: 'var(--surface-raised)', border: '1px solid var(--border-input)',
+                        borderRadius: '8px', color: 'var(--text-primary)', fontSize: '12px',
+                        fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em', textTransform: 'uppercase',
+                        outline: 'none', cursor: 'pointer', appearance: 'none',
+                      }}
+                    >
+                      {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                    <ChevronDown size={13} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', pointerEvents: 'none' }} />
+                  </div>
+                ))}
               </div>
             </div>
           )}

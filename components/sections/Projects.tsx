@@ -202,13 +202,13 @@ export default function Projects() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: '-10%' }}
                     transition={{ duration: 0.7, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
-                    className="project-card-h group border rounded-xl overflow-hidden flex flex-col transition-colors duration-300"
+                    className="project-card-h group rounded-xl overflow-hidden flex flex-col transition-all duration-300"
                     style={{
-                      borderColor: 'var(--border-card)',
+                      boxShadow: '0 0 0 1px rgba(255,255,255,0.08), 0 8px 32px rgba(0,0,0,0.6)',
                       background: 'var(--surface)',
                     }}
-                    onMouseEnter={e => (e.currentTarget.style.borderColor = project.mockupAccent)}
-                    onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-card)')}
+                    onMouseEnter={e => (e.currentTarget.style.boxShadow = `0 0 0 1px ${project.mockupAccent}66, 0 8px 40px rgba(0,0,0,0.6), 0 0 32px ${project.mockupAccent}55`)}
+                    onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 0 0 1px rgba(255,255,255,0.08), 0 8px 32px rgba(0,0,0,0.6)')}
                     whileHover={{ y: -6, transition: { duration: 0.3, ease: 'easeOut' } }}
                   >
                     <MockupScreen
@@ -270,7 +270,7 @@ export default function Projects() {
                         ))}
                       </div>
 
-                      <div className="text-[11px] tracking-[0.14em] pt-2 border-t" style={{ color: 'var(--text-secondary)', borderColor: 'var(--border)', fontFamily: 'var(--ff-mono)' }}>
+                      <div className="text-[11px] tracking-[0.14em] pt-2" style={{ color: '#e8ff00', fontFamily: 'var(--ff-mono)', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.08)' }}>
                         {SPELLS[i % SPELLS.length]} {slug}
                       </div>
                     </div>

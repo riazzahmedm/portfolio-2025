@@ -102,6 +102,7 @@ export interface ShopSettings {
   qr_code_url: string
   store_name: string
   store_tagline: string
+  artist_photo_url: string
 }
 
 export interface CartItem {
@@ -111,6 +112,7 @@ export interface CartItem {
   size: string
   price: number
   qty: number
+  stock_qty: number
   image: string
 }
 

@@ -46,26 +46,43 @@ export default function ProductCard({ product }: { product: ShopProduct }) {
           )}
         </div>
 
-        <div style={{ padding: '14px 16px 16px' }}>
-          <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+        <div style={{ padding: '10px 12px 12px' }}>
+          <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px', lineHeight: 1.3 }}>
             {product.name}
           </div>
-          {product.tags && product.tags.length > 0 && (
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' }}>
-              {product.tags.map(tag => (
-                <span key={tag.id} style={{
-                  fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase',
-                  padding: '2px 8px', borderRadius: '999px',
-                  background: 'var(--lavender-dim)', color: 'var(--lavender)',
-                  fontFamily: 'var(--ff-mono)',
+
+          {/* Category only */}
+          {product.category && (
+            <div style={{ marginBottom: '7px' }}>
+              <span style={{
+                fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase',
+                padding: '2px 6px', borderRadius: '999px',
+                background: 'rgba(130,255,31,0.08)', color: 'var(--lime)',
+                fontFamily: 'var(--ff-mono)', border: '1px solid rgba(130,255,31,0.2)',
+              }}>
+                {product.category.name}
+              </span>
+            </div>
+          )}
+
+          {/* Size variants */}
+          {product.variants && product.variants.length > 0 && (
+            <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap', marginBottom: '8px' }}>
+              {product.variants.map(v => (
+                <span key={v.id} style={{
+                  fontSize: '9px', fontFamily: 'var(--ff-mono)',
+                  padding: '2px 6px', borderRadius: '5px',
+                  background: 'var(--surface-raised)', color: v.stock_qty > 0 ? 'var(--text-secondary)' : 'var(--text-dim)',
+                  textDecoration: v.stock_qty === 0 ? 'line-through' : 'none',
                 }}>
-                  {tag.name}
+                  {v.size}
                 </span>
               ))}
             </div>
           )}
+
           {minPrice !== null && (
-            <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--lavender)', fontFamily: 'var(--ff-mono)' }}>
+            <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--lavender)', fontFamily: 'var(--ff-mono)' }}>
               From ₹{minPrice}
             </div>
           )}

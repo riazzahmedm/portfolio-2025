@@ -41,7 +41,7 @@ export default function ProductsAdmin() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ fontFamily: 'var(--ff-display)', fontSize: '20px', letterSpacing: '0.04em', textTransform: 'uppercase', margin: 0 }}>Products</h2>
-        <button onClick={() => setShowForm(s => !s)} style={{ padding: '8px 18px', borderRadius: '10px', background: 'var(--lavender)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 600, fontFamily: 'var(--ff-body)' }}>
+        <button onClick={() => setShowForm(s => !s)} style={{ padding: '8px 18px', borderRadius: '10px', background: 'rgba(184,160,255,0.1)', color: 'var(--lavender)', border: '1px solid rgba(184,160,255,0.25)', cursor: 'pointer', fontSize: '13px', fontWeight: 600, fontFamily: 'var(--ff-body)' }}>
           {showForm ? 'Cancel' : '+ New product'}
         </button>
       </div>
@@ -152,7 +152,7 @@ function ProductForm({ categories, tags, onSaved }: { categories: ShopCategory[]
       </div>
 
       <button onClick={save} disabled={saving}
-        style={{ padding: '10px 22px', borderRadius: '10px', background: 'var(--lavender)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: 600, fontFamily: 'var(--ff-body)', width: 'fit-content' }}>
+        style={{ padding: '10px 22px', borderRadius: '10px', background: 'rgba(184,160,255,0.1)', color: 'var(--lavender)', border: '1px solid rgba(184,160,255,0.25)', cursor: 'pointer', fontSize: '14px', fontWeight: 600, fontFamily: 'var(--ff-body)', width: 'fit-content' }}>
         {saving ? 'Creating...' : 'Create product'}
       </button>
     </div>
@@ -215,7 +215,7 @@ function VariantsEditor({ productId, variants, onChanged }: { productId: string;
             style={{ width: '80px', padding: '7px 10px', background: 'var(--surface)', border: '1px solid var(--border-input)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '13px', fontFamily: 'var(--ff-mono)', outline: 'none' }} />
           <input value={form.stock_qty} onChange={e => setForm(f => ({ ...f, stock_qty: e.target.value }))} placeholder="Stock" type="number"
             style={{ width: '72px', padding: '7px 10px', background: 'var(--surface)', border: '1px solid var(--border-input)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '13px', fontFamily: 'var(--ff-mono)', outline: 'none' }} />
-          <button onClick={add} style={{ padding: '7px 14px', background: 'var(--lavender)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontFamily: 'var(--ff-body)' }}>Add</button>
+          <button onClick={add} style={{ padding: '7px 14px', background: 'rgba(184,160,255,0.1)', color: 'var(--lavender)', border: '1px solid rgba(184,160,255,0.25)', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontFamily: 'var(--ff-body)' }}>Add</button>
           <button onClick={() => setAdding(false)} style={{ padding: '7px 10px', background: 'var(--surface-raised)', color: 'var(--text-secondary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}>Cancel</button>
         </div>
       )}

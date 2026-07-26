@@ -12,15 +12,20 @@ export default function CheckoutPage() {
   const { items }    = useCart()
   const [deals, setDeals] = useState<ShopBundleDeal[]>([])
   const [loading, setLoading] = useState(false)
+  const [ready, setReady] = useState(false)
   const [form, setForm] = useState<ShippingAddress>({
     name: '', email: '', phone: '',
     line1: '', line2: '', city: '', state: '', pincode: '',
   })
 
   useEffect(() => {
-    if (items.length === 0) router.replace('/shop/cart')
+    setReady(true)
     fetch('/api/admin/shop/discounts/bundles').then(r => r.json()).then(setDeals)
-  }, [items.length, router])
+  }, [])
+
+  useEffect(() => {
+    if (ready && items.length === 0) router.replace('/shop/cart')
+  }, [ready, items.length, router])
 
   const { total: bundleTotal } = applyBundleDeal(items, deals)
   const couponDiscount = 0
@@ -68,21 +73,21 @@ export default function CheckoutPage() {
 
   return (
     <main style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 24px' }}>
-      <h1 style={{ fontFamily: 'var(--ff-display)', fontSize: '28px', letterSpacing: '0.04em', textTransform: 'uppercase', margin: '0 0 32px' }}>
+      <h1 style={{ fontFamily: 'var(--ff-display)', fontSize: '28px', letterSpacing: '0.04em', textTransform: 'uppercase', margin: '0 0 32px', color: 'var(--text-primary)' }}>
         Checkout
       </h1>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <Field label="Full name *"  value={form.name}        onChange={v => update('name', v)}    placeholder="Riaz Ahmed" />
-        <Field label="Email *"      value={form.email}       onChange={v => update('email', v)}   placeholder="you@example.com" type="email" />
+        <Field label="Full name *"  value={form.name}        onChange={v => update('name', v)}    placeholder="Peter Parker" />
+        <Field label="Email *"      value={form.email}       onChange={v => update('email', v)}   placeholder="peter@dailybugle.com" type="email" />
         <Field label="Phone *"      value={form.phone}       onChange={v => update('phone', v)}   placeholder="+91 98765 43210" type="tel" />
-        <Field label="Address *"    value={form.line1}       onChange={v => update('line1', v)}   placeholder="House / Flat, Street" />
-        <Field label="Address 2"    value={form.line2 ?? ''} onChange={v => update('line2', v)}   placeholder="Landmark, Area (optional)" />
+        <Field label="Address *"    value={form.line1}       onChange={v => update('line1', v)}   placeholder="20 Ingram Street" />
+        <Field label="Address 2"    value={form.line2 ?? ''} onChange={v => update('line2', v)}   placeholder="Forest Hills, Queens (optional)" />
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-          <Field label="City *"     value={form.city}        onChange={v => update('city', v)}    placeholder="Chennai" />
-          <Field label="State *"    value={form.state}       onChange={v => update('state', v)}   placeholder="Tamil Nadu" />
+          <Field label="City *"     value={form.city}        onChange={v => update('city', v)}    placeholder="New York" />
+          <Field label="State *"    value={form.state}       onChange={v => update('state', v)}   placeholder="New York" />
         </div>
-        <Field label="Pincode *"    value={form.pincode}     onChange={v => update('pincode', v)} placeholder="600001" />
+        <Field label="Pincode *"    value={form.pincode}     onChange={v => update('pincode', v)} placeholder="11375" />
 
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '12px', padding: '16px', marginTop: '8px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: 700 }}>
@@ -97,7 +102,7 @@ export default function CheckoutPage() {
         <button
           type="submit"
           disabled={loading}
-          style={{ padding: '14px', borderRadius: '12px', background: 'var(--lavender)', color: '#fff', border: 'none', cursor: loading ? 'wait' : 'pointer', fontSize: '15px', fontWeight: 600, fontFamily: 'var(--ff-body)', marginTop: '8px' }}
+          style={{ padding: '14px', borderRadius: '12px', background: '#6b45d4', color: '#fff', border: 'none', cursor: loading ? 'wait' : 'pointer', fontSize: '15px', fontWeight: 600, fontFamily: 'var(--ff-body)', marginTop: '8px' }}
         >
           {loading ? 'Sending OTP...' : 'Continue — Verify email'}
         </button>
@@ -111,7 +116,7 @@ function Field({ label, value, onChange, placeholder, type = 'text' }: {
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-      <label style={{ fontSize: '12px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>{label}</label>
+      <label style={{ fontSize: '12px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--lavender)', fontFamily: 'var(--ff-mono)' }}>{label}</label>
       <input
         type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
         style={{ padding: '10px 14px', background: 'var(--surface)', border: '1px solid var(--border-input)', borderRadius: '10px', color: 'var(--text-primary)', fontSize: '14px', fontFamily: 'var(--ff-body)', outline: 'none' }}

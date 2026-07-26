@@ -11,7 +11,7 @@ export default function CartIcon() {
       {count > 0 && (
         <span style={{
           position: 'absolute', top: '-6px', right: '-8px',
-          background: 'var(--lavender)', color: '#fff',
+          background: '#e8ff00', color: '#0a0a0a',
           borderRadius: '999px', fontSize: '10px', fontWeight: 700,
           minWidth: '16px', height: '16px',
           display: 'flex', alignItems: 'center', justifyContent: 'center',

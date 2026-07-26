@@ -15,6 +15,7 @@ html.lenis, html.lenis body { height: auto; }
   --lime-dim: rgba(130, 255, 31, 0.2);
   --lavender: #b8a0ff;
   --lavender-dim: rgba(184, 160, 255, 0.2);
+
   --dot-color: rgba(255, 255, 255, 0.07);
   --dot-size: 32px;
 
@@ -27,8 +28,8 @@ html.lenis, html.lenis body { height: auto; }
   --text-primary: #ffffff;
   --text-secondary: rgba(255, 255, 255, 0.6);
   --text-muted: rgba(255, 255, 255, 0.38);
-  --text-dim: rgba(255, 255, 255, 0.22);
-  --text-faint: rgba(255, 255, 255, 0.12);
+  --text-dim: rgba(255, 255, 255, 0.6);
+  --text-faint: rgba(255, 255, 255, 0.4);
   --border: rgba(255, 255, 255, 0.06);
   --border-card: rgba(255, 255, 255, 0.08);
   --border-input: rgba(255, 255, 255, 0.12);
@@ -50,13 +51,14 @@ html.light {
   --lime-dim: rgba(90, 184, 0, 0.15);
   --lavender: #7c5ccc;
   --lavender-dim: rgba(124, 92, 204, 0.15);
+
   --dot-color: rgba(0, 0, 0, 0.06);
 
   --text-primary: #0a0a0a;
   --text-secondary: rgba(10, 10, 10, 0.65);
   --text-muted: rgba(10, 10, 10, 0.5);
-  --text-dim: rgba(10, 10, 10, 0.35);
-  --text-faint: rgba(10, 10, 10, 0.22);
+  --text-dim: rgba(10, 10, 10, 0.65);
+  --text-faint: rgba(10, 10, 10, 0.45);
   --border: rgba(0, 0, 0, 0.07);
   --border-card: rgba(0, 0, 0, 0.1);
   --border-input: rgba(0, 0, 0, 0.15);
