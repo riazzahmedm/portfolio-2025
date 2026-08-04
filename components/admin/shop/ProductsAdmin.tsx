@@ -97,7 +97,8 @@ export default function ProductsAdmin() {
           </div>
 
           {expanded === product.id && (
-            <div style={{ borderTop: '1px solid var(--border)', padding: '16px 18px' }}>
+            <div style={{ borderTop: '1px solid var(--border)', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <ProductEditor product={product} categories={categories} onChanged={refresh} />
               <VariantsEditor productId={product.id} variants={product.variants ?? []} onChanged={refresh} />
               <TagsEditor productId={product.id} allTags={tags} selectedTags={product.tags ?? []} onChanged={refresh} />
             </div>
@@ -168,6 +169,68 @@ function ProductForm({ categories, tags, onSaved }: { categories: ShopCategory[]
       <button onClick={save} disabled={saving}
         style={{ padding: '10px 22px', borderRadius: '10px', background: 'rgba(184,160,255,0.1)', color: 'var(--lavender)', border: '1px solid rgba(184,160,255,0.25)', cursor: 'pointer', fontSize: '14px', fontWeight: 600, fontFamily: 'var(--ff-body)', width: 'fit-content' }}>
         {saving ? 'Creating...' : 'Create product'}
+      </button>
+    </div>
+  )
+}
+
+function ProductEditor({ product, categories, onChanged }: { product: ShopProduct; categories: ShopCategory[]; onChanged: () => void }) {
+  const [form,      setForm]      = useState({ name: product.name, description: product.description ?? '', category_id: product.category_id ?? '' })
+  const [images,    setImages]    = useState<string[]>(product.images ?? [])
+  const [uploading, setUploading] = useState(false)
+  const [saving,    setSaving]    = useState(false)
+
+  const inputStyle = { padding: '8px 12px', background: 'var(--surface-raised)', border: '1px solid var(--border-input)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '13px', fontFamily: 'var(--ff-body)', outline: 'none', width: '100%', boxSizing: 'border-box' as const }
+
+  async function uploadImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]; if (!file) return
+    setUploading(true)
+    const fd = new FormData(); fd.append('file', file)
+    const res = await fetch('/api/shop/upload', { method: 'POST', body: fd })
+    const data = await res.json()
+    if (data.url) setImages(imgs => [...imgs, data.url])
+    else toast.error(data.error ?? 'Upload failed')
+    setUploading(false)
+  }
+
+  async function save() {
+    setSaving(true)
+    const res = await fetch(`/api/shop/products/${product.id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...form, images, category_id: form.category_id || null }),
+    })
+    if (res.ok) { toast.success('Product updated'); onChanged() }
+    else { const e = await res.json(); toast.error(e.error) }
+    setSaving(false)
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '16px', borderBottom: '1px solid var(--border)' }}>
+      <div style={{ fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>Edit product</div>
+      <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Product name" style={inputStyle} />
+      <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Description" rows={2}
+        style={{ ...inputStyle, resize: 'vertical' }} />
+      <select value={form.category_id} onChange={e => setForm(f => ({ ...f, category_id: e.target.value }))} style={inputStyle}>
+        <option value="">No category</option>
+        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+      </select>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+        {images.map((url, i) => (
+          <div key={i} style={{ position: 'relative', width: '64px', height: '64px', flexShrink: 0 }}>
+            <img src={url} alt="" style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px', display: 'block' }} />
+            <button onClick={() => setImages(imgs => imgs.filter((_, j) => j !== i))}
+              style={{ position: 'absolute', top: '-6px', right: '-6px', background: 'var(--red)', border: 'none', borderRadius: '999px', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}>
+              <X size={10} color="#fff" />
+            </button>
+          </div>
+        ))}
+        <label style={{ width: '64px', height: '64px', border: '2px dashed var(--border-card)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-dim)', flexShrink: 0 }}>
+          {uploading ? '...' : <Plus size={18} />}
+          <input type="file" accept="image/*" onChange={uploadImage} style={{ display: 'none' }} />
+        </label>
+      </div>
+      <button onClick={save} disabled={saving} style={{ padding: '8px 18px', borderRadius: '8px', background: 'rgba(184,160,255,0.1)', color: 'var(--lavender)', border: '1px solid rgba(184,160,255,0.25)', cursor: 'pointer', fontSize: '13px', fontWeight: 600, fontFamily: 'var(--ff-body)', width: 'fit-content' }}>
+        {saving ? 'Saving...' : 'Save changes'}
       </button>
     </div>
   )
