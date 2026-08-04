@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import type { ShopSettings } from '@/lib/shop.types'
+import { compressImage } from '@/lib/compress-image'
 
 export default function SettingsAdmin() {
   const [settings,        setSettings]        = useState<ShopSettings>({ upi_id: '', qr_code_url: '', store_name: '', store_tagline: '', artist_photo_url: '' })
@@ -82,12 +83,14 @@ export default function SettingsAdmin() {
           <input type="file" accept="image/*" onChange={async e => {
             const file = e.target.files?.[0]; if (!file) return
             setUploadingPhoto(true)
-            const fd = new FormData(); fd.append('file', file)
-            const res = await fetch('/api/shop/upload', { method: 'POST', body: fd })
-            const data = await res.json()
-            if (data.url) { setSettings(s => ({ ...s, artist_photo_url: data.url })); toast.success('Photo uploaded') }
-            else toast.error(data.error ?? 'Upload failed')
-            setUploadingPhoto(false)
+            try {
+              const compressed = await compressImage(file)
+              const fd = new FormData(); fd.append('file', compressed)
+              const res = await fetch('/api/shop/upload', { method: 'POST', body: fd })
+              const data = await res.json()
+              if (data.url) { setSettings(s => ({ ...s, artist_photo_url: data.url })); toast.success('Photo uploaded') }
+              else toast.error(data.error ?? 'Upload failed')
+            } catch { toast.error('Compression failed') } finally { setUploadingPhoto(false) }
           }} style={{ display: 'none' }} />
         </label>
       </div>

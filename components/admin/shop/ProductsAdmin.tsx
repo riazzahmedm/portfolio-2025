@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Plus, Trash2, X, ChevronDown, ChevronUp } from 'lucide-react'
 import type { ShopProduct, ShopCategory, ShopTag, ShopVariant } from '@/lib/shop.types'
+import { compressImage } from '@/lib/compress-image'
 
 export default function ProductsAdmin() {
   const [products,   setProducts]   = useState<ShopProduct[]>([])
@@ -118,12 +119,14 @@ function ProductForm({ categories, tags, onSaved }: { categories: ShopCategory[]
   async function uploadImage(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]; if (!file) return
     setUploading(true)
-    const fd = new FormData(); fd.append('file', file)
-    const res = await fetch('/api/shop/upload', { method: 'POST', body: fd })
-    const data = await res.json()
-    if (data.url) setImages(imgs => [...imgs, data.url])
-    else toast.error(data.error ?? 'Upload failed')
-    setUploading(false)
+    try {
+      const compressed = await compressImage(file)
+      const fd = new FormData(); fd.append('file', compressed)
+      const res = await fetch('/api/shop/upload', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (data.url) setImages(imgs => [...imgs, data.url])
+      else toast.error(data.error ?? 'Upload failed')
+    } catch { toast.error('Compression failed') } finally { setUploading(false) }
   }
 
   async function save() {
@@ -185,12 +188,14 @@ function ProductEditor({ product, categories, onChanged }: { product: ShopProduc
   async function uploadImage(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]; if (!file) return
     setUploading(true)
-    const fd = new FormData(); fd.append('file', file)
-    const res = await fetch('/api/shop/upload', { method: 'POST', body: fd })
-    const data = await res.json()
-    if (data.url) setImages(imgs => [...imgs, data.url])
-    else toast.error(data.error ?? 'Upload failed')
-    setUploading(false)
+    try {
+      const compressed = await compressImage(file)
+      const fd = new FormData(); fd.append('file', compressed)
+      const res = await fetch('/api/shop/upload', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (data.url) setImages(imgs => [...imgs, data.url])
+      else toast.error(data.error ?? 'Upload failed')
+    } catch { toast.error('Compression failed') } finally { setUploading(false) }
   }
 
   async function save() {

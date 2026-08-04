@@ -3,6 +3,7 @@ import { useState, useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 import { Plus, Trash2, ChevronUp, ChevronDown, Type, Image, Video, Code, Eye, EyeOff, Loader2, Upload } from 'lucide-react'
 import type { BlogPost, ContentBlock } from '@/lib/blog.types'
+import { compressImage } from '@/lib/compress-image'
 
 // ── Upload button ─────────────────────────────────────────────────────────────
 function UploadButton({ onUploaded }: { onUploaded: (url: string) => void }) {
@@ -14,8 +15,9 @@ function UploadButton({ onUploaded }: { onUploaded: (url: string) => void }) {
     if (!file) return
     setUploading(true)
     try {
+      const compressed = await compressImage(file)
       const form = new FormData()
-      form.append('file', file)
+      form.append('file', compressed)
       const res  = await fetch('/api/blog/upload', { method: 'POST', body: form })
       const data = await res.json()
       if (!res.ok) { toast.error(data.error ?? 'Upload failed'); return }
