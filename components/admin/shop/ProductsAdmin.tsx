@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
 import { toast } from 'sonner'
 import { Plus, Trash2, X, ChevronDown, ChevronUp } from 'lucide-react'
 import type { ShopProduct, ShopCategory, ShopTag, ShopVariant } from '@/lib/shop.types'
@@ -73,9 +72,7 @@ export default function ProductsAdmin() {
         <div key={product.id} style={{ background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '14px', overflow: 'hidden' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 18px' }}>
             {product.images[0] && (
-              <div style={{ position: 'relative', width: '52px', height: '52px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
-                <Image src={product.images[0]} alt={product.name} fill style={{ objectFit: 'cover' }} />
-              </div>
+              <img src={product.images[0]} alt={product.name} style={{ width: '52px', height: '52px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0, display: 'block' }} />
             )}
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{product.name}</div>
@@ -156,7 +153,7 @@ function ProductForm({ categories, tags, onSaved }: { categories: ShopCategory[]
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
         {images.map((url, i) => (
           <div key={i} style={{ position: 'relative', width: '64px', height: '64px' }}>
-            <Image src={url} alt="" fill style={{ objectFit: 'cover', borderRadius: '8px' }} />
+            <img src={url} alt="" style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px', display: 'block' }} />
             <button onClick={() => setImages(imgs => imgs.filter((_, j) => j !== i))} style={{ position: 'absolute', top: '-6px', right: '-6px', background: 'var(--red)', border: 'none', borderRadius: '999px', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}>
               <X size={10} color="#fff" />
             </button>

@@ -1,5 +1,4 @@
 'use client'
-import Image from 'next/image'
 import Link from 'next/link'
 import type { ShopProduct } from '@/lib/shop.types'
 
@@ -28,7 +27,7 @@ export default function ProductCard({ product }: { product: ShopProduct }) {
       >
         <div style={{ position: 'relative', aspectRatio: '1', background: 'var(--surface-alt)' }}>
           {image ? (
-            <Image src={image} alt={product.name} fill style={{ objectFit: 'cover' }} />
+            <img src={image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           ) : (
             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)', fontSize: '13px' }}>
               No image

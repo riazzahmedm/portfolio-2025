@@ -26,11 +26,15 @@ export async function POST(req: Request) {
     buffer = Buffer.from(output)
   }
 
-  // Resize to max 1200px wide and compress to JPEG at 75% quality
-  buffer = await sharp(buffer)
-    .resize({ width: 800, withoutEnlargement: true })
-    .jpeg({ quality: 75, progressive: true })
-    .toBuffer()
+  // Resize to max 800px wide and compress to JPEG
+  try {
+    buffer = await sharp(buffer)
+      .resize({ width: 800, withoutEnlargement: true })
+      .jpeg({ quality: 80 })
+      .toBuffer()
+  } catch {
+    // If sharp fails (e.g. unsupported format), upload the original buffer as-is
+  }
 
   const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
 

@@ -25,10 +25,14 @@ export async function POST(req: Request) {
     buffer = Buffer.from(output)
   }
 
-  buffer = await sharp(buffer)
-    .resize({ width: 1200, withoutEnlargement: true })
-    .jpeg({ quality: 75, progressive: true })
-    .toBuffer()
+  try {
+    buffer = await sharp(buffer)
+      .resize({ width: 1200, withoutEnlargement: true })
+      .jpeg({ quality: 80 })
+      .toBuffer()
+  } catch {
+    // fall back to original buffer if sharp fails
+  }
 
   const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
 
