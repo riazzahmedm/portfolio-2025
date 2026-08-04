@@ -17,20 +17,41 @@ export function applyBundleDeal(items: CartItem[], deals: ShopBundleDeal[]): {
   subtotal: number
   discount: number
   total: number
-  appliedDeal: ShopBundleDeal | null
+  appliedDeals: ShopBundleDeal[]
 } {
-  const totalQty = items.reduce((s, i) => s + i.qty, 0)
   const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0)
 
-  const activeDeals = deals
-    .filter(d => d.is_active && totalQty >= d.min_qty)
-    .sort((a, b) => b.min_qty - a.min_qty)
-
-  const deal = activeDeals[0] ?? null
-  if (deal) {
-    return { subtotal, discount: Math.max(0, subtotal - deal.price), total: deal.price, appliedDeal: deal }
+  // Group items by category_id (null = uncategorised)
+  const byCategory = new Map<string | null, CartItem[]>()
+  for (const item of items) {
+    const key = item.category_id ?? null
+    if (!byCategory.has(key)) byCategory.set(key, [])
+    byCategory.get(key)!.push(item)
   }
-  return { subtotal, discount: 0, total: subtotal, appliedDeal: null }
+
+  let totalDiscount = 0
+  const appliedDeals: ShopBundleDeal[] = []
+
+  for (const [catId, catItems] of byCategory) {
+    const catQty = catItems.reduce((s, i) => s + i.qty, 0)
+    // Deals for this category (or global deals with null category_id)
+    const candidates = deals
+      .filter(d => d.is_active && d.category_id === catId && catQty >= d.min_qty)
+      .sort((a, b) => b.min_qty - a.min_qty)
+    const deal = candidates[0]
+    if (deal) {
+      const catSubtotal = catItems.reduce((s, i) => s + i.price * i.qty, 0)
+      totalDiscount += Math.max(0, catSubtotal - deal.price)
+      appliedDeals.push(deal)
+    }
+  }
+
+  return {
+    subtotal,
+    discount: totalDiscount,
+    total: subtotal - totalDiscount,
+    appliedDeals,
+  }
 }
 
 export function useCart() {

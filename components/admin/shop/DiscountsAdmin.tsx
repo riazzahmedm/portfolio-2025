@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Trash2 } from 'lucide-react'
-import type { ShopBundleDeal, ShopCoupon } from '@/lib/shop.types'
+import type { ShopBundleDeal, ShopCategory, ShopCoupon } from '@/lib/shop.types'
 
 const inputStyle = { padding: '9px 12px', background: 'var(--surface)', border: '1px solid var(--border-input)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '13px', fontFamily: 'var(--ff-mono)', outline: 'none', width: '100%', boxSizing: 'border-box' as const }
 const labelStyle = { fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase' as const, color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)', marginBottom: '6px', display: 'block' }
@@ -17,26 +17,30 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 export default function DiscountsAdmin() {
-  const [bundles, setBundles] = useState<ShopBundleDeal[]>([])
-  const [coupons, setCoupons] = useState<ShopCoupon[]>([])
+  const [bundles,    setBundles]    = useState<ShopBundleDeal[]>([])
+  const [coupons,    setCoupons]    = useState<ShopCoupon[]>([])
+  const [categories, setCategories] = useState<ShopCategory[]>([])
 
   function refresh() {
     fetch('/api/admin/shop/discounts/bundles').then(r => r.json()).then(setBundles)
     fetch('/api/admin/shop/discounts/coupons').then(r => r.json()).then(setCoupons)
   }
 
-  useEffect(() => { refresh() }, [])
+  useEffect(() => {
+    refresh()
+    fetch('/api/shop/categories').then(r => r.json()).then(setCategories)
+  }, [])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '48px', maxWidth: '640px' }}>
-      <BundlesSection bundles={bundles} onChanged={refresh} />
+      <BundlesSection bundles={bundles} categories={categories} onChanged={refresh} />
       <CouponsSection coupons={coupons} onChanged={refresh} />
     </div>
   )
 }
 
-function BundlesSection({ bundles, onChanged }: { bundles: ShopBundleDeal[]; onChanged: () => void }) {
-  const [form,   setForm]   = useState({ name: '', min_qty: '', price: '' })
+function BundlesSection({ bundles, categories, onChanged }: { bundles: ShopBundleDeal[]; categories: ShopCategory[]; onChanged: () => void }) {
+  const [form,   setForm]   = useState({ name: '', min_qty: '', price: '', category_id: '' })
   const [saving, setSaving] = useState(false)
 
   async function add() {
@@ -44,9 +48,14 @@ function BundlesSection({ bundles, onChanged }: { bundles: ShopBundleDeal[]; onC
     setSaving(true)
     const res = await fetch('/api/admin/shop/discounts/bundles', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: form.name, min_qty: parseInt(form.min_qty), price: parseFloat(form.price) }),
+      body: JSON.stringify({
+        name: form.name,
+        min_qty: parseInt(form.min_qty),
+        price: parseFloat(form.price),
+        category_id: form.category_id || null,
+      }),
     })
-    if (res.ok) { toast.success('Bundle deal added'); setForm({ name: '', min_qty: '', price: '' }); onChanged() }
+    if (res.ok) { toast.success('Bundle deal added'); setForm({ name: '', min_qty: '', price: '', category_id: '' }); onChanged() }
     else { const e = await res.json(); toast.error(e.error) }
     setSaving(false)
   }
@@ -74,7 +83,10 @@ function BundlesSection({ bundles, onChanged }: { bundles: ShopBundleDeal[]; onC
             <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderBottom: i < bundles.length - 1 ? '1px solid var(--border)' : 'none' }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>{b.name}</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>Min {b.min_qty} items → ₹{Number(b.price).toFixed(0)}</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
+                  Min {b.min_qty} → ₹{Number(b.price).toFixed(0)}
+                  {b.category_name ? <span style={{ color: 'var(--lavender)', marginLeft: '8px' }}>{b.category_name}</span> : <span style={{ opacity: 0.5, marginLeft: '8px' }}>all categories</span>}
+                </div>
               </div>
               <button onClick={() => toggle(b)} style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '999px', border: '1px solid', borderColor: b.is_active ? 'var(--lime)' : 'var(--border-card)', background: b.is_active ? 'var(--lime-dim)' : 'transparent', color: b.is_active ? 'var(--lime)' : 'var(--text-dim)', cursor: 'pointer', fontFamily: 'var(--ff-mono)' }}>
                 {b.is_active ? 'On' : 'Off'}
@@ -90,6 +102,12 @@ function BundlesSection({ bundles, onChanged }: { bundles: ShopBundleDeal[]; onC
         <div style={{ fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>New bundle deal</div>
         <Field label="Deal name">
           <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Buy 3 save" style={inputStyle} />
+        </Field>
+        <Field label="Category">
+          <select value={form.category_id} onChange={e => setForm(f => ({ ...f, category_id: e.target.value }))} style={{ ...inputStyle, appearance: 'none' }}>
+            <option value="">All categories</option>
+            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
         </Field>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           <Field label="Minimum qty">

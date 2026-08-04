@@ -24,7 +24,7 @@ export default function CartPage() {
     fetch('/api/admin/shop/discounts/bundles').then(r => r.json()).then(setDeals)
   }, [])
 
-  const { subtotal, discount: bundleDiscount, total: bundleTotal, appliedDeal } = applyBundleDeal(items, deals)
+  const { subtotal, discount: bundleDiscount, total: bundleTotal, appliedDeals } = applyBundleDeal(items, deals)
   const finalTotal = Math.max(0, bundleTotal - couponDiscount)
 
   async function validateCoupon() {
@@ -116,9 +116,12 @@ export default function CartPage() {
         ))}
       </div>
 
-      {appliedDeal && (
-        <div style={{ background: 'var(--lime-dim)', border: '1px solid var(--lime)', borderRadius: '10px', padding: '10px 16px', marginBottom: '20px', fontSize: '13px', color: 'var(--lime)', fontFamily: 'var(--ff-mono)' }}>
-          Bundle deal: {appliedDeal.name} — ₹{bundleDiscount.toFixed(0)} saved
+      {appliedDeals.length > 0 && (
+        <div style={{ background: 'var(--lime-dim)', border: '1px solid var(--lime)', borderRadius: '10px', padding: '10px 16px', marginBottom: '20px', fontSize: '13px', color: 'var(--lime)', fontFamily: 'var(--ff-mono)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {appliedDeals.map(d => (
+            <div key={d.id}>Bundle deal: {d.name}</div>
+          ))}
+          <div style={{ opacity: 0.8 }}>₹{bundleDiscount.toFixed(0)} saved</div>
         </div>
       )}
 

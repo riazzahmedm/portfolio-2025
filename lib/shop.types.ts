@@ -84,6 +84,8 @@ export interface ShopBundleDeal {
   min_qty: number
   price: number
   is_active: boolean
+  category_id: string | null
+  category_name?: string
   created_at: string
 }
 
@@ -117,6 +119,7 @@ export interface CartItem {
   qty: number
   stock_qty: number
   image: string
+  category_id: string | null
 }
 
 export type ShopEventType = 'page_view' | 'add_to_cart' | 'checkout_started' | 'payment_submitted' | 'order_completed'

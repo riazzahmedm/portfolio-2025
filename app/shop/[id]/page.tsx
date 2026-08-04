@@ -40,14 +40,15 @@ export default function ProductPage() {
       return
     }
     addItem({
-      variantId: selectedVariant.id,
-      productId: product.id,
-      name:      product.name,
-      size:      selectedVariant.size,
-      price:     Number(selectedVariant.price),
+      variantId:   selectedVariant.id,
+      productId:   product.id,
+      name:        product.name,
+      size:        selectedVariant.size,
+      price:       Number(selectedVariant.price),
       qty,
-      stock_qty: selectedVariant.stock_qty,
-      image:     product.images[0] ?? '',
+      stock_qty:   selectedVariant.stock_qty,
+      image:       product.images[0] ?? '',
+      category_id: product.category_id ?? null,
     })
     track('add_to_cart', {
       product_id: product.id,
