@@ -41,7 +41,9 @@ export function applyBundleDeal(items: CartItem[], deals: ShopBundleDeal[]): {
     const deal = candidates[0]
     if (deal) {
       const catSubtotal = catItems.reduce((s, i) => s + i.price * i.qty, 0)
-      totalDiscount += Math.max(0, catSubtotal - deal.price)
+      // Apply deal to exactly min_qty items; remaining qty stays at normal price
+      const applicableSubtotal = catSubtotal * (deal.min_qty / catQty)
+      totalDiscount += Math.max(0, applicableSubtotal - deal.price)
       appliedDeals.push(deal)
     }
   }
