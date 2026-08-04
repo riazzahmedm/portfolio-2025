@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 function ProductCardSkeleton() {
   return (
@@ -41,9 +41,19 @@ export default function ShopPage() {
   const [products,   setProducts]   = useState<ShopProduct[]>([])
   const [categories, setCategories] = useState<ShopCategory[]>([])
   const [tags,       setTags]       = useState<ShopTag[]>([])
-  const [activeCat,  setActiveCat]  = useState<string>('all')
-  const [activeTag,  setActiveTag]  = useState<string>('all')
-  const [loading,    setLoading]    = useState(true)
+  const [activeCat,    setActiveCat]    = useState<string>('all')
+  const [activeTag,    setActiveTag]    = useState<string>('all')
+  const [filterOpen,   setFilterOpen]   = useState(false)
+  const [loading,      setLoading]      = useState(true)
+  const filterRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (filterRef.current && !filterRef.current.contains(e.target as Node)) setFilterOpen(false)
+    }
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [])
 
   useEffect(() => {
     track('page_view', { path: '/shop' })
@@ -107,8 +117,8 @@ export default function ShopPage() {
           </p>
         </div>
 
-        {categories.length > 0 && (
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
             {[{ id: 'all', name: 'All' }, ...categories].map(cat => (
               <button
                 key={cat.id}
@@ -126,29 +136,69 @@ export default function ShopPage() {
               </button>
             ))}
           </div>
-        )}
 
-        {tags.length > 0 && (
-          <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', marginBottom: '20px' }}>
-            {[{ id: 'all', slug: 'all', name: 'All tags' }, ...tags].map(tag => (
-              <button
-                key={tag.id}
-                onClick={() => setActiveTag(tag.id === 'all' ? 'all' : (tag as ShopTag).slug)}
-                style={{
-                  padding: '3px 10px', borderRadius: '999px', fontSize: '10px', letterSpacing: '0.08em',
-                  textTransform: 'uppercase', fontFamily: 'var(--ff-mono)',
-                  border: '1px solid',
-                  borderColor: activeTag === (tag.id === 'all' ? 'all' : (tag as ShopTag).slug) ? 'var(--lime)' : 'var(--border)',
-                  background:  activeTag === (tag.id === 'all' ? 'all' : (tag as ShopTag).slug) ? 'var(--lime-dim)' : 'transparent',
-                  color:       activeTag === (tag.id === 'all' ? 'all' : (tag as ShopTag).slug) ? 'var(--lime)' : 'var(--text-secondary)',
-                  cursor: 'pointer',
-                }}
-              >
-                {tag.name}
-              </button>
-            ))}
+          {tags.length > 0 && (
+          <div ref={filterRef} style={{ position: 'relative', display: 'inline-block' }}>
+            <button
+              onClick={() => setFilterOpen(o => !o)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '7px',
+                padding: '5px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 500,
+                border: '1px solid',
+                borderColor: activeTag !== 'all' ? 'var(--lime)' : 'var(--border-card)',
+                background:  activeTag !== 'all' ? 'var(--lime-dim)' : 'transparent',
+                color:       activeTag !== 'all' ? 'var(--lime)' : 'var(--text-secondary)',
+                cursor: 'pointer', fontFamily: 'var(--ff-body)',
+              }}
+            >
+              {activeTag === 'all'
+                ? 'Filter by tag'
+                : tags.find(t => t.slug === activeTag)?.name ?? activeTag}
+              {activeTag !== 'all' && (
+                <span
+                  onClick={e => { e.stopPropagation(); setActiveTag('all') }}
+                  style={{ fontSize: '13px', lineHeight: 1, opacity: 0.7, marginLeft: '2px' }}
+                >✕</span>
+              )}
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.6, transform: filterOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>
+                <path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+
+            {filterOpen && (
+              <div style={{
+                position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 100,
+                background: 'var(--surface-raised)', border: '1px solid var(--border-card)',
+                borderRadius: '12px', padding: '6px', minWidth: '160px',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+                display: 'flex', flexDirection: 'column', gap: '2px',
+              }}>
+                {tags.map(tag => (
+                  <button
+                    key={tag.id}
+                    onClick={() => { setActiveTag(tag.slug); setFilterOpen(false) }}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '7px 12px', borderRadius: '8px', fontSize: '12px',
+                      border: 'none', cursor: 'pointer', textAlign: 'left',
+                      fontFamily: 'var(--ff-mono)', letterSpacing: '0.06em', textTransform: 'uppercase',
+                      background: activeTag === tag.slug ? 'rgba(130,255,31,0.1)' : 'transparent',
+                      color:      activeTag === tag.slug ? 'var(--lime)' : 'var(--text-secondary)',
+                    }}
+                  >
+                    {tag.name}
+                    {activeTag === tag.slug && (
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+          )}
+        </div>
 
         {loading ? (
           <div className="shop-grid">

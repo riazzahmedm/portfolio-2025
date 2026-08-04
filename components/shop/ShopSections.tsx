@@ -235,14 +235,22 @@ export default function ShopSections() {
 
         {/* Draggable photo cards */}
         {[
-          { id:1, src:'/insta-1.jpg',  w:140, h:172, rotate:-10, pos:{ top:'6%',    left:'-20px'  } },
-          { id:2, src:'/insta-2.jpg',  w:124, h:154, rotate:8,   pos:{ bottom:'6%', left:'-15px'  } },
-          { id:3, src:'/insta-3.jpg',  w:148, h:184, rotate:9,   pos:{ top:'4%',    right:'-20px' } },
-          { id:4, src:'/insta-4.jpg',  w:130, h:162, rotate:-8,  pos:{ bottom:'5%', right:'-18px' } },
-          { id:5, src:'/insta-5.jpg',  w:122, h:152, rotate:-6,  pos:{ top:'-20px', left:'18%'    } },
-          { id:6, src:'/insta-6.jpg',  w:116, h:144, rotate:7,   pos:{ top:'-16px', right:'18%'   } },
-          { id:7, src:'/insta-7.png',  w:118, h:146, rotate:-5,  pos:{ bottom:'-18px', left:'10%' } },
-          { id:8, src:'/insta-10.jpg', w:112, h:140, rotate:6,   pos:{ bottom:'-14px', right:'10%'} },
+          // LEFT EDGE — 3 photos spread top/mid/bottom
+          { id:1,  src:'/insta-1.jpg',  w:140, h:172, rotate:-10, pos:{ top:'2%',    left:'0px'  } },
+          { id:9,  src:'/insta-11.jpg', w:118, h:148, rotate:-7,  pos:{ top:'41%',   left:'0px'  } },
+          { id:2,  src:'/insta-2.jpg',  w:124, h:154, rotate:8,   pos:{ bottom:'2%', left:'0px'  } },
+          // RIGHT EDGE — 3 photos spread top/mid/bottom
+          { id:3,  src:'/insta-3.jpg',  w:148, h:184, rotate:9,   pos:{ top:'2%',    right:'0px' } },
+          { id:10, src:'/insta-12.jpg', w:114, h:142, rotate:5,   pos:{ top:'41%',   right:'0px' } },
+          { id:4,  src:'/insta-4.jpg',  w:130, h:162, rotate:-8,  pos:{ bottom:'-16px', right:'36%'  } },
+          // TOP EDGE — 3 photos spread across, peeking from top
+          { id:5,  src:'/insta-5.jpg',  w:122, h:152, rotate:-6,  pos:{ top:'-20px', left:'12%'    } },
+          { id:11, src:'/insta-13.jpg', w:120, h:150, rotate:10,  pos:{ top:'-18px', left:'38%'    } },
+          { id:6,  src:'/insta-6.jpg',  w:116, h:144, rotate:7,   pos:{ top:'-16px', right:'12%'   } },
+          // BOTTOM EDGE — 3 photos spread across, peeking from bottom
+          { id:7,  src:'/insta-7.png',  w:118, h:146, rotate:-5,  pos:{ bottom:'-18px', left:'14%' } },
+          { id:12, src:'/insta-14.jpg', w:116, h:144, rotate:-8,  pos:{ bottom:'2%',    right:'-18px' } },
+          { id:8,  src:'/insta-10.jpg', w:112, h:140, rotate:6,   pos:{ bottom:'-14px', right:'12%'} },
         ].map(card => (
           <motion.div
             key={card.id}
@@ -270,6 +278,7 @@ export default function ShopSections() {
           position: 'absolute', top: '50%', left: '50%',
           transform: 'translate(-50%,-50%)',
           textAlign: 'center', zIndex: 50, userSelect: 'none', width: '100%',
+          pointerEvents: 'none',
         }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -296,9 +305,9 @@ export default function ShopSections() {
                 border: '1px solid rgba(255,255,255,0.2)',
                 background: 'rgba(255,255,255,0.05)',
                 backdropFilter: 'blur(8px)',
-                  color: '#fff', textDecoration: 'none',
+                color: '#fff', textDecoration: 'none',
                 fontFamily: 'var(--ff-body)', fontSize: '14px',
-                letterSpacing: '0.04em',
+                letterSpacing: '0.04em', pointerEvents: 'auto',
               }}
             >
               Follow me

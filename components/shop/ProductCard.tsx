@@ -27,7 +27,7 @@ export default function ProductCard({ product }: { product: ShopProduct }) {
       >
         <div style={{ position: 'relative', aspectRatio: '1', background: 'var(--surface-alt)' }}>
           {image ? (
-            <img src={image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <img src={image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: product.image_fit ?? 'cover', objectPosition: product.image_position ?? 'center', display: 'block' }} />
           ) : (
             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)', fontSize: '13px' }}>
               No image

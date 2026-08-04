@@ -29,6 +29,8 @@ export interface ShopProduct {
   description: string | null
   images: string[]
   is_active: boolean
+  image_fit: 'cover' | 'contain'
+  image_position: 'top' | 'center' | 'bottom'
   created_at: string
   category?: ShopCategory
   variants?: ShopVariant[]

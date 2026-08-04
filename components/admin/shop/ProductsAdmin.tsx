@@ -178,7 +178,7 @@ function ProductForm({ categories, tags, onSaved }: { categories: ShopCategory[]
 }
 
 function ProductEditor({ product, categories, onChanged }: { product: ShopProduct; categories: ShopCategory[]; onChanged: () => void }) {
-  const [form,      setForm]      = useState({ name: product.name, description: product.description ?? '', category_id: product.category_id ?? '' })
+  const [form,      setForm]      = useState({ name: product.name, description: product.description ?? '', category_id: product.category_id ?? '', image_fit: product.image_fit ?? 'cover', image_position: product.image_position ?? 'center' })
   const [images,    setImages]    = useState<string[]>(product.images ?? [])
   const [uploading, setUploading] = useState(false)
   const [saving,    setSaving]    = useState(false)
@@ -219,6 +219,38 @@ function ProductEditor({ product, categories, onChanged }: { product: ShopProduc
         <option value="">No category</option>
         {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
       </select>
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)', marginBottom: '5px' }}>Image fit</div>
+          <div style={{ display: 'flex', gap: '4px' }}>
+            {(['cover', 'contain'] as const).map(opt => (
+              <button key={opt} onClick={() => setForm(f => ({ ...f, image_fit: opt }))}
+                style={{ flex: 1, padding: '6px 0', borderRadius: '7px', border: '1px solid', fontSize: '11px', fontFamily: 'var(--ff-mono)', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.06em',
+                  borderColor: form.image_fit === opt ? 'var(--lavender)' : 'var(--border-input)',
+                  background:  form.image_fit === opt ? 'rgba(184,160,255,0.12)' : 'transparent',
+                  color:       form.image_fit === opt ? 'var(--lavender)' : 'var(--text-dim)',
+                }}>
+                {opt}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)', marginBottom: '5px' }}>Crop position</div>
+          <div style={{ display: 'flex', gap: '4px' }}>
+            {(['top', 'center', 'bottom'] as const).map(opt => (
+              <button key={opt} onClick={() => setForm(f => ({ ...f, image_position: opt }))}
+                style={{ flex: 1, padding: '6px 0', borderRadius: '7px', border: '1px solid', fontSize: '11px', fontFamily: 'var(--ff-mono)', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.06em',
+                  borderColor: form.image_position === opt ? 'var(--lavender)' : 'var(--border-input)',
+                  background:  form.image_position === opt ? 'rgba(184,160,255,0.12)' : 'transparent',
+                  color:       form.image_position === opt ? 'var(--lavender)' : 'var(--text-dim)',
+                }}>
+                {opt}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
         {images.map((url, i) => (
           <div key={i} style={{ position: 'relative', width: '64px', height: '64px', flexShrink: 0 }}>

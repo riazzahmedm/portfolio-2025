@@ -107,7 +107,7 @@ export default function ProductPage() {
         <div>
           <div style={{ position: 'relative', aspectRatio: '1', borderRadius: '16px', overflow: 'hidden', background: 'var(--surface-alt)', marginBottom: '12px' }}>
             {product.images[activeImg] ? (
-              <Image src={product.images[activeImg]} alt={product.name} fill style={{ objectFit: 'cover' }} />
+              <Image src={product.images[activeImg]} alt={product.name} fill style={{ objectFit: product.image_fit ?? 'cover', objectPosition: product.image_position ?? 'center' }} />
             ) : (
               <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)' }}>No image</div>
             )}
