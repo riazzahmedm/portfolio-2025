@@ -1,9 +1,84 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { Plus, Trash2, X, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, Trash2, X, ChevronDown, ChevronUp, GripVertical } from 'lucide-react'
 import type { ShopProduct, ShopCategory, ShopTag, ShopVariant } from '@/lib/shop.types'
 import { compressImage } from '@/lib/compress-image'
+import {
+  DndContext, closestCenter, PointerSensor, useSensor, useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext, verticalListSortingStrategy, useSortable, arrayMove,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+
+function SortableProduct({
+  product, expanded, onToggleExpand, onToggleActive, onDelete, categories, tags, onChanged,
+}: {
+  product: ShopProduct
+  expanded: boolean
+  onToggleExpand: () => void
+  onToggleActive: () => void
+  onDelete: () => void
+  categories: ShopCategory[]
+  tags: ShopTag[]
+  onChanged: () => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: product.id })
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        background: 'var(--surface)', border: '1px solid var(--border-card)',
+        borderRadius: '14px', overflow: 'hidden',
+        transform: CSS.Transform.toString(transform), transition,
+        opacity: isDragging ? 0.5 : 1,
+        boxShadow: isDragging ? '0 8px 32px rgba(0,0,0,0.4)' : 'none',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 18px' }}>
+        <div
+          {...attributes} {...listeners}
+          style={{ color: 'var(--text-dim)', cursor: 'grab', padding: '4px', flexShrink: 0, touchAction: 'none' }}
+        >
+          <GripVertical size={16} />
+        </div>
+        {product.images[0] && (
+          <img src={product.images[0]} alt={product.name} style={{ width: '52px', height: '52px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0, display: 'block' }} />
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{product.name}</div>
+          <div style={{ fontSize: '12px', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)', marginTop: '2px' }}>
+            {product.category?.name ?? 'No category'} · {product.variants?.length ?? 0} variants
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button onClick={onToggleActive}
+            style={{ fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 10px', borderRadius: '999px', border: '1px solid', borderColor: product.is_active ? 'var(--lime)' : 'var(--border-card)', background: product.is_active ? 'var(--lime-dim)' : 'transparent', color: product.is_active ? 'var(--lime)' : 'var(--text-dim)', cursor: 'pointer', fontFamily: 'var(--ff-mono)' }}>
+            {product.is_active ? 'Active' : 'Hidden'}
+          </button>
+          <button onClick={onToggleExpand} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px' }}>
+            {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+          <button onClick={onDelete} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '4px' }}>
+            <Trash2 size={15} />
+          </button>
+        </div>
+      </div>
+
+      {expanded && (
+        <div style={{ borderTop: '1px solid var(--border)', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <ProductEditor product={product} categories={categories} onChanged={onChanged} />
+          <VariantsEditor productId={product.id} variants={product.variants ?? []} onChanged={onChanged} />
+          <TagsEditor productId={product.id} allTags={tags} selectedTags={product.tags ?? []} onChanged={onChanged} />
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function ProductsAdmin() {
   const [products,   setProducts]   = useState<ShopProduct[]>([])
@@ -12,6 +87,8 @@ export default function ProductsAdmin() {
   const [expanded,   setExpanded]   = useState<string | null>(null)
   const [showForm,   setShowForm]   = useState(false)
   const [loading,    setLoading]    = useState(true)
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   function refresh() {
     fetch('/api/shop/products').then(r => r.json()).then(data => { setProducts(data); setLoading(false) })
@@ -38,8 +115,23 @@ export default function ProductsAdmin() {
     refresh()
   }
 
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = products.findIndex(p => p.id === active.id)
+    const newIndex = products.findIndex(p => p.id === over.id)
+    const reordered = arrayMove(products, oldIndex, newIndex)
+    setProducts(reordered)
+    await fetch('/api/shop/products/reorder', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: reordered.map(p => p.id) }),
+    })
+    toast.success('Order saved')
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <style>{`.sk{background:var(--surface-raised);border-radius:6px;animation:pulse 1.6s ease-in-out infinite}`}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ fontFamily: 'var(--ff-display)', fontSize: '20px', letterSpacing: '0.04em', textTransform: 'uppercase', margin: 0 }}>Products</h2>
         <button onClick={() => setShowForm(s => !s)} style={{ padding: '8px 18px', borderRadius: '10px', background: 'rgba(184,160,255,0.1)', color: 'var(--lavender)', border: '1px solid rgba(184,160,255,0.25)', cursor: 'pointer', fontSize: '13px', fontWeight: 600, fontFamily: 'var(--ff-body)' }}>
@@ -51,16 +143,15 @@ export default function ProductsAdmin() {
 
       {loading && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <style>{`.sk{background:var(--surface-raised);border-radius:6px;animation:pulse 1.6s ease-in-out infinite}`}</style>
           {[0,1,2].map(i => (
             <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '14px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div className="sk" style={{ width: '16px', height: '20px' }} />
               <div className="sk" style={{ width: '52px', height: '52px', borderRadius: '8px', flexShrink: 0 }} />
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div className="sk" style={{ width: '160px', height: '14px' }} />
                 <div className="sk" style={{ width: '110px', height: '11px' }} />
               </div>
               <div className="sk" style={{ width: '60px', height: '26px', borderRadius: '999px' }} />
-              <div className="sk" style={{ width: '20px', height: '20px', borderRadius: '4px' }} />
             </div>
           ))}
         </div>
@@ -69,43 +160,27 @@ export default function ProductsAdmin() {
         <p style={{ color: 'var(--text-dim)', fontSize: '13px', fontFamily: 'var(--ff-mono)' }}>No products yet.</p>
       )}
 
-      {products.map(product => (
-        <div key={product.id} style={{ background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '14px', overflow: 'hidden' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 18px' }}>
-            {product.images[0] && (
-              <img src={product.images[0]} alt={product.name} style={{ width: '52px', height: '52px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0, display: 'block' }} />
-            )}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{product.name}</div>
-              <div style={{ fontSize: '12px', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)', marginTop: '2px' }}>
-                {product.category?.name ?? 'No category'} · {product.variants?.length ?? 0} variants
-              </div>
+      {!loading && products.length > 0 && (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={products.map(p => p.id)} strategy={verticalListSortingStrategy}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {products.map(product => (
+                <SortableProduct
+                  key={product.id}
+                  product={product}
+                  expanded={expanded === product.id}
+                  onToggleExpand={() => setExpanded(e => e === product.id ? null : product.id)}
+                  onToggleActive={() => toggleActive(product)}
+                  onDelete={() => deleteProduct(product.id)}
+                  categories={categories}
+                  tags={tags}
+                  onChanged={refresh}
+                />
+              ))}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <button
-                onClick={() => toggleActive(product)}
-                style={{ fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 10px', borderRadius: '999px', border: '1px solid', borderColor: product.is_active ? 'var(--lime)' : 'var(--border-card)', background: product.is_active ? 'var(--lime-dim)' : 'transparent', color: product.is_active ? 'var(--lime)' : 'var(--text-dim)', cursor: 'pointer', fontFamily: 'var(--ff-mono)' }}
-              >
-                {product.is_active ? 'Active' : 'Hidden'}
-              </button>
-              <button onClick={() => setExpanded(e => e === product.id ? null : product.id)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px' }}>
-                {expanded === product.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              </button>
-              <button onClick={() => deleteProduct(product.id)} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '4px' }}>
-                <Trash2 size={15} />
-              </button>
-            </div>
-          </div>
-
-          {expanded === product.id && (
-            <div style={{ borderTop: '1px solid var(--border)', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <ProductEditor product={product} categories={categories} onChanged={refresh} />
-              <VariantsEditor productId={product.id} variants={product.variants ?? []} onChanged={refresh} />
-              <TagsEditor productId={product.id} allTags={tags} selectedTags={product.tags ?? []} onChanged={refresh} />
-            </div>
-          )}
-        </div>
-      ))}
+          </SortableContext>
+        </DndContext>
+      )}
     </div>
   )
 }

@@ -15,7 +15,7 @@ export async function GET(req: Request) {
       variants:shop_variants(*),
       tags:shop_product_tags(tag:shop_tags(*))
     `)
-    .order('created_at', { ascending: false })
+    .order('sort_order', { ascending: true })
 
   if (!admin) query = query.eq('is_active', true)
   if (category) query = query.eq('category_id', category)

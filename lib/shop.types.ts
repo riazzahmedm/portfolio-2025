@@ -31,6 +31,7 @@ export interface ShopProduct {
   is_active: boolean
   image_fit: 'cover' | 'contain'
   image_position: 'top' | 'center' | 'bottom'
+  sort_order: number
   created_at: string
   category?: ShopCategory
   variants?: ShopVariant[]
