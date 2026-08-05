@@ -87,6 +87,7 @@ export default function ProductsAdmin() {
   const [expanded,   setExpanded]   = useState<string | null>(null)
   const [showForm,   setShowForm]   = useState(false)
   const [loading,    setLoading]    = useState(true)
+  const [filterCat,  setFilterCat]  = useState<string>('')
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
@@ -139,6 +140,27 @@ export default function ProductsAdmin() {
         </button>
       </div>
 
+      {categories.length > 0 && (
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {[{ id: '', name: 'All' }, ...categories].map(c => (
+            <button
+              key={c.id}
+              onClick={() => setFilterCat(c.id)}
+              style={{
+                padding: '5px 14px', borderRadius: '999px', border: '1px solid',
+                borderColor: filterCat === c.id ? 'var(--lavender)' : 'var(--border-card)',
+                background: filterCat === c.id ? 'rgba(184,160,255,0.12)' : 'transparent',
+                color: filterCat === c.id ? 'var(--lavender)' : 'var(--text-dim)',
+                cursor: 'pointer', fontSize: '12px', fontFamily: 'var(--ff-mono)',
+                letterSpacing: '0.06em',
+              }}
+            >
+              {c.name}
+            </button>
+          ))}
+        </div>
+      )}
+
       {showForm && <ProductForm categories={categories} tags={tags} onSaved={() => { setShowForm(false); refresh() }} />}
 
       {loading && (
@@ -164,7 +186,7 @@ export default function ProductsAdmin() {
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={products.map(p => p.id)} strategy={verticalListSortingStrategy}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {products.map(product => (
+              {products.filter(p => !filterCat || p.category_id === filterCat).map(product => (
                 <SortableProduct
                   key={product.id}
                   product={product}

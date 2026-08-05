@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { Trash2 } from 'lucide-react'
+import { Trash2, Pencil, Check, X } from 'lucide-react'
 import type { ShopBundleDeal, ShopCategory, ShopCoupon } from '@/lib/shop.types'
 
 const inputStyle = { padding: '9px 12px', background: 'var(--surface)', border: '1px solid var(--border-input)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '13px', fontFamily: 'var(--ff-mono)', outline: 'none', width: '100%', boxSizing: 'border-box' as const }
@@ -40,8 +40,11 @@ export default function DiscountsAdmin() {
 }
 
 function BundlesSection({ bundles, categories, onChanged }: { bundles: ShopBundleDeal[]; categories: ShopCategory[]; onChanged: () => void }) {
-  const [form,   setForm]   = useState({ name: '', min_qty: '', price: '', category_id: '' })
-  const [saving, setSaving] = useState(false)
+  const [form,    setForm]    = useState({ name: '', min_qty: '', price: '', category_id: '' })
+  const [saving,  setSaving]  = useState(false)
+  const [editId,  setEditId]  = useState<string | null>(null)
+  const [editForm, setEditForm] = useState({ name: '', min_qty: '', price: '', category_id: '' })
+  const [editSaving, setEditSaving] = useState(false)
 
   async function add() {
     if (!form.name || !form.min_qty || !form.price) { toast.error('All fields required'); return }
@@ -58,6 +61,28 @@ function BundlesSection({ bundles, categories, onChanged }: { bundles: ShopBundl
     if (res.ok) { toast.success('Bundle deal added'); setForm({ name: '', min_qty: '', price: '', category_id: '' }); onChanged() }
     else { const e = await res.json(); toast.error(e.error) }
     setSaving(false)
+  }
+
+  function startEdit(b: ShopBundleDeal) {
+    setEditId(b.id)
+    setEditForm({ name: b.name, min_qty: String(b.min_qty), price: String(b.price), category_id: b.category_id ?? '' })
+  }
+
+  async function saveEdit() {
+    if (!editForm.name || !editForm.min_qty || !editForm.price) { toast.error('All fields required'); return }
+    setEditSaving(true)
+    const res = await fetch(`/api/admin/shop/discounts/bundles/${editId}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: editForm.name,
+        min_qty: parseInt(editForm.min_qty),
+        price: parseFloat(editForm.price),
+        category_id: editForm.category_id || null,
+      }),
+    })
+    if (res.ok) { toast.success('Updated'); setEditId(null); onChanged() }
+    else { const e = await res.json(); toast.error(e.error) }
+    setEditSaving(false)
   }
 
   async function toggle(b: ShopBundleDeal) {
@@ -80,18 +105,53 @@ function BundlesSection({ bundles, categories, onChanged }: { bundles: ShopBundl
       {bundles.length > 0 && (
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '12px', overflow: 'hidden' }}>
           {bundles.map((b, i) => (
-            <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderBottom: i < bundles.length - 1 ? '1px solid var(--border)' : 'none' }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>{b.name}</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
-                  Min {b.min_qty} → ₹{Number(b.price).toFixed(0)}
-                  {b.category_name ? <span style={{ color: 'var(--lavender)', marginLeft: '8px' }}>{b.category_name}</span> : <span style={{ opacity: 0.5, marginLeft: '8px' }}>all categories</span>}
+            <div key={b.id} style={{ borderBottom: i < bundles.length - 1 ? '1px solid var(--border)' : 'none' }}>
+              {editId === b.id ? (
+                /* ── inline edit form ── */
+                <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <Field label="Deal name">
+                    <input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} style={inputStyle} />
+                  </Field>
+                  <Field label="Category">
+                    <select value={editForm.category_id} onChange={e => setEditForm(f => ({ ...f, category_id: e.target.value }))} style={{ ...inputStyle, appearance: 'none' }}>
+                      <option value="">All categories</option>
+                      {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </Field>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <Field label="Min qty">
+                      <input value={editForm.min_qty} onChange={e => setEditForm(f => ({ ...f, min_qty: e.target.value }))} type="number" style={inputStyle} />
+                    </Field>
+                    <Field label="Bundle price (₹)">
+                      <input value={editForm.price} onChange={e => setEditForm(f => ({ ...f, price: e.target.value }))} type="number" style={inputStyle} />
+                    </Field>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={saveEdit} disabled={editSaving} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '7px 14px', borderRadius: '8px', background: 'rgba(130,255,31,0.1)', color: 'var(--lime)', border: '1px solid rgba(130,255,31,0.3)', cursor: 'pointer', fontSize: '12px', fontFamily: 'var(--ff-body)', fontWeight: 600 }}>
+                      <Check size={13} />{editSaving ? 'Saving…' : 'Save'}
+                    </button>
+                    <button onClick={() => setEditId(null)} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '7px 14px', borderRadius: '8px', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--border-card)', cursor: 'pointer', fontSize: '12px', fontFamily: 'var(--ff-body)' }}>
+                      <X size={13} />Cancel
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <button onClick={() => toggle(b)} style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '999px', border: '1px solid', borderColor: b.is_active ? 'var(--lime)' : 'var(--border-card)', background: b.is_active ? 'var(--lime-dim)' : 'transparent', color: b.is_active ? 'var(--lime)' : 'var(--text-dim)', cursor: 'pointer', fontFamily: 'var(--ff-mono)' }}>
-                {b.is_active ? 'On' : 'Off'}
-              </button>
-              <button onClick={() => del(b.id)} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px' }}><Trash2 size={13} /></button>
+              ) : (
+                /* ── read row ── */
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>{b.name}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
+                      Min {b.min_qty} → ₹{Number(b.price).toFixed(0)}
+                      {b.category_name ? <span style={{ color: 'var(--lavender)', marginLeft: '8px' }}>{b.category_name}</span> : <span style={{ opacity: 0.5, marginLeft: '8px' }}>all categories</span>}
+                    </div>
+                  </div>
+                  <button onClick={() => toggle(b)} style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '999px', border: '1px solid', borderColor: b.is_active ? 'var(--lime)' : 'var(--border-card)', background: b.is_active ? 'var(--lime-dim)' : 'transparent', color: b.is_active ? 'var(--lime)' : 'var(--text-dim)', cursor: 'pointer', fontFamily: 'var(--ff-mono)' }}>
+                    {b.is_active ? 'On' : 'Off'}
+                  </button>
+                  <button onClick={() => startEdit(b)} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px' }}><Pencil size={13} /></button>
+                  <button onClick={() => del(b.id)} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px' }}><Trash2 size={13} /></button>
+                </div>
+              )}
             </div>
           ))}
         </div>

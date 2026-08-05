@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
+import type { ShopBundleDeal } from '@/lib/shop.types'
 
 function ProductCardSkeleton() {
   return (
@@ -38,13 +39,18 @@ import type { ShopProduct, ShopCategory, ShopTag } from '@/lib/shop.types'
 
 export default function ShopPage() {
   const { track } = useShopSession()
-  const [products,   setProducts]   = useState<ShopProduct[]>([])
+  const [products,     setProducts]     = useState<ShopProduct[]>([])
+  const [allProducts,  setAllProducts]  = useState<ShopProduct[]>([])
   const [categories, setCategories] = useState<ShopCategory[]>([])
   const [tags,       setTags]       = useState<ShopTag[]>([])
   const [activeCat,    setActiveCat]    = useState<string>('all')
   const [activeTag,    setActiveTag]    = useState<string>('all')
   const [filterOpen,   setFilterOpen]   = useState(false)
   const [loading,      setLoading]      = useState(true)
+  const [deals,        setDeals]        = useState<ShopBundleDeal[]>([])
+  const [dealIdx,      setDealIdx]      = useState(0)
+  const [sweeping,     setSweeping]     = useState(false)
+  const [visibleCount, setVisibleCount] = useState(10)
   const filterRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -60,11 +66,27 @@ export default function ShopPage() {
     Promise.all([
       fetch('/api/shop/categories').then(r => r.json()),
       fetch('/api/shop/tags').then(r => r.json()),
-    ]).then(([cats, tgs]) => {
+      fetch('/api/shop/bundles').then(r => r.json()),
+      fetch('/api/shop/products').then(r => r.json()),
+    ]).then(([cats, tgs, bndls, all]) => {
       setCategories(cats)
       setTags(tgs)
+      setDeals(Array.isArray(bndls) ? bndls : [])
+      setAllProducts(Array.isArray(all) ? all : [])
     })
   }, [track])
+
+  // Cycle inline deal card with glare sweep
+  useEffect(() => {
+    if (deals.length < 2) return
+    const t = setInterval(() => {
+      setSweeping(true)
+      // Swap content at midpoint of sweep so shine appears to reveal it
+      setTimeout(() => setDealIdx(i => (i + 1) % deals.length), 280)
+      setTimeout(() => setSweeping(false), 650)
+    }, 3500)
+    return () => clearInterval(t)
+  }, [deals.length])
 
   useEffect(() => {
     setLoading(true)
@@ -91,6 +113,12 @@ export default function ShopPage() {
         @media (min-width: 600px) {
           .shop-main { padding: 40px 24px; }
         }
+        .tag-dropdown { right: 0; }
+        @media (max-width: 599px) {
+          .tag-dropdown { right: 0; left: auto; }
+        }
+        .cat-pills::-webkit-scrollbar { display: none; }
+        .cat-pills { -ms-overflow-style: none; scrollbar-width: none; }
         @keyframes shimmer {
           from { transform: translateX(-100%); }
           to   { transform: translateX(100%); }
@@ -99,6 +127,61 @@ export default function ShopPage() {
           position: absolute; inset: 0;
           background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
           animation: shimmer 1.4s infinite;
+        }
+        .deal-inline-card {
+          grid-column: 1 / -1;
+          border-radius: 16px;
+          overflow: hidden;
+          position: relative;
+        }
+        .deal-card-inner {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 24px;
+          padding: clamp(20px, 4vw, 36px);
+        }
+        .deal-collage {
+          flex-shrink: 0;
+          position: relative;
+          width: 220px;
+          height: 140px;
+        }
+        @media (max-width: 599px) {
+          .deal-card-inner {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 14px;
+            padding-bottom: 0;
+          }
+          .deal-collage {
+            width: 220px;
+            height: 90px;
+            overflow: visible;
+            align-self: center;
+          }
+        }
+        @keyframes shineSwipe {
+          from { transform: translateX(-150%) skewX(-18deg); }
+          to   { transform: translateX(400%) skewX(-18deg); }
+        }
+        .deal-shine {
+          position: absolute; inset: 0; z-index: 10; pointer-events: none;
+          overflow: hidden; border-radius: 16px;
+        }
+        .deal-shine::after {
+          content: '';
+          position: absolute; top: 0; bottom: 0; left: 0;
+          width: 55%;
+          background: linear-gradient(
+            105deg,
+            transparent 20%,
+            rgba(255,255,255,0.04) 38%,
+            rgba(255,255,255,0.18) 50%,
+            rgba(255,255,255,0.04) 62%,
+            transparent 80%
+          );
+          animation: shineSwipe 0.65s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
       `}</style>
       <main className="shop-main" style={{ maxWidth: '1100px', margin: '0 auto' }}>
@@ -113,16 +196,16 @@ export default function ShopPage() {
             </span>
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '14px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.06em' }}>
-            Original art prints · Shipped to your door
+            Original art prints. Yours to keep.
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '20px' }}>
+          <div className="cat-pills" style={{ display: 'flex', gap: '6px', flexWrap: 'nowrap', overflowX: 'auto', minWidth: 0 }}>
             {[{ id: 'all', name: 'All' }, ...categories].map(cat => (
               <button
                 key={cat.id}
-                onClick={() => setActiveCat(cat.id)}
+                onClick={() => { setActiveCat(cat.id); setVisibleCount(10) }}
                 style={{
                   padding: '5px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 500,
                   border: '1px solid',
@@ -141,35 +224,35 @@ export default function ShopPage() {
           <div ref={filterRef} style={{ position: 'relative', display: 'inline-block' }}>
             <button
               onClick={() => setFilterOpen(o => !o)}
+              title={activeTag === 'all' ? 'Filter by tag' : (tags.find(t => t.slug === activeTag)?.name ?? activeTag)}
               style={{
-                display: 'inline-flex', alignItems: 'center', gap: '7px',
-                padding: '5px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 500,
-                border: '1px solid',
+                display: 'inline-flex', alignItems: 'center', gap: '5px',
+                padding: '5px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: 500,
+                border: '1px solid', flexShrink: 0,
                 borderColor: activeTag !== 'all' ? 'var(--lime)' : 'var(--border-card)',
                 background:  activeTag !== 'all' ? 'var(--lime-dim)' : 'transparent',
                 color:       activeTag !== 'all' ? 'var(--lime)' : 'var(--text-secondary)',
-                cursor: 'pointer', fontFamily: 'var(--ff-body)',
+                cursor: 'pointer',
               }}
             >
-              {activeTag === 'all'
-                ? 'Filter by tag'
-                : tags.find(t => t.slug === activeTag)?.name ?? activeTag}
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M1 3h12M3 7h8M5 11h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
               {activeTag !== 'all' && (
                 <span
                   onClick={e => { e.stopPropagation(); setActiveTag('all') }}
-                  style={{ fontSize: '13px', lineHeight: 1, opacity: 0.7, marginLeft: '2px' }}
+                  style={{ fontSize: '12px', lineHeight: 1, opacity: 0.7 }}
                 >✕</span>
               )}
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.6, transform: filterOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>
-                <path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
             </button>
 
             {filterOpen && (
-              <div style={{
-                position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 100,
+              <div className="tag-dropdown" style={{
+                position: 'absolute', top: 'calc(100% + 6px)', zIndex: 100,
                 background: 'var(--surface-raised)', border: '1px solid var(--border-card)',
                 borderRadius: '12px', padding: '6px', minWidth: '160px',
+                maxWidth: 'min(220px, calc(100vw - 32px))',
+                maxHeight: '240px', overflowY: 'auto',
                 boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
                 display: 'flex', flexDirection: 'column', gap: '2px',
               }}>
@@ -200,7 +283,7 @@ export default function ShopPage() {
           )}
         </div>
 
-        {loading ? (
+{loading ? (
           <div className="shop-grid">
             {Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} />)}
           </div>
@@ -220,9 +303,112 @@ export default function ShopPage() {
             <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.6, margin: '0 auto', maxWidth: '300px' }}>Try a different category or tag.</p>
           </div>
         ) : (
+          <>
           <div className="shop-grid">
-            {products.map(p => <ProductCard key={p.id} product={p} />)}
+            {(() => {
+              const nodes: React.ReactNode[] = []
+              let dealCardInserted = false
+              const displayedProducts = activeCat === 'all' ? products.slice(0, visibleCount) : products
+              displayedProducts.forEach((p, i) => {
+                nodes.push(<ProductCard key={p.id} product={p} />)
+                // Inject deal card once after the 4th product
+                if (i === 3 && deals.length > 0 && !dealCardInserted) {
+                  dealCardInserted = true
+                  const d = deals[dealIdx]
+                  // Pick up to 3 product images from the deal's own category
+                  const catProducts = allProducts.filter(pr => pr.category_id === d.category_id && pr.images[0])
+                  const collageImgs = catProducts.slice(0, 3).map(pr => pr.images[0])
+                  // Fallback: any product images
+                  while (collageImgs.length < 3) {
+                    const fallback = allProducts.find(pr => pr.images[0] && !collageImgs.includes(pr.images[0]))
+                    if (!fallback) break
+                    collageImgs.push(fallback.images[0])
+                  }
+                  const rotations = [-10, 3, 14]
+                  const offsets   = [{ x: 0, y: 0 }, { x: 18, y: -12 }, { x: 36, y: 4 }]
+                  nodes.push(
+                    <div
+                      key="deal-card"
+                      className="deal-inline-card"
+                      style={{
+                        background: 'linear-gradient(135deg, #0f1a00 0%, #1a2a00 60%, #0a1400 100%)',
+                        border: '1px solid rgba(232,255,0,0.2)',
+                      }}
+                    >
+                      {sweeping && <div className="deal-shine" />}
+                      <div className="deal-card-inner">
+                      {/* Left: deal text */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '9px', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(232,255,0,0.5)', marginBottom: '10px' }}>
+                          ◈ Bundle deal{d.category_name ? ` · ${d.category_name}` : ''}
+                        </div>
+                        <div style={{ fontFamily: 'var(--ff-display)', fontSize: 'clamp(24px, 5vw, 44px)', letterSpacing: '-0.02em', textTransform: 'uppercase', lineHeight: 1, color: '#e8ff00' }}>
+                          {d.name}
+                        </div>
+                        <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px', color: 'rgba(232,255,0,0.5)', marginTop: '10px', letterSpacing: '0.06em' }}>
+                          Auto-applied at checkout
+                        </div>
+                        {deals.length > 1 && (
+                          <div style={{ display: 'flex', gap: '5px', marginTop: '16px' }}>
+                            {deals.map((_, di) => (
+                              <div key={di} style={{
+                                width: di === dealIdx ? '18px' : '5px', height: '5px',
+                                borderRadius: '999px',
+                                background: di === dealIdx ? '#e8ff00' : 'rgba(232,255,0,0.25)',
+                                transition: 'width 0.3s ease, background 0.3s ease',
+                              }} />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Right: 3-image fanned collage */}
+                      {collageImgs.length > 0 && (
+                        <div className="deal-collage">
+                          {[
+                            { top: 16, left: 0,   rotate: -13, z: 1 },
+                            { top: 4,  left: 56,  rotate:   2, z: 2 },
+                            { top: 20, left: 110, rotate:  12, z: 3 },
+                          ].slice(0, collageImgs.length).map((cfg, ci) => (
+                            <div key={ci} style={{
+                              position: 'absolute',
+                              top: cfg.top, left: cfg.left,
+                              width: '110px', height: '110px',
+                              borderRadius: '10px', overflow: 'hidden',
+                              border: '2px solid rgba(232,255,0,0.22)',
+                              boxShadow: '0 8px 24px rgba(0,0,0,0.55)',
+                              transform: `rotate(${cfg.rotate}deg)`,
+                              zIndex: cfg.z,
+                            }}>
+                              <img src={collageImgs[ci]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', pointerEvents: 'none', userSelect: 'none' }} />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      </div>{/* end deal-card-inner */}
+                    </div>
+                  )
+                }
+              })
+              return nodes
+            })()}
           </div>
+          {activeCat === 'all' && products.length > visibleCount && (
+            <div style={{ textAlign: 'center', marginTop: '28px' }}>
+              <button
+                onClick={() => setVisibleCount(c => c + 10)}
+                style={{
+                  padding: '10px 28px', borderRadius: '999px', fontSize: '13px',
+                  fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em', textTransform: 'uppercase',
+                  border: '1px solid var(--border-card)', background: 'transparent',
+                  color: 'var(--text-secondary)', cursor: 'pointer',
+                }}
+              >
+                Load more
+              </button>
+            </div>
+          )}
+          </>
         )}
       </main>
       <ShopSections />

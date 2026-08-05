@@ -39,8 +39,15 @@ export default function ShopSections() {
         .shop-follow-btn:hover { background: rgba(255,255,255,0.12) !important; border-color: rgba(255,255,255,0.4) !important; transform: translateY(-2px); }
 
         .shop-marquee-track {
-          display: flex; white-space: nowrap;
+          display: flex; white-space: nowrap; width: max-content;
           animation: marquee 18s linear infinite;
+          will-change: transform;
+        }
+        @media (max-width: 599px) {
+          .shop-marquee-track { animation-duration: 13s; }
+          .artist-quote { font-size: 13px !important; }
+          .artist-tags span { font-size: 9px !important; padding: 3px 8px !important; }
+          .artist-photo { filter: brightness(1.8); }
         }
         @keyframes marquee {
           from { transform: translateX(0); }
@@ -53,23 +60,25 @@ export default function ShopSections() {
         overflow: 'hidden', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)',
         padding: '10px 0', background: 'var(--surface)',
       }}>
-        <div className="shop-marquee-track" style={{ alignItems: 'center' }}>
-          {Array.from({ length: 2 }).map((_, repeat) =>
-            ['Hand-crafted drops', '✦', 'Art that hits different', '◈', 'Limited runs', '★', 'Merch with soul', '✦', 'For the culture', '◈', 'Built for walls & laps & mobiles & many things', '★'].map((item, i) => (
-              <span key={`${repeat}-${i}`} style={{
-                fontFamily: item.length <= 2 ? 'var(--ff-body)' : 'var(--ff-display)',
-                fontSize: item.length <= 2 ? '14px' : '11px',
-                letterSpacing: item.length <= 2 ? '0' : '0.2em',
-                textTransform: 'uppercase',
-                lineHeight: 1,
-                color: ['✦', '◈', '★'].includes(item) ? 'var(--lavender)' : i % 3 === 0 ? 'var(--text-primary)' : 'var(--text-secondary)',
-                paddingRight: item.length <= 2 ? '28px' : '36px',
-                fontWeight: item.length <= 2 ? 400 : 500,
-              }}>
-                {item}
-              </span>
-            ))
-          )}
+        <div className="shop-marquee-track">
+          {[0, 1].map(copy => (
+            <div key={copy} aria-hidden={copy === 1} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+              {['Hand-crafted drops', '✦', 'Art that hits different', '◈', 'Limited runs', '★', 'Merch with soul', '✦', 'For the culture', '◈', 'Built for walls & laps & many things', '★'].map((item, i) => (
+                <span key={i} style={{
+                  fontFamily: item.length <= 2 ? 'var(--ff-body)' : 'var(--ff-display)',
+                  fontSize: item.length <= 2 ? '14px' : '11px',
+                  letterSpacing: item.length <= 2 ? '0' : '0.2em',
+                  textTransform: 'uppercase',
+                  lineHeight: 1,
+                  color: ['✦', '◈', '★'].includes(item) ? 'var(--lavender)' : i % 3 === 0 ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  paddingRight: item.length <= 2 ? '28px' : '36px',
+                  fontWeight: item.length <= 2 ? 400 : 500,
+                }}>
+                  {item}
+                </span>
+              ))}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -103,20 +112,20 @@ export default function ShopSections() {
             </div>
 
             {/* Statement */}
-            <p style={{
+            <p className="artist-quote" style={{
               fontSize: '15px', lineHeight: 1.75, color: 'var(--text-secondary)',
               margin: '0 0 20px', fontStyle: 'italic',
               borderLeft: '2px solid var(--lavender)', paddingLeft: '16px',
               maxWidth: '480px',
             }}>
-              "Started drawing because I couldn't find the art I wanted to own. Now I make it — and ship it to you."
+              "Art that has something to say. Loudly."
             </p>
-            <div style={{
+            <div className="artist-tags" style={{
               display: 'flex', gap: '8px', flexWrap: 'wrap',
               fontFamily: 'var(--ff-mono)', fontSize: '11px',
               letterSpacing: '0.1em', textTransform: 'uppercase',
             }}>
-              {['Indie artist', 'Digital to physical', 'Printed on demand'].map((tag, i) => (
+              {['Self-taught', 'Obsessively detailed', 'Printed on demand'].map((tag, i) => (
                 <span key={i} style={{
                   padding: '4px 10px', borderRadius: '999px',
                   border: '1px solid rgba(232,255,0,0.3)', color: '#e8ff00',
@@ -133,6 +142,7 @@ export default function ShopSections() {
               <img
                 src={photo}
                 alt="Riaz Ahmed"
+                className="artist-photo"
                 style={{
                   width: 'clamp(100px, 16vw, 180px)',
                   height: 'auto',
@@ -158,14 +168,14 @@ export default function ShopSections() {
               fontFamily: 'var(--ff-mono)', fontSize: '10px', letterSpacing: '0.22em',
               textTransform: 'uppercase', color: 'var(--lavender)',
             }}>
-              ◈ How it works
+              ◈ The ritual
             </span>
             <h2 style={{
               fontFamily: 'var(--ff-display)', fontSize: 'clamp(22px, 5vw, 36px)',
               letterSpacing: '0.04em', textTransform: 'uppercase',
               margin: '10px 0 0', color: 'var(--text-primary)',
             }}>
-              From screen to door
+              Nuff said. Just art.
             </h2>
           </div>
 
@@ -173,20 +183,20 @@ export default function ShopSections() {
             {[
               {
                 n: '01',
-                title: 'Pick your print',
-                desc: 'Browse the collection and choose your size. Stickers in 2.5" or 3", posters in A5 or A4.',
+                title: 'Pick your obsession',
+                desc: 'Scroll until something grabs you. You\'ll know.',
                 accent: 'var(--lavender)',
               },
               {
                 n: '02',
-                title: 'Pay via UPI',
-                desc: 'Scan the QR code or use the UPI ID. No gateway, no fees — just a direct transfer.',
+                title: 'Zap the money',
+                desc: 'Scan the QR, send it direct. No payment processor taking a cut.',
                 accent: 'var(--lime)',
               },
               {
                 n: '03',
-                title: 'We pack & ship',
-                desc: 'Once payment is verified, your order is carefully packed and shipped to your address.',
+                title: 'Wait for the knock',
+                desc: 'Packed. Shipped. On its way.',
                 accent: 'var(--lavender)',
               },
             ].map(step => (
