@@ -78,19 +78,29 @@ export default function CartPage() {
 
   return (
     <main style={{ maxWidth: '760px', margin: '0 auto', padding: '40px 24px' }}>
+      <style>{`
+        .cart-item { display: flex; gap: 14px; align-items: center; flex-wrap: nowrap; }
+        .cart-item-controls { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+        @media (max-width: 599px) {
+          .cart-item { flex-wrap: wrap; }
+          .cart-item-info { flex: 1; min-width: 0; }
+          .cart-item-controls { width: 100%; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--border); }
+        }
+      `}</style>
+
       <h1 style={{ fontFamily: 'var(--ff-display)', fontSize: '28px', letterSpacing: '0.04em', textTransform: 'uppercase', margin: '0 0 32px' }}>
         Cart
       </h1>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
         {items.map(item => (
-          <div key={item.variantId} style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '14px', padding: '14px 16px' }}>
+          <div key={item.variantId} className="cart-item" style={{ background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '14px', padding: '14px 16px' }}>
             {item.image && (
               <div style={{ position: 'relative', width: '64px', height: '64px', borderRadius: '10px', overflow: 'hidden', flexShrink: 0 }}>
                 <Image src={item.image} alt={item.name} fill style={{ objectFit: 'cover' }} />
               </div>
             )}
-            <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="cart-item-info" style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{item.name}</div>
               <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'var(--ff-mono)', marginTop: '2px' }}>{item.size}</div>
               {item.stock_qty <= 5 && (
@@ -99,13 +109,13 @@ export default function CartPage() {
                 </div>
               )}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div className="cart-item-controls">
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--surface-raised)', borderRadius: '8px', padding: '4px 10px' }}>
                 <button onClick={() => updateQty(item.variantId, item.qty - 1)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '16px', padding: '0 2px' }}>−</button>
                 <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '13px', minWidth: '16px', textAlign: 'center' }}>{item.qty}</span>
                 <button onClick={() => updateQty(item.variantId, item.qty + 1)} disabled={item.qty >= item.stock_qty} style={{ background: 'none', border: 'none', color: item.qty >= item.stock_qty ? 'var(--text-dim)' : 'var(--text-secondary)', cursor: item.qty >= item.stock_qty ? 'not-allowed' : 'pointer', fontSize: '16px', padding: '0 2px' }}>+</button>
               </div>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--ff-mono)', minWidth: '56px', textAlign: 'right' }}>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--ff-mono)' }}>
                 ₹{(item.price * item.qty).toFixed(0)}
               </div>
               <button onClick={() => removeItem(item.variantId)} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '4px' }}>
@@ -117,31 +127,109 @@ export default function CartPage() {
       </div>
 
       {appliedDeals.length > 0 && (
-        <div style={{ background: 'var(--lime-dim)', border: '1px solid var(--lime)', borderRadius: '10px', padding: '10px 16px', marginBottom: '20px', fontSize: '13px', color: 'var(--lime)', fontFamily: 'var(--ff-mono)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          {appliedDeals.map(d => (
-            <div key={d.id}>Bundle deal: {d.name}</div>
-          ))}
-          <div style={{ opacity: 0.8 }}>₹{bundleDiscount.toFixed(0)} saved</div>
+        <div style={{
+          background: 'linear-gradient(135deg, #0f1a00 0%, #1a2a00 60%, #0a1400 100%)',
+          border: '1px solid rgba(232,255,0,0.25)',
+          borderRadius: '14px', padding: '16px 20px', marginBottom: '20px',
+          position: 'relative', overflow: 'hidden',
+        }}>
+          {/* shimmer */}
+          <div style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none',
+            background: 'linear-gradient(105deg, transparent 40%, rgba(232,255,0,0.04) 50%, transparent 60%)',
+          }} />
+          <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '9px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'rgba(232,255,0,0.45)', marginBottom: '8px' }}>
+            ✦ Deal unlocked
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+            <div>
+              {appliedDeals.map(d => (
+                <div key={d.id} style={{ fontFamily: 'var(--ff-display)', fontSize: 'clamp(18px, 5vw, 26px)', letterSpacing: '-0.01em', textTransform: 'uppercase', color: '#e8ff00', lineHeight: 1.1 }}>
+                  {d.name}
+                </div>
+              ))}
+              <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '10px', color: 'rgba(232,255,0,0.45)', letterSpacing: '0.06em', marginTop: '6px' }}>
+                Auto-applied at checkout
+              </div>
+            </div>
+            <div style={{
+              flexShrink: 0,
+              background: 'rgba(232,255,0,0.12)', border: '1px solid rgba(232,255,0,0.3)',
+              borderRadius: '999px', padding: '4px 14px',
+              fontFamily: 'var(--ff-mono)', fontSize: '13px', color: '#e8ff00', fontWeight: 600,
+              whiteSpace: 'nowrap',
+            }}>
+              ₹{bundleDiscount.toFixed(0)} saved
+            </div>
+          </div>
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '24px' }}>
-        <input
-          type="text"
-          placeholder="Coupon code"
-          value={couponCode}
-          onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponError('') }}
-          style={{ flex: 1, padding: '10px 14px', background: 'var(--surface)', border: '1px solid var(--border-input)', borderRadius: '10px', color: 'var(--text-primary)', fontSize: '14px', fontFamily: 'var(--ff-mono)', outline: 'none' }}
-        />
-        <button
-          onClick={validateCoupon}
-          disabled={validating || !couponCode.trim() || !!couponApplied}
-          style={{ padding: '10px 20px', borderRadius: '10px', background: couponApplied ? 'var(--lime-dim)' : '#6b45d4', color: couponApplied ? 'var(--lime)' : '#fff', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 600, fontFamily: 'var(--ff-body)' }}
-        >
-          {couponApplied ? 'Applied' : validating ? '...' : 'Apply'}
-        </button>
-      </div>
-      {couponError && <div style={{ color: 'var(--red)', fontSize: '13px', marginBottom: '16px', fontFamily: 'var(--ff-mono)' }}>{couponError}</div>}
+      {couponApplied ? (
+        <div style={{
+          background: 'linear-gradient(135deg, #00101a 0%, #001a2a 60%, #000f1a 100%)',
+          border: '1px solid rgba(107,69,212,0.35)',
+          borderRadius: '14px', padding: '16px 20px', marginBottom: '20px',
+          position: 'relative', overflow: 'hidden',
+        }}>
+          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'linear-gradient(105deg, transparent 40%, rgba(107,69,212,0.05) 50%, transparent 60%)' }} />
+          <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '9px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'rgba(180,150,255,0.7)', marginBottom: '8px' }}>
+            ✦ Coupon applied
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+            <div>
+              <div style={{ fontFamily: 'var(--ff-display)', fontSize: 'clamp(18px, 5vw, 26px)', letterSpacing: '-0.01em', textTransform: 'uppercase', color: 'var(--lavender)', lineHeight: 1.1 }}>
+                {couponApplied}
+              </div>
+              <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '10px', color: 'rgba(180,150,255,0.65)', letterSpacing: '0.06em', marginTop: '6px' }}>
+                Discount applied at total
+              </div>
+            </div>
+            <div style={{
+              flexShrink: 0,
+              background: 'rgba(107,69,212,0.15)', border: '1px solid rgba(107,69,212,0.35)',
+              borderRadius: '999px', padding: '4px 14px',
+              fontFamily: 'var(--ff-mono)', fontSize: '13px', color: 'var(--lavender)', fontWeight: 600,
+              whiteSpace: 'nowrap',
+            }}>
+              ₹{couponDiscount.toFixed(0)} saved
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div style={{ display: 'flex', gap: '10px', marginBottom: couponError ? '10px' : '24px' }}>
+            <input
+              type="text"
+              placeholder="Coupon code"
+              value={couponCode}
+              onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponError('') }}
+              style={{ flex: 1, padding: '10px 14px', background: 'var(--surface)', border: `1px solid ${couponError ? 'rgba(255,80,80,0.4)' : 'var(--border-input)'}`, borderRadius: '10px', color: 'var(--text-primary)', fontSize: '14px', fontFamily: 'var(--ff-mono)', outline: 'none' }}
+            />
+            <button
+              onClick={validateCoupon}
+              disabled={validating || !couponCode.trim()}
+              style={{ padding: '10px 20px', borderRadius: '10px', background: '#6b45d4', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 600, fontFamily: 'var(--ff-body)' }}
+            >
+              {validating ? '...' : 'Apply'}
+            </button>
+          </div>
+          {couponError && (
+            <div style={{
+              display: 'flex', alignItems: 'flex-start', gap: '10px',
+              background: 'rgba(255,60,60,0.06)', border: '1px solid rgba(255,60,60,0.2)',
+              borderRadius: '10px', padding: '10px 14px', marginBottom: '16px',
+            }}>
+              <span style={{ fontSize: '14px', color: 'rgba(255,100,100,0.7)', marginTop: '2px' }}>✗</span>
+              <div>
+                <div style={{ fontFamily: 'var(--ff-display)', fontSize: '13px', letterSpacing: '0.04em', textTransform: 'uppercase', color: 'rgba(255,100,100,0.9)' }}>
+                  {couponError}
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '14px', padding: '20px', marginBottom: '24px' }}>
         <Row label="Subtotal" value={`₹${subtotal.toFixed(0)}`} />

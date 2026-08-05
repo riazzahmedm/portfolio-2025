@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 
 const STATUS_COLORS: Record<string, string> = {
   pending_payment:   'var(--text-dim)',
@@ -46,7 +45,7 @@ function StatCard({ label, value, sub, warn }: { label: string; value: string | 
   )
 }
 
-export default function OverviewAdmin() {
+export default function OverviewAdmin({ onViewAllOrders }: { onViewAllOrders?: () => void }) {
   const [data,    setData]    = useState<Overview | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -90,7 +89,7 @@ export default function OverviewAdmin() {
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '14px', overflow: 'hidden' }}>
         <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Recent orders</span>
-          <Link href="/admin?tab=shop" style={{ fontSize: '12px', color: 'var(--lavender)', textDecoration: 'none', fontFamily: 'var(--ff-mono)' }}>View all →</Link>
+          <button onClick={onViewAllOrders} style={{ fontSize: '12px', color: 'var(--lavender)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--ff-mono)', padding: 0 }}>View all →</button>
         </div>
         {data.recentOrders.length === 0 ? (
           <div style={{ padding: '32px 18px', textAlign: 'center', color: 'var(--text-dim)', fontSize: '13px', fontFamily: 'var(--ff-mono)' }}>No orders yet</div>

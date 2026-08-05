@@ -72,18 +72,22 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 24px' }}>
-      <h1 style={{ fontFamily: 'var(--ff-display)', fontSize: '28px', letterSpacing: '0.04em', textTransform: 'uppercase', margin: '0 0 32px', color: 'var(--text-primary)' }}>
+    <main style={{ maxWidth: '560px', margin: '0 auto', padding: 'clamp(24px, 5vw, 40px) clamp(16px, 4vw, 24px)', boxSizing: 'border-box', width: '100%' }}>
+      <style>{`
+        .checkout-city-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 399px) { .checkout-city-grid { grid-template-columns: 1fr; } }
+      `}</style>
+      <h1 style={{ fontFamily: 'var(--ff-display)', fontSize: 'clamp(22px, 6vw, 28px)', letterSpacing: '0.04em', textTransform: 'uppercase', margin: '0 0 28px', color: 'var(--text-primary)' }}>
         Checkout
       </h1>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <Field label="Full name *"  value={form.name}        onChange={v => update('name', v)}    placeholder="Peter Parker" />
         <Field label="Email *"      value={form.email}       onChange={v => update('email', v)}   placeholder="peter@dailybugle.com" type="email" />
         <Field label="Phone *"      value={form.phone}       onChange={v => update('phone', v)}   placeholder="+91 98765 43210" type="tel" />
         <Field label="Address *"    value={form.line1}       onChange={v => update('line1', v)}   placeholder="20 Ingram Street" />
         <Field label="Address 2"    value={form.line2 ?? ''} onChange={v => update('line2', v)}   placeholder="Forest Hills, Queens (optional)" />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        <div className="checkout-city-grid">
           <Field label="City *"     value={form.city}        onChange={v => update('city', v)}    placeholder="New York" />
           <Field label="State *"    value={form.state}       onChange={v => update('state', v)}   placeholder="New York" />
         </div>

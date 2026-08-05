@@ -18,8 +18,14 @@ const NAV: { key: Tab; label: string; Icon: React.ElementType }[] = [
 ]
 
 export default function AdminPage() {
-  const [authed, setAuthed] = useState(false)
-  const [tab,    setTab]    = useState<Tab>('overview')
+  const [authed,      setAuthed]      = useState(false)
+  const [tab,         setTab]         = useState<Tab>('overview')
+  const [shopSection, setShopSection] = useState<string | undefined>(undefined)
+
+  function goToShopOrders() {
+    setShopSection('orders')
+    setTab('shop')
+  }
 
   useEffect(() => {
     fetch('/api/auth/admin').then(r => r.json()).then(d => {
@@ -180,8 +186,8 @@ export default function AdminPage() {
                 </div>
               )}
 
-              {tab === 'overview' && <OverviewAdmin />}
-              {tab === 'shop'     && <ShopAdmin />}
+              {tab === 'overview' && <OverviewAdmin onViewAllOrders={goToShopOrders} />}
+              {tab === 'shop'     && <ShopAdmin initialSection={shopSection} />}
               {tab === 'movies'   && <MoviesAdmin />}
               {tab === 'blog'     && <BlogAdmin />}
             </div>

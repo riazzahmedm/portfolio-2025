@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import ProductsAdmin   from './ProductsAdmin'
 import CategoriesAdmin from './CategoriesAdmin'
 import OrdersAdmin     from './OrdersAdmin'
@@ -18,8 +18,14 @@ const SHOP_TABS: { key: ShopTab; label: string }[] = [
   { key: 'settings',   label: 'Settings' },
 ]
 
-export default function ShopAdmin() {
+export default function ShopAdmin({ initialSection }: { initialSection?: string }) {
   const [tab, setTab] = useState<ShopTab>('products')
+
+  useEffect(() => {
+    if (initialSection === 'orders' || initialSection === 'categories' || initialSection === 'discounts' || initialSection === 'analytics' || initialSection === 'settings') {
+      setTab(initialSection)
+    }
+  }, [initialSection])
 
   return (
     <div>

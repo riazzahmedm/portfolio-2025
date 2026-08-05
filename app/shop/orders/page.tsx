@@ -150,21 +150,28 @@ export default function OrdersPage() {
   )
 
   return (
-    <main style={{ maxWidth: '700px', margin: '0 auto', padding: '40px 24px' }}>
-      <h1 style={{ fontFamily: 'var(--ff-display)', fontSize: '28px', letterSpacing: '0.04em', textTransform: 'uppercase', margin: '0 0 32px' }}>My orders</h1>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+    <main style={{ maxWidth: '700px', margin: '0 auto', padding: 'clamp(24px,5vw,40px) clamp(16px,4vw,24px)' }}>
+      <h1 style={{ fontFamily: 'var(--ff-display)', fontSize: 'clamp(22px,6vw,28px)', letterSpacing: '0.04em', textTransform: 'uppercase', margin: '0 0 28px' }}>My orders</h1>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {orders.map(order => (
           <Link key={order.id} href={`/shop/orders/${order.id}`} style={{ textDecoration: 'none' }}>
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '14px', padding: '18px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
-              <div>
-                <div style={{ fontSize: '13px', fontFamily: 'var(--ff-mono)', color: 'var(--text-dim)', marginBottom: '4px' }}>
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '14px', padding: '16px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: '12px', fontFamily: 'var(--ff-mono)', color: 'var(--text-dim)', marginBottom: '4px' }}>
                   #{order.id.slice(0, 8).toUpperCase()} · {new Date(order.created_at).toLocaleDateString('en-IN')}
                 </div>
                 <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
                   ₹{Number(order.total).toFixed(0)}
                 </div>
               </div>
-              <div style={{ fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em', textTransform: 'uppercase', color: STATUS_COLORS[order.status] ?? 'var(--text-dim)' }}>
+              <div style={{
+                flexShrink: 0,
+                fontSize: '11px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em', textTransform: 'uppercase',
+                color: STATUS_COLORS[order.status] ?? 'var(--text-dim)',
+                background: `color-mix(in srgb, ${STATUS_COLORS[order.status] ?? 'var(--text-dim)'} 12%, transparent)`,
+                border: `1px solid color-mix(in srgb, ${STATUS_COLORS[order.status] ?? 'var(--text-dim)'} 30%, transparent)`,
+                borderRadius: '999px', padding: '4px 12px', whiteSpace: 'nowrap',
+              }}>
                 {STATUS_LABELS[order.status] ?? order.status}
               </div>
             </div>
