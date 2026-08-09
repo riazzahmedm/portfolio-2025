@@ -111,13 +111,13 @@ export default function StoryCardModal({
         </div>
 
         {/* Variant picker */}
-        <div style={{ display: 'flex', gap: '6px', width: '100%' }}>
+        <div style={{ display: 'flex', gap: '6px', width: '100%', overflowX: 'auto', paddingBottom: '2px' }}>
           {VARIANTS.map(v => (
             <button
               key={v.id}
               onClick={() => pickVariant(v.id)}
               style={{
-                flex: 1,
+                flex: '1 0 52px',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
                 padding: '8px 4px',
                 background: variant === v.id ? `${v.accent}14` : 'rgba(255,255,255,0.04)',
