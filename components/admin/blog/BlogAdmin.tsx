@@ -124,8 +124,17 @@ function BlogAdminContent() {
         </div>
       )}
 
-      {view === 'new' && <AdminForm onSuccess={handleSaved} />}
-      {view === 'edit' && editPost && <AdminForm initial={editPost} onSuccess={handleSaved} />}
+      {(() => {
+        const existingTags = Array.from(
+          new Set(posts.flatMap(p => p.tags).map(t => t.trim()))
+        ).sort()
+        return (
+          <>
+            {view === 'new'  && <AdminForm onSuccess={handleSaved} existingTags={existingTags} />}
+            {view === 'edit' && editPost && <AdminForm initial={editPost} onSuccess={handleSaved} existingTags={existingTags} />}
+          </>
+        )
+      })()}
     </div>
   )
 }

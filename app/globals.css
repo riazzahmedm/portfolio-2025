@@ -90,8 +90,8 @@ html, body {
 .cursor-ring {
   display: none;
 }
-@media (pointer: fine) {
-*, *::before, *::after { cursor: none !important; }
+@media (pointer: fine) and (hover: hover) and (min-width: 1025px) {
+html[data-cursor="custom"] *, html[data-cursor="custom"] *::before, html[data-cursor="custom"] *::after { cursor: none !important; }
 .cursor {
   display: block;
   position: fixed;
@@ -118,7 +118,7 @@ html, body {
   background: transparent;
   will-change: transform;
 }
-} /* end @media (pointer: fine) */
+} /* end @media (pointer: fine) and (hover: hover) */
 
 /* ─── Scroll container — window-based Lenis scroll ───────────────── */
 .snap-container {

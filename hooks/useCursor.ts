@@ -11,6 +11,9 @@ const RADII = [
 
 export function useCursor() {
   useEffect(() => {
+    // Only activate on desktop with mouse — skip touch/stylus/narrow-viewport devices
+    if (!window.matchMedia('(pointer: fine) and (hover: hover) and (min-width: 1025px)').matches) return
+
     const dot  = document.querySelector('.cursor')      as HTMLElement
     const blob = document.querySelector('.cursor-ring') as HTMLElement
     if (!dot || !blob) return

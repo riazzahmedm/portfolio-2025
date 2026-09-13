@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { ArrowLeft, Plus, Film, Tv, X, Search, ChevronDown, Bookmark, Sparkles, LayoutGrid, CalendarDays, List, Radio } from 'lucide-react'
-import type { MovieLog, WatchlistItem } from '@/lib/movies.types'
+import type { MovieLog, WatchlistItem, TMDBResult } from '@/lib/movies.types'
 import { VIBES } from '@/lib/movies.types'
 import LogCard from '@/components/movies/LogCard'
 import WatchlistCard from '@/components/movies/WatchlistCard'
@@ -300,15 +300,28 @@ export default function MoviesPage() {
   const [genreFilter,     setGenreFilter]     = useState('')
   const [logDisplayMode,  setLogDisplayMode]  = useState<'grid' | 'calendar'>('grid')
 
-  const LIMIT       = 20
-  const sentinelRef = useRef<HTMLDivElement>(null)
-  const loadingRef  = useRef(false)
-  const pageRef     = useRef(1)
-  const hasMoreRef  = useRef(false)
+  // ── Add-to-later search ──
+  const [wlQuery,   setWlQuery]   = useState('')
+  const [wlType,    setWlType]    = useState<'movie' | 'series'>('movie')
+  const [wlResults, setWlResults] = useState<TMDBResult[]>([])
+  const [wlSaving,  setWlSaving]  = useState<Set<number>>(new Set())
+  const [wlSaved,   setWlSaved]   = useState<Set<number>>(new Set())
+  const wlDebounce  = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const fetchLogs = useCallback(async () => {
+  const LIMIT            = 20
+  const sentinelRef      = useRef<HTMLDivElement>(null)
+  const loadingRef       = useRef(false)
+  const pageRef          = useRef(1)
+  const hasMoreRef       = useRef(false)
+  const filterRef        = useRef<LogFilter>('movie')
+  const viewRef          = useRef<'log' | 'later'>('log')
+  const filterChangedRef = useRef(false)
+
+  const fetchLogs = useCallback(async (type: LogFilter = filterRef.current) => {
+    setLoading(true)
     try {
-      const res  = await fetch(`/api/movies?page=1&limit=${LIMIT}`)
+      const typeParam = type !== 'all' ? `&type=${type}` : ''
+      const res  = await fetch(`/api/movies?page=1&limit=${LIMIT}${typeParam}`)
       const json = await res.json()
       const data = json.data ?? (Array.isArray(json) ? json : [])
       const tot  = json.total ?? data.length
@@ -329,12 +342,13 @@ export default function MoviesPage() {
   }, [])
 
   const loadMore = useCallback(async () => {
-    if (loadingRef.current || !hasMoreRef.current) return
+    if (loadingRef.current || !hasMoreRef.current || viewRef.current !== 'log') return
     loadingRef.current = true
     setLoadingMore(true)
     try {
-      const nextPage = pageRef.current + 1
-      const res  = await fetch(`/api/movies?page=${nextPage}&limit=${LIMIT}`)
+      const nextPage  = pageRef.current + 1
+      const typeParam = filterRef.current !== 'all' ? `&type=${filterRef.current}` : ''
+      const res  = await fetch(`/api/movies?page=${nextPage}&limit=${LIMIT}${typeParam}`)
       const json = await res.json()
       const data = json.data ?? []
       const tot  = json.total ?? 0
@@ -368,6 +382,70 @@ export default function MoviesPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Debounced TMDB search for add-to-later
+  useEffect(() => {
+    if (!wlQuery.trim()) { setWlResults([]); return }
+    if (wlDebounce.current) clearTimeout(wlDebounce.current)
+    wlDebounce.current = setTimeout(async () => {
+      try {
+        const tmdbType = wlType === 'movie' ? 'movie' : 'tv'
+        const res  = await fetch(`/api/tmdb/search?q=${encodeURIComponent(wlQuery)}&type=${tmdbType}`)
+        const data = await res.json()
+        setWlResults(Array.isArray(data) ? data : [])
+      } catch { setWlResults([]) }
+    }, 350)
+    return () => { if (wlDebounce.current) clearTimeout(wlDebounce.current) }
+  }, [wlQuery, wlType])
+
+  async function addToWatchLater(r: TMDBResult) {
+    if (wlSaving.has(r.id) || wlSaved.has(r.id)) return
+    setWlSaving(prev => new Set(prev).add(r.id))
+    const year  = r.release_date   ? new Date(r.release_date).getFullYear()   :
+                  r.first_air_date ? new Date(r.first_air_date).getFullYear() : null
+    const title = r.title ?? r.name ?? 'Title'
+    try {
+      const res = await fetch('/api/watchlist', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tmdb_id:      r.id,
+          type:         wlType === 'movie' ? 'movie' : 'series',
+          title,
+          poster_url:   r.poster_path   ? `https://image.tmdb.org/t/p/w500${r.poster_path}`   : null,
+          backdrop_url: r.backdrop_path ? `https://image.tmdb.org/t/p/w1280${r.backdrop_path}` : null,
+          year,
+          overview:     r.overview ?? null,
+          genres:       [],
+          tmdb_rating:  r.vote_average ?? null,
+        }),
+      })
+      if (res.ok) {
+        setWlSaved(prev => new Set(prev).add(r.id))
+        toast.success('Added to Watch Later', { description: title })
+        fetchWatchlist()
+      } else {
+        toast.error('Failed to save — try again')
+      }
+    } catch {
+      toast.error('Failed to save — try again')
+    } finally {
+      setWlSaving(prev => { const s = new Set(prev); s.delete(r.id); return s })
+    }
+  }
+
+  // Keep viewRef in sync so loadMore can bail when not in log view
+  useEffect(() => { viewRef.current = view }, [view])
+
+  // Reset + refetch when the type filter (movie/series/all) changes
+  useEffect(() => {
+    filterRef.current = filter
+    if (!filterChangedRef.current) { filterChangedRef.current = true; return }
+    setLogs([])
+    setPage(1);        pageRef.current = 1
+    setHasMore(false); hasMoreRef.current = false
+    fetchLogs(filter)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter])
+
   // After initial load or each page completion: if the sentinel is still visible
   // (page too short to scroll), keep fetching until it scrolls off-screen or all data is loaded.
   useEffect(() => {
@@ -396,7 +474,7 @@ export default function MoviesPage() {
   }, [])
 
   useEffect(() => {
-    fetchLogs()
+    fetchLogs('movie')
     fetchWatchlist()
     fetch('/api/auth/movies').then(r => r.json()).then(d => setIsAdmin(d.authed))
     // Save scroll on unmount (navigating away)
@@ -414,7 +492,7 @@ export default function MoviesPage() {
 
   // ── Counts for FilterTabs — all come from API totals, not loaded items ──
   const counts: Record<LogFilter, number> = {
-    all:    total,
+    all:    movieTotal + seriesTotal,
     movie:  movieTotal,
     series: seriesTotal,
   }
@@ -436,7 +514,6 @@ export default function MoviesPage() {
 
   // ── Apply all filters ──
   const filtered = logs
-    .filter(l => filter === 'all' || l.type === filter)
     .filter(l => !search         || l.title.toLowerCase().includes(search.toLowerCase()))
     .filter(l => !vibeFilter     || l.vibe === vibeFilter)
     .filter(l => !yearFilter     || l.year === Number(yearFilter))
@@ -532,13 +609,17 @@ export default function MoviesPage() {
           .wl-vibe-row        { margin-bottom: 8px !important; }
           .wl-tabs-row        { margin-bottom: 14px !important; }
         }
+        @keyframes wl-bounce {
+          from { transform: translateY(0);    opacity: 0.35; }
+          to   { transform: translateY(-7px); opacity: 1;    }
+        }
       `}</style>
       <header style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(5,5,5,0.88)', backdropFilter: 'blur(18px)' }}>
         <div className="wl-header-inner" style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
 
           {/* Left — back */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
-            <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', textDecoration: 'none', fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em', flexShrink: 0 }}>
+            <Link href="/hub" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', textDecoration: 'none', fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em', flexShrink: 0 }}>
               <ArrowLeft size={13} />
             </Link>
           </div>
@@ -599,7 +680,7 @@ export default function MoviesPage() {
               )}
             </button>
             {isAdmin && (
-              <Link href="/admin" title="Log a film" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '100px', border: '1px solid rgba(184,160,255,0.28)', background: 'rgba(184,160,255,0.08)', color: '#b8a0ff', textDecoration: 'none', fontSize: '12px', letterSpacing: '0.1em', fontFamily: 'var(--ff-mono)' }}>
+              <Link href="/admin?tab=movies" title="Log a film" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '100px', border: '1px solid rgba(184,160,255,0.28)', background: 'rgba(184,160,255,0.08)', color: '#b8a0ff', textDecoration: 'none', fontSize: '12px', letterSpacing: '0.1em', fontFamily: 'var(--ff-mono)' }}>
                 <Plus size={13} />
               </Link>
             )}
@@ -659,6 +740,110 @@ export default function MoviesPage() {
                 {watchlist.length} {watchlist.length === 1 ? 'item' : 'items'} saved
               </div>
             </div>
+
+            {/* ── Add to Later search (admin only) ── */}
+            {isAdmin && (
+              <div style={{ marginBottom: '28px', position: 'relative' }}>
+                {/* Type toggle + search row */}
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                  {(['movie', 'series'] as const).map(t => {
+                    const on = wlType === t
+                    return (
+                      <button key={t} type="button" onClick={() => { setWlType(t); setWlResults([]) }}
+                        style={{
+                          padding: '6px 14px', borderRadius: '100px', cursor: 'pointer',
+                          border: `1px solid ${on ? 'rgba(184,160,255,0.45)' : 'rgba(255,255,255,0.08)'}`,
+                          background: on ? 'rgba(184,160,255,0.12)' : 'transparent',
+                          color: on ? '#b8a0ff' : 'rgba(255,255,255,0.35)',
+                          fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase',
+                          fontFamily: 'var(--ff-mono)', transition: 'all 0.18s',
+                        }}>
+                        {t}
+                      </button>
+                    )
+                  })}
+                </div>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <Search size={13} style={{ position: 'absolute', left: '12px', color: 'rgba(255,255,255,0.28)', pointerEvents: 'none' }} />
+                  <input
+                    value={wlQuery}
+                    onChange={e => setWlQuery(e.target.value)}
+                    placeholder={`Search ${wlType === 'movie' ? 'movies' : 'TV shows'} to add…`}
+                    style={{
+                      width: '100%', padding: '10px 36px',
+                      background: 'rgba(255,255,255,0.04)',
+                      border: `1px solid ${wlQuery ? 'rgba(184,160,255,0.35)' : 'rgba(255,255,255,0.1)'}`,
+                      borderRadius: '12px', color: '#fff',
+                      fontSize: '14px', fontFamily: 'var(--ff-body)',
+                      outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s',
+                    }}
+                  />
+                  {wlQuery && (
+                    <button onClick={() => { setWlQuery(''); setWlResults([]) }}
+                      style={{ position: 'absolute', right: '10px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', padding: '4px', display: 'flex' }}>
+                      <X size={13} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Results dropdown */}
+                {wlResults.length > 0 && (
+                  <div style={{
+                    position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 50,
+                    background: '#141414', border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '12px', overflow: 'hidden',
+                    boxShadow: '0 16px 48px rgba(0,0,0,0.7)',
+                    maxHeight: '320px', overflowY: 'auto',
+                  }}>
+                    {wlResults.map(r => {
+                      const year  = (r.release_date ?? r.first_air_date ?? '').slice(0, 4)
+                      const thumb = r.poster_path ? `https://image.tmdb.org/t/p/w92${r.poster_path}` : null
+                      const saved = wlSaved.has(r.id)
+                      const saving = wlSaving.has(r.id)
+                      return (
+                        <div key={r.id} style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', flex: 1, minWidth: 0 }}>
+                            <div style={{ width: '32px', height: '48px', borderRadius: '4px', background: '#0a0a0a', flexShrink: 0, overflow: 'hidden' }}>
+                              {thumb
+                                // eslint-disable-next-line @next/next/no-img-element
+                                ? <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>🎬</div>
+                              }
+                            </div>
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontSize: '13px', fontWeight: 600, fontFamily: 'var(--ff-body)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.title ?? r.name}</div>
+                              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--ff-mono)' }}>
+                                {year}{r.vote_average ? ` · ★ ${r.vote_average.toFixed(1)}` : ''}
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            disabled={saving}
+                            onClick={() => addToWatchLater(r)}
+                            title={saved ? 'Saved' : 'Add to Watch Later'}
+                            style={{
+                              flexShrink: 0, padding: '10px 16px',
+                              background: saved ? 'rgba(184,160,255,0.1)' : 'none',
+                              border: 'none', cursor: saved || saving ? 'default' : 'pointer',
+                              color: saved ? '#b8a0ff' : 'rgba(255,255,255,0.35)',
+                              display: 'flex', alignItems: 'center', gap: '5px',
+                              fontSize: '11px', fontFamily: 'var(--ff-mono)',
+                              letterSpacing: '0.08em', transition: 'all 0.15s',
+                            }}
+                            onMouseEnter={e => { if (!saved && !saving) (e.currentTarget as HTMLButtonElement).style.color = '#b8a0ff' }}
+                            onMouseLeave={e => { if (!saved && !saving) (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.35)' }}
+                          >
+                            <Bookmark size={13} fill={saved ? '#b8a0ff' : 'none'} />
+                            {saving ? 'Saving…' : saved ? 'Saved' : 'Save'}
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
 
             {watchlistLoad ? (
               <Skeleton />
@@ -808,14 +993,24 @@ export default function MoviesPage() {
               </div>
             )}
 
-            {/* Sentinel — always in DOM so IntersectionObserver attaches at mount */}
-            <div ref={sentinelRef} style={{ height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '16px' }}>
-              {loadingMore && !hasFilters && (
-                <span style={{ fontSize: '11px', fontFamily: 'var(--ff-mono)', color: 'var(--text-dim)', letterSpacing: '0.1em' }}>Loading…</span>
-              )}
-            </div>
           </>
         )}
+
+        {/* Sentinel is outside the conditional so the IntersectionObserver element
+            never changes between view switches — fixes IO breaking after view toggle */}
+        <div ref={sentinelRef} style={{ height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '8px' }}>
+          {view === 'log' && loadingMore && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+              {[0, 1, 2].map(i => (
+                <div key={i} style={{
+                  width: '7px', height: '7px', borderRadius: '50%',
+                  background: 'rgba(184,160,255,0.7)',
+                  animation: `wl-bounce 0.75s ease-in-out ${i * 0.18}s infinite alternate`,
+                }} />
+              ))}
+            </div>
+          )}
+        </div>
       </main>
     </div>
   )

@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { Search, X, ChevronDown, Check, RefreshCw, Eye, Users, BookOpen, Clapperboard, Building2, Layers, Tag, Music, Sparkles, Flame, MessageCircle, Trophy, Tv, Clock, Telescope } from 'lucide-react'
+import { Search, X, ChevronDown, Check, RefreshCw, Eye, Bookmark, Users, BookOpen, Clapperboard, Building2, Layers, Tag, Music, Sparkles, Flame, MessageCircle, Trophy, Tv, Clock, Telescope } from 'lucide-react'
 import { toast } from 'sonner'
 import type { LogType, LogStatus, TMDBResult, TMDBEpisode, FavoritePerson, MovieLog } from '@/lib/movies.types'
 import DatePicker from './DatePicker'
@@ -380,6 +380,8 @@ export default function AdminForm({
   const [previewItem,      setPreviewItem]      = useState<TMDBResult | null>(null)
   const [submitting,       setSubmitting]       = useState(false)
   const [error,            setError]            = useState('')
+  const [savingWL,         setSavingWL]         = useState<Set<number>>(new Set())
+  const [savedWL,          setSavedWL]          = useState<Set<number>>(new Set())
   const [providers,        setProviders]        = useState<{ flatrate: WatchProvider[]; rent: WatchProvider[]; buy: WatchProvider[]; link: string | null } | null>(null)
   const debounce    = useRef<ReturnType<typeof setTimeout> | null>(null)
   const editDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -537,6 +539,40 @@ export default function AdminForm({
     setSeasons([]); setSelectedSeason(null)
     setEpisodes([]); setSelectedEpisode(null)
     setPeople([]); setFavPerson(null)
+  }
+
+  async function addToWatchLater(r: TMDBResult) {
+    if (savingWL.has(r.id) || savedWL.has(r.id)) return
+    setSavingWL(prev => new Set(prev).add(r.id))
+    const year  = r.release_date   ? new Date(r.release_date).getFullYear()   :
+                  r.first_air_date ? new Date(r.first_air_date).getFullYear() : null
+    const title = r.title ?? r.name ?? 'Title'
+    try {
+      const res = await fetch('/api/watchlist', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tmdb_id:      r.id,
+          type:         type === 'movie' ? 'movie' : 'series',
+          title,
+          poster_url:   r.poster_path   ? `https://image.tmdb.org/t/p/w500${r.poster_path}`   : null,
+          backdrop_url: r.backdrop_path ? `https://image.tmdb.org/t/p/w1280${r.backdrop_path}` : null,
+          year,
+          overview:     r.overview ?? null,
+          genres:       [],
+          tmdb_rating:  r.vote_average ?? null,
+        }),
+      })
+      if (res.ok) {
+        setSavedWL(prev => new Set(prev).add(r.id))
+        toast.success('Added to Watch Later', { description: title })
+      } else {
+        toast.error('Failed to save — try again')
+      }
+    } catch {
+      toast.error('Failed to save — try again')
+    } finally {
+      setSavingWL(prev => { const s = new Set(prev); s.delete(r.id); return s })
+    }
   }
 
   function setField<K extends keyof FormState>(k: K, v: FormState[K]) {
@@ -895,11 +931,26 @@ export default function AdminForm({
                       </button>
                       <button type="button" onClick={() => setPreviewItem(r)}
                         title="Preview"
-                        style={{ padding: '10px 14px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)', flexShrink: 0, display: 'flex', alignItems: 'center', transition: 'color 0.15s' }}
+                        style={{ padding: '10px 12px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)', flexShrink: 0, display: 'flex', alignItems: 'center', transition: 'color 0.15s' }}
                         onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#b8a0ff' }}
                         onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.25)' }}
                       >
                         <Eye size={14} />
+                      </button>
+                      <button type="button"
+                        onClick={() => addToWatchLater(r)}
+                        title={savedWL.has(r.id) ? 'Saved to Watch Later' : 'Add to Watch Later'}
+                        disabled={savingWL.has(r.id)}
+                        style={{
+                          padding: '10px 12px', background: 'none', border: 'none',
+                          cursor: savedWL.has(r.id) || savingWL.has(r.id) ? 'default' : 'pointer',
+                          color: savedWL.has(r.id) ? '#b8a0ff' : 'rgba(255,255,255,0.25)',
+                          flexShrink: 0, display: 'flex', alignItems: 'center', transition: 'color 0.15s',
+                        }}
+                        onMouseEnter={e => { if (!savedWL.has(r.id)) (e.currentTarget as HTMLButtonElement).style.color = '#b8a0ff' }}
+                        onMouseLeave={e => { if (!savedWL.has(r.id)) (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.25)' }}
+                      >
+                        <Bookmark size={14} fill={savedWL.has(r.id) ? '#b8a0ff' : 'none'} />
                       </button>
                     </div>
                   )

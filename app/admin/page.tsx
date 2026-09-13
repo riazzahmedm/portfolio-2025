@@ -28,6 +28,9 @@ export default function AdminPage() {
   }
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const t = params.get('tab') as Tab | null
+    if (t && NAV.some(n => n.key === t)) setTab(t)
     fetch('/api/auth/admin').then(r => r.json()).then(d => {
       if (d.authed) setAuthed(true)
     })

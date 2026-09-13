@@ -1,7 +1,7 @@
 'use client'
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, KeyboardEvent } from 'react'
 import { toast } from 'sonner'
-import { Plus, Trash2, ChevronUp, ChevronDown, Type, Image, Video, Code, Eye, EyeOff, Loader2, Upload } from 'lucide-react'
+import { Plus, Trash2, ChevronUp, ChevronDown, Type, Image, Video, Code, Eye, EyeOff, Loader2, Upload, Maximize2, Minimize2, X } from 'lucide-react'
 import type { BlogPost, ContentBlock } from '@/lib/blog.types'
 import { compressImage } from '@/lib/compress-image'
 
@@ -83,6 +83,71 @@ const LABEL: React.CSSProperties = {
   textTransform: 'uppercase',
   color:         'var(--text-dim)',
   marginBottom:  '6px',
+}
+
+// ── HTML fullscreen editor ────────────────────────────────────────────────────
+function HtmlEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [full, setFull] = useState(false)
+
+  const textarea = (
+    <textarea
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder="Paste raw HTML here…"
+      spellCheck={false}
+      style={{
+        ...INPUT,
+        resize:     full ? 'none' : 'vertical',
+        lineHeight: 1.55,
+        fontFamily: 'var(--ff-mono)',
+        fontSize:   '12.5px',
+        minHeight:  full ? 'calc(100vh - 80px)' : '400px',
+        flex:       full ? 1 : undefined,
+        tabSize:    2,
+      }}
+      onKeyDown={e => {
+        if (e.key === 'Tab') {
+          e.preventDefault()
+          const el  = e.currentTarget
+          const s   = el.selectionStart
+          const end = el.selectionEnd
+          const v   = el.value
+          el.value  = v.slice(0, s) + '  ' + v.slice(end)
+          el.selectionStart = el.selectionEnd = s + 2
+          onChange(el.value)
+        }
+      }}
+    />
+  )
+
+  if (full) return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 500,
+      background: '#0a0a0a',
+      display: 'flex', flexDirection: 'column',
+      padding: '16px',
+      gap: '12px',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: '10px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#f59e0b' }}>// html — fullscreen</span>
+        <button type="button" onClick={() => setFull(false)} style={{ ...iconBtn, gap: '6px', paddingRight: '10px', color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontFamily: 'var(--ff-mono)' }}>
+          <Minimize2 size={13} /> Exit fullscreen
+        </button>
+      </div>
+      {textarea}
+    </div>
+  )
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button type="button" onClick={() => setFull(true)} style={{ ...iconBtn, gap: '5px', paddingRight: '10px', color: 'rgba(255,255,255,0.4)', fontSize: '11px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em' }}>
+          <Maximize2 size={12} /> Fullscreen
+        </button>
+      </div>
+      {textarea}
+    </div>
+  )
 }
 
 // ── Block editor row ──────────────────────────────────────────────────────────
@@ -178,12 +243,9 @@ function BlockEditor({
       )}
 
       {block.type === 'html' && (
-        <textarea
+        <HtmlEditor
           value={block.content}
-          onChange={e => onChange({ ...block, content: e.target.value })}
-          placeholder="Paste raw HTML here…"
-          rows={10}
-          style={{ ...INPUT, resize: 'vertical', lineHeight: 1.5, fontFamily: 'var(--ff-mono)', fontSize: '12px' }}
+          onChange={v => onChange({ ...block, content: v })}
         />
       )}
     </div>
@@ -203,11 +265,12 @@ const iconBtn: React.CSSProperties = {
 
 // ── Main form ─────────────────────────────────────────────────────────────────
 interface Props {
-  initial?:  BlogPost
-  onSuccess: (post: BlogPost) => void
+  initial?:      BlogPost
+  existingTags?: string[]
+  onSuccess:     (post: BlogPost) => void
 }
 
-export default function AdminForm({ initial, onSuccess }: Props) {
+export default function AdminForm({ initial, existingTags = [], onSuccess }: Props) {
   const isEdit = !!initial
 
   const [title,      setTitle]      = useState(initial?.title ?? '')
@@ -215,10 +278,28 @@ export default function AdminForm({ initial, onSuccess }: Props) {
   const [slugManual, setSlugManual] = useState(isEdit)
   const [excerpt,    setExcerpt]    = useState(initial?.excerpt ?? '')
   const [coverImage, setCoverImage] = useState(initial?.cover_image ?? '')
-  const [tags,       setTags]       = useState((initial?.tags ?? []).join(', '))
+  const [tags,       setTags]       = useState<string[]>(initial?.tags ?? [])
+  const [tagInput,   setTagInput]   = useState('')
   const [published,  setPublished]  = useState(initial?.published ?? false)
   const [blocks,     setBlocks]     = useState<ContentBlock[]>(initial?.content ?? [])
   const [saving,     setSaving]     = useState(false)
+
+  function commitTag(raw: string) {
+    const t = raw.trim().replace(/,+$/, '').trim()
+    if (t && !tags.map(x => x.toLowerCase()).includes(t.toLowerCase())) {
+      setTags(prev => [...prev, t])
+    }
+    setTagInput('')
+  }
+
+  function handleTagKey(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault()
+      commitTag(tagInput)
+    } else if (e.key === 'Backspace' && tagInput === '' && tags.length > 0) {
+      setTags(prev => prev.slice(0, -1))
+    }
+  }
 
   function handleTitleChange(v: string) {
     setTitle(v)
@@ -265,7 +346,7 @@ export default function AdminForm({ initial, onSuccess }: Props) {
         slug:        slug.trim(),
         excerpt:     excerpt.trim() || null,
         cover_image: coverImage.trim() || null,
-        tags:        tags.split(',').map(t => t.trim()).filter(Boolean),
+        tags:        tags,
         published,
         content:     blocks,
       }
@@ -326,8 +407,107 @@ export default function AdminForm({ initial, onSuccess }: Props) {
 
       {/* Tags */}
       <div>
-        <label style={LABEL}>Tags (comma-separated)</label>
-        <input value={tags} onChange={e => setTags(e.target.value)} placeholder="tech, design, life" style={INPUT} />
+        <label style={LABEL}>Tags</label>
+        <div
+          style={{
+            ...INPUT,
+            display:    'flex',
+            flexWrap:   'wrap',
+            gap:        '6px',
+            alignItems: 'center',
+            minHeight:  '44px',
+            cursor:     'text',
+            height:     'auto',
+            padding:    '8px 12px',
+          }}
+          onClick={e => (e.currentTarget.querySelector('input') as HTMLInputElement | null)?.focus()}
+        >
+          {tags.map(t => (
+            <span key={t} style={{
+              display:       'flex', alignItems: 'center', gap: '4px',
+              padding:       '3px 10px',
+              background:    'rgba(130,255,31,0.1)',
+              border:        '1px solid rgba(130,255,31,0.25)',
+              borderRadius:  '100px',
+              fontSize:      '11px', fontFamily: 'var(--ff-mono)',
+              letterSpacing: '0.1em', textTransform: 'uppercase',
+              color:         '#82ff1f',
+            }}>
+              {t}
+              <button
+                type="button"
+                onClick={() => setTags(prev => prev.filter(x => x !== t))}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'rgba(130,255,31,0.5)', display: 'flex', lineHeight: 1 }}
+              >
+                <X size={10} />
+              </button>
+            </span>
+          ))}
+          <input
+            value={tagInput}
+            onChange={e => setTagInput(e.target.value)}
+            onKeyDown={handleTagKey}
+            onBlur={() => tagInput.trim() && commitTag(tagInput)}
+            placeholder={tags.length === 0 ? 'Type a tag, press Enter…' : ''}
+            style={{
+              background:  'none', border: 'none', outline: 'none',
+              color:       '#fff', fontSize: '13px', fontFamily: 'var(--ff-body)',
+              minWidth:    '120px', flex: 1,
+            }}
+          />
+        </div>
+        <div style={{ marginTop: '5px', fontSize: '11px', fontFamily: 'var(--ff-mono)', color: 'var(--text-dim)' }}>
+          Press Enter or comma to add · Backspace to remove last
+        </div>
+
+        {/* Existing tag suggestions */}
+        {(() => {
+          const suggestions = existingTags.filter(t =>
+            !tags.map(x => x.toLowerCase()).includes(t.toLowerCase()) &&
+            t.toLowerCase().includes(tagInput.toLowerCase())
+          )
+          if (suggestions.length === 0) return null
+          return (
+            <div style={{ marginTop: '10px' }}>
+              <div style={{ fontSize: '10px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '6px' }}>
+                Existing tags
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {suggestions.map(t => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTags(prev => [...prev, t])}
+                    style={{
+                      display:       'flex', alignItems: 'center', gap: '4px',
+                      padding:       '3px 10px',
+                      background:    'rgba(255,255,255,0.04)',
+                      border:        '1px solid rgba(255,255,255,0.1)',
+                      borderRadius:  '100px',
+                      fontSize:      '11px', fontFamily: 'var(--ff-mono)',
+                      letterSpacing: '0.1em', textTransform: 'uppercase',
+                      color:         'rgba(255,255,255,0.45)',
+                      cursor:        'pointer',
+                      transition:    'all 0.15s',
+                    }}
+                    onMouseEnter={e => {
+                      (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(130,255,31,0.35)'
+                      ;(e.currentTarget as HTMLButtonElement).style.color = '#82ff1f'
+                      ;(e.currentTarget as HTMLButtonElement).style.background = 'rgba(130,255,31,0.06)'
+                    }}
+                    onMouseLeave={e => {
+                      (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.1)'
+                      ;(e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.45)'
+                      ;(e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.04)'
+                    }}
+                  >
+                    <Plus size={9} /> {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )
+        })()}
       </div>
 
       {/* Published toggle */}

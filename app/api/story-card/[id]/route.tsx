@@ -76,7 +76,7 @@ function v1(log: MovieLog, poster: string|null, vibe: VibeDef, platform: Platfor
         )}
         {/* Review */}
         {review && <div style={{ color:'rgba(255,255,255,0.52)', fontSize:'26px', textAlign:'center', lineHeight:1.6, fontStyle:'italic', display:'flex', maxWidth:'800px' }}>{review}</div>}
-        <div style={{ position:'absolute', bottom:'84px', color:`${PINK}38`, fontSize:'18px', letterSpacing:'0.35em', display:'flex' }}>RIAZZ-PORTFOLIO.VERCEL.APP</div>
+        <div style={{ position:'absolute', bottom:'84px', color:`${PINK}38`, fontSize:'18px', letterSpacing:'0.35em', display:'flex' }}>RIAZ AHMED</div>
       </div>
     </div>
   )
@@ -148,7 +148,7 @@ function v2(log: MovieLog, poster: string|null, vibe: VibeDef, platform: Platfor
         {/* Footer */}
         <div style={{ position:'absolute', bottom:'82px', left:'100px', right:'100px', display:'flex', justifyContent:'space-between' }}>
           <span style={{ color:`${G}38`, fontSize:'16px', letterSpacing:'0.1em', display:'flex' }}>{date}</span>
-          <span style={{ color:`${G}28`, fontSize:'16px', letterSpacing:'0.1em', display:'flex' }}>riazz-portfolio.vercel.app</span>
+          <span style={{ color:`${G}28`, fontSize:'16px', letterSpacing:'0.1em', display:'flex' }}>RIAZ AHMED</span>
         </div>
       </div>
     </div>
@@ -204,7 +204,7 @@ function v3(log: MovieLog, poster: string|null, vibe: VibeDef, platform: Platfor
         {/* Review */}
         {review && <div style={{ color:'rgba(0,0,0,0.6)', fontSize:'30px', lineHeight:1.6, fontStyle:'italic', fontFamily:'Georgia,serif', display:'flex' }}>{review}</div>}
 
-        <div style={{ position:'absolute', bottom:'52px', right:'64px', color:'rgba(0,0,0,0.18)', fontSize:'18px', letterSpacing:'0.16em', display:'flex' }}>riazz-portfolio.vercel.app/movies</div>
+        <div style={{ position:'absolute', bottom:'52px', right:'64px', color:'rgba(0,0,0,0.18)', fontSize:'18px', letterSpacing:'0.16em', display:'flex' }}>RIAZ AHMED</div>
       </div>
     </div>
   )
@@ -262,7 +262,7 @@ function v4(log: MovieLog, poster: string|null, vibe: VibeDef, platform: Platfor
 
         <div style={{ position:'absolute', bottom:'76px', display:'flex', flexDirection:'column', alignItems:'center', gap:'8px' }}>
           <div style={{ color:'rgba(255,255,255,0.18)', fontSize:'20px', letterSpacing:'0.12em', display:'flex' }}>{date}</div>
-          <div style={{ color:'rgba(255,255,255,0.1)', fontSize:'16px', letterSpacing:'0.18em', display:'flex' }}>riazz-portfolio.vercel.app/movies</div>
+          <div style={{ color:'rgba(255,255,255,0.1)', fontSize:'16px', letterSpacing:'0.18em', display:'flex' }}>RIAZ AHMED</div>
         </div>
       </div>
     </div>
@@ -295,7 +295,7 @@ function v5(log: MovieLog, poster: string|null, vibe: VibeDef, platform: Platfor
         )}
         {review && <div style={{ display:'flex', color:'rgba(255,255,255,0.65)', fontSize:'30px', textAlign:'center', lineHeight:1.65, maxWidth:'820px', fontStyle:'italic', marginBottom:'56px', paddingLeft:'36px', borderLeft:'3px solid rgba(184,160,255,0.4)' }}>{review}</div>}
         <div style={{ display:'flex', color:'rgba(255,255,255,0.22)', fontSize:'26px', letterSpacing:'0.14em', marginBottom:'80px' }}>{date}</div>
-        <div style={{ position:'absolute', bottom:'72px', display:'flex', color:'rgba(255,255,255,0.18)', fontSize:'26px', letterSpacing:'0.22em' }}>riazz-portfolio.vercel.app/movies</div>
+        <div style={{ position:'absolute', bottom:'72px', display:'flex', color:'rgba(255,255,255,0.18)', fontSize:'26px', letterSpacing:'0.22em' }}>RIAZ AHMED</div>
       </div>
     </div>
   )

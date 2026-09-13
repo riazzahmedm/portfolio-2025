@@ -21,8 +21,13 @@ export async function GET(req: Request) {
   const from  = (page - 1) * limit
   const to    = from + limit - 1
 
+  const type  = searchParams.get('type')
+  const baseQ = supabase.from('logs').select('*', { count: 'exact' })
+    .order('watched_on', { ascending: false })
+    .order('created_at', { ascending: false })
+  const mainQ = (type === 'movie' || type === 'series') ? baseQ.eq('type', type) : baseQ
   const [main, movies, series] = await Promise.all([
-    supabase.from('logs').select('*', { count: 'exact' }).order('watched_on', { ascending: false }).order('created_at', { ascending: false }).range(from, to),
+    mainQ.range(from, to),
     supabase.from('logs').select('*', { count: 'exact', head: true }).eq('type', 'movie'),
     supabase.from('logs').select('*', { count: 'exact', head: true }).eq('type', 'series'),
   ])
@@ -60,5 +65,11 @@ export async function POST(req: Request) {
 
   const { data, error } = await supabase.from('logs').insert(body).select().single()
   if (error) return Response.json({ error: error.message }, { status: 500 })
+
+  // Remove from Watch Later if it was queued there
+  if (body.tmdb_id) {
+    await supabase.from('watchlist').delete().eq('tmdb_id', body.tmdb_id)
+  }
+
   return Response.json(data, { status: 201 })
 }

@@ -49,12 +49,13 @@ export default function BlogPage() {
     fetch('/api/auth/blog').then(r => r.json()).then(d => setIsAdmin(d.authed))
   }, [fetchPosts])
 
-  // All tags from posts
-  const allTags = Array.from(new Set(posts.flatMap(p => p.tags))).sort()
+  const allTags = Array.from(
+    new Set(posts.flatMap(p => p.tags).map(t => t.trim().toLowerCase()))
+  ).sort()
 
   const filtered = posts
     .filter(p => !search || p.title.toLowerCase().includes(search.toLowerCase()) || (p.excerpt ?? '').toLowerCase().includes(search.toLowerCase()))
-    .filter(p => !tag    || p.tags.includes(tag))
+    .filter(p => !tag    || p.tags.map(t => t.trim().toLowerCase()).includes(tag))
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg)', color: 'var(--text-primary)', fontFamily: 'var(--ff-body)' }}>
@@ -71,7 +72,7 @@ export default function BlogPage() {
       {/* ── Header ── */}
       <header style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(5,5,5,0.88)', backdropFilter: 'blur(18px)' }}>
         <div className="blog-header-inner" style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', textDecoration: 'none', fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em' }}>
+          <Link href="/hub" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', textDecoration: 'none', fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em' }}>
             <ArrowLeft size={13} />
           </Link>
           {isAdmin && (

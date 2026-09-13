@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 import CartIcon from '@/components/shop/CartIcon'
 import CartBanner from '@/components/shop/CartBanner'
 
@@ -19,9 +20,14 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
         height: '56px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
-        <Link href="/shop" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-          <img src="/shop-logo.png" alt="Art prints from Riaz" style={{ height: '44px', width: 'auto', display: 'block' }} />
-        </Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <Link href="/hub" style={{ display: 'flex', alignItems: 'center', color: 'var(--text-dim)', textDecoration: 'none' }}>
+            <ArrowLeft size={16} />
+          </Link>
+          <Link href="/shop" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+            <img src="/shop-logo.png" alt="Art prints from Riaz" style={{ height: '44px', width: 'auto', display: 'block' }} />
+          </Link>
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <Link href="/shop/orders" style={{ fontSize: '13px', color: 'var(--text-secondary)', textDecoration: 'none' }}>
             My Orders

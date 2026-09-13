@@ -4,18 +4,10 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Pencil, Trash2, Calendar, Clock } from 'lucide-react'
 import { toast } from 'sonner'
-import type { BlogPost, ContentBlock } from '@/lib/blog.types'
+import type { BlogPost } from '@/lib/blog.types'
+import { readingTime } from '@/lib/reading-time'
 import BlockRenderer from '@/components/blog/BlockRenderer'
 import ConfirmModal from '@/components/ui/ConfirmModal'
-
-function readingTime(content: ContentBlock[]): number {
-  const words = content
-    .filter(b => b.type === 'text')
-    .map(b => (b as { type: 'text'; content: string }).content)
-    .join(' ')
-    .split(/\s+/).length
-  return Math.max(1, Math.round(words / 200))
-}
 
 export default function BlogPostPage() {
   const { slug }   = useParams<{ slug: string }>()
@@ -66,7 +58,7 @@ export default function BlogPostPage() {
   }
 
   const date  = post.published_at ?? post.created_at
-  const mins  = readingTime(post.content)
+  const mins  = readingTime(post)
   const month = new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 
   return (
