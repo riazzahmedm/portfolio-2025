@@ -197,12 +197,59 @@ const HTML_VARS_CSS = `
 }
 `
 
+// Strip the HTML document boilerplate and scope embedded <style> rules so they
+// don't leak out and affect the rest of the page (body, * selectors etc.).
+function processHtml(raw: string): { styles: string; body: string } {
+  // Extract all <style>…</style> blocks
+  const styleBlocks: string[] = []
+  const withoutStyles = raw.replace(/<style[\s\S]*?<\/style>/gi, m => {
+    // Pull out just the CSS text
+    const css = m.replace(/<\/?style[^>]*>/gi, '')
+    styleBlocks.push(css)
+    return ''
+  })
+
+  // Scope each CSS rule to .blog-html-block so it cannot affect the outer page.
+  // Rewrite selectors like `body { … }` → `.blog-html-block { … }` and
+  // `* { … }` → `.blog-html-block * { … }`.
+  const scopedCss = styleBlocks
+    .join('\n')
+    .replace(/([^{}]+)\{/g, (match, selector) => {
+      const scoped = selector
+        .split(',')
+        .map((s: string) => {
+          const t = s.trim()
+          if (!t) return ''
+          // Replace bare html/body selectors with the wrapper class
+          if (/^(html|body|\*)$/.test(t)) return `.blog-html-block`
+          // Prefix everything else
+          return `.blog-html-block ${t}`
+        })
+        .filter(Boolean)
+        .join(', ')
+      return `${scoped} {`
+    })
+
+  // Extract just the <body> content (strip html/head/body wrapper tags)
+  let bodyContent = withoutStyles
+  bodyContent = bodyContent.replace(/<!DOCTYPE[^>]*>/gi, '')
+  bodyContent = bodyContent.replace(/<\/?html[^>]*>/gi, '')
+  bodyContent = bodyContent.replace(/<head[\s\S]*?<\/head>/gi, '')
+  bodyContent = bodyContent.replace(/<\/?body[^>]*>/gi, '')
+
+  return { styles: scopedCss, body: bodyContent.trim() }
+}
+
 function HtmlBlock({ content }: { content: string }) {
+  const { styles, body } = processHtml(content)
   return (
-    <div
-      className="blog-html-block"
-      dangerouslySetInnerHTML={{ __html: content }}
-    />
+    <>
+      {styles && <style>{styles}</style>}
+      <div
+        className="blog-html-block"
+        dangerouslySetInnerHTML={{ __html: body }}
+      />
+    </>
   )
 }
 

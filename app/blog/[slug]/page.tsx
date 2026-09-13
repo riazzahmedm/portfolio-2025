@@ -113,14 +113,16 @@ export default function BlogPostPage() {
 
       {/* ── Cover image ── */}
       {post.cover_image && (
-        <div style={{ position: 'relative', width: '100%', maxHeight: '420px', overflow: 'hidden', borderRadius: '20px 20px 0 0' }}>
-          <img src={post.cover_image} alt={post.title} style={{ width: '100%', maxHeight: '420px', objectFit: 'cover', display: 'block' }} />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, var(--bg))' }} />
+        <div style={{ maxWidth: '720px', margin: '0 auto', padding: '0 20px' }}>
+          <div style={{ position: 'relative', maxHeight: '420px', overflow: 'hidden', borderRadius: '20px' }}>
+            <img src={post.cover_image} alt={post.title} style={{ width: '100%', maxHeight: '420px', objectFit: 'cover', display: 'block' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, var(--bg))' }} />
+          </div>
         </div>
       )}
 
       {/* ── Article ── */}
-      <article style={{ maxWidth: '800px', margin: '0 auto', padding: post.cover_image ? '0 24px 80px' : '48px 24px 80px' }}>
+      <article style={{ maxWidth: '720px', margin: '0 auto', padding: post.cover_image ? '0 20px 80px' : '48px 20px 80px' }}>
 
         {/* Draft badge */}
         {!post.published && isAdmin && (
