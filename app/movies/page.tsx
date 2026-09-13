@@ -9,6 +9,8 @@ import LogCard from '@/components/movies/LogCard'
 import WatchlistCard from '@/components/movies/WatchlistCard'
 import FilterTabs, { type LogFilter } from '@/components/movies/FilterTabs'
 import AdminForm from '@/components/movies/AdminForm'
+import { AnimatePresence } from 'framer-motion'
+import Loader from '@/components/ui/Loader'
 
 // ── Stat tile ────────────────────────────────────────────────────────────────
 function Stat({ icon, value, label }: { icon: React.ReactNode; value: number; label: string }) {
@@ -279,6 +281,7 @@ function CalendarHeatmap({ logs }: { logs: MovieLog[] }) {
 export default function MoviesPage() {
   const [logs,          setLogs]          = useState<MovieLog[]>([])
   const [loading,       setLoading]       = useState(true)
+  const [loaded,        setLoaded]        = useState(false)
   const [loadingMore,   setLoadingMore]   = useState(false)
   const [page,          setPage]          = useState(1)
   const [hasMore,       setHasMore]       = useState(false)
@@ -542,7 +545,11 @@ export default function MoviesPage() {
   }
 
   return (
-    <div style={{ minHeight: '100dvh', background: 'var(--bg)', color: 'var(--text-primary)', fontFamily: 'var(--ff-body)' }}>
+    <>
+      <AnimatePresence mode="wait">
+        {!loaded && <Loader key="loader" onComplete={() => setLoaded(true)} />}
+      </AnimatePresence>
+      <div style={{ minHeight: '100dvh', background: 'var(--bg)', color: 'var(--text-primary)', fontFamily: 'var(--ff-body)' }}>
 
       {/* ── Log-from-watchlist drawer ── */}
       {loggingItem && loggingItem.tmdb_id !== null && (
@@ -1013,5 +1020,6 @@ export default function MoviesPage() {
         </div>
       </main>
     </div>
+    </>
   )
 }

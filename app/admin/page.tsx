@@ -1,6 +1,8 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
+import Loader from '@/components/ui/Loader'
 import { LayoutDashboard, ShoppingBag, Film, FileText, LogOut } from 'lucide-react'
 import PasswordGate  from '@/components/admin/PasswordGate'
 import OverviewAdmin from '@/components/admin/OverviewAdmin'
@@ -19,6 +21,8 @@ const NAV: { key: Tab; label: string; Icon: React.ElementType }[] = [
 
 export default function AdminPage() {
   const [authed,      setAuthed]      = useState(false)
+  const [checking,    setChecking]    = useState(true)
+  const [loaded,      setLoaded]      = useState(false)
   const [tab,         setTab]         = useState<Tab>('overview')
   const [shopSection, setShopSection] = useState<string | undefined>(undefined)
 
@@ -33,7 +37,7 @@ export default function AdminPage() {
     if (t && NAV.some(n => n.key === t)) setTab(t)
     fetch('/api/auth/admin').then(r => r.json()).then(d => {
       if (d.authed) setAuthed(true)
-    })
+    }).finally(() => setChecking(false))
   }, [])
 
   async function logout() {
@@ -42,6 +46,12 @@ export default function AdminPage() {
     toast.success('Logged out')
   }
 
+  if (!loaded) return (
+    <AnimatePresence mode="wait">
+      <Loader key="loader" onComplete={() => setLoaded(true)} />
+    </AnimatePresence>
+  )
+  if (checking) return <div style={{ minHeight: '100dvh', background: 'var(--bg)' }} />
   if (!authed) return <PasswordGate endpoint="/api/auth/admin" onAuthed={() => setAuthed(true)} label="Admin portal" />
 
   return (

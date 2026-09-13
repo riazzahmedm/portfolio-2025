@@ -1,6 +1,8 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import type { ShopBundleDeal } from '@/lib/shop.types'
+import { AnimatePresence } from 'framer-motion'
+import Loader from '@/components/ui/Loader'
 
 function ProductCardSkeleton() {
   return (
@@ -47,6 +49,7 @@ export default function ShopPage() {
   const [activeTag,    setActiveTag]    = useState<string>('all')
   const [filterOpen,   setFilterOpen]   = useState(false)
   const [loading,      setLoading]      = useState(true)
+  const [loaded,       setLoaded]       = useState(false)
   const [deals,        setDeals]        = useState<ShopBundleDeal[]>([])
   const [dealIdx,      setDealIdx]      = useState(0)
   const [sweeping,     setSweeping]     = useState(false)
@@ -100,6 +103,9 @@ export default function ShopPage() {
 
   return (
     <>
+      <AnimatePresence mode="wait">
+        {!loaded && <Loader key="loader" onComplete={() => setLoaded(true)} />}
+      </AnimatePresence>
       <style>{`
         .shop-grid {
           display: grid;

@@ -5,6 +5,8 @@ import { ArrowLeft, Plus, Search, X } from 'lucide-react'
 import { toast } from 'sonner'
 import type { BlogPost } from '@/lib/blog.types'
 import PostCard from '@/components/blog/PostCard'
+import { AnimatePresence } from 'framer-motion'
+import Loader from '@/components/ui/Loader'
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 function Skeleton() {
@@ -28,6 +30,7 @@ function Skeleton() {
 export default function BlogPage() {
   const [posts,   setPosts]   = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
+  const [loaded,  setLoaded]  = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [search,  setSearch]  = useState('')
   const [tag,     setTag]     = useState('')
@@ -58,7 +61,11 @@ export default function BlogPage() {
     .filter(p => !tag    || p.tags.map(t => t.trim().toLowerCase()).includes(tag))
 
   return (
-    <div style={{ minHeight: '100dvh', background: 'var(--bg)', color: 'var(--text-primary)', fontFamily: 'var(--ff-body)' }}>
+    <>
+      <AnimatePresence mode="wait">
+        {!loaded && <Loader key="loader" onComplete={() => setLoaded(true)} />}
+      </AnimatePresence>
+      <div style={{ minHeight: '100dvh', background: 'var(--bg)', color: 'var(--text-primary)', fontFamily: 'var(--ff-body)' }}>
       <style>{`
         @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
         .blog-header-inner { padding: 14px 24px; }
@@ -191,5 +198,6 @@ export default function BlogPage() {
         )}
       </main>
     </div>
+    </>
   )
 }
