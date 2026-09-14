@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 import { useCursor } from '@/hooks/useCursor'
 
 // Routes where the custom cursor should be disabled — system cursor stays visible
-const EXCLUDED = ['/blog', '/movies', '/shop', '/admin']
+const EXCLUDED = ['/blog', '/movies', '/admin']
 
 function isExcluded(pathname: string) {
   return EXCLUDED.some(prefix => pathname === prefix || pathname.startsWith(prefix + '/'))
