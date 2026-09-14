@@ -145,7 +145,7 @@ export default function Testimonials() {
 
       </div>
 
-      <SectionFooter current={7} />
+      <SectionFooter current={7} hideLabel />
     </SectionShell>
   )
 }

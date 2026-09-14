@@ -142,7 +142,7 @@ export default function Hero() {
             </span>
           </div>
         </motion.div>
-        <SectionFooter current={1} />
+        <SectionFooter current={1} hideLabel />
       </div>
 
     </SectionShell>

@@ -35,11 +35,12 @@ export default function CustomCursor() {
 
   useCursor()
 
-  if (!active) return null
+  // Always render so useCursor can find the elements on mount.
+  // Visibility is driven by the data-cursor attribute + CSS, not by conditional rendering.
   return (
     <>
-      <div className="cursor" />
-      <div className="cursor-ring" />
+      <div className="cursor"      style={{ opacity: active ? 1 : 0, pointerEvents: 'none' }} />
+      <div className="cursor-ring" style={{ opacity: active ? 1 : 0, pointerEvents: 'none' }} />
     </>
   )
 }

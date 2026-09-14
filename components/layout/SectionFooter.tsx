@@ -2,24 +2,26 @@ interface Props {
   current: number
   total?: number
   hideLabel?: boolean
+  label?: string
 }
 
-export default function SectionFooter({ current, total = 8, hideLabel = false }: Props) {
+export default function SectionFooter({ current, total = 8, hideLabel = false, label }: Props) {
   const num = String(current).padStart(2, '0')
   const tot = String(total).padStart(2, '0')
+  const text = label ?? 'Scroll to explore'
 
   return (
     <div
       className="flex items-center justify-between px-8 md:px-14 lg:px-20 py-3 flex-shrink-0 transition-colors duration-300"
       style={{ borderTop: '1px solid var(--border)' }}
     >
-      <div className="flex items-center gap-3">
-        <div className="relative w-10 h-px overflow-hidden" style={{ background: 'var(--border-card)' }}>
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <div className="relative w-10 flex-shrink-0 h-px overflow-hidden" style={{ background: 'var(--border-card)' }}>
           <div className="absolute top-0 bottom-0 w-full" style={{ background: 'var(--red)', animation: 'scanline 2s ease-in-out infinite' }} />
         </div>
         {!hideLabel && (
-          <span className="text-[12px] tracking-[0.18em] uppercase" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
-            Scroll to explore
+          <span className="truncate text-[10px] md:text-[12px] tracking-[0.1em] md:tracking-[0.18em] uppercase" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
+            {text}
           </span>
         )}
       </div>

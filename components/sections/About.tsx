@@ -169,24 +169,6 @@ export default function About() {
               </p>
             </div>
 
-            {/* Keep scrolling hint — desktop only */}
-            <motion.div
-              className="hidden md:flex flex-shrink-0 flex-col items-center gap-1.5"
-              style={{ opacity: useTransform(scrollYProgress, [0, 0.85], [1, 0]) }}
-            >
-              <span
-                className="text-[10px] tracking-[0.2em] uppercase"
-                style={{ color: 'var(--text-faint)', fontFamily: 'var(--ff-mono)' }}
-              >
-                keep scrolling
-              </span>
-              <motion.div
-                animate={{ y: [0, 6, 0] }}
-                transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
-                className="w-px h-6"
-                style={{ background: 'linear-gradient(to bottom, var(--lavender), transparent)' }}
-              />
-            </motion.div>
           </div>
 
           <SectionFooter current={2} hideLabel />

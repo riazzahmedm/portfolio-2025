@@ -120,7 +120,9 @@ export default function Projects() {
   useEffect(() => {
     const measure = () => {
       if (trackRef.current) {
-        const dist = trackRef.current.scrollWidth - window.innerWidth
+        const cardWidth = Math.min(0.78 * window.innerWidth, 460)
+        // Stop when the last card is centered in the viewport
+        const dist = trackRef.current.scrollWidth - cardWidth / 2 - window.innerWidth / 2
         setScrollRange(Math.max(0, dist))
       }
     }
@@ -141,7 +143,7 @@ export default function Projects() {
     [0.05, 0.95],
     [0, -scrollRange],
   )
-  const x = useSpring(xRaw, { stiffness: 80, damping: 28, restDelta: 1 })
+  const x = useSpring(xRaw, { stiffness: 180, damping: 40, restDelta: 0.5 })
 
   // derive active card from scroll progress
   useEffect(() => {
@@ -280,7 +282,7 @@ export default function Projects() {
             </motion.div>
           </div>
 
-          {/* Dot nav + counter */}
+          {/* Dot nav + counter + keep scrolling hint */}
           <div className="flex items-center justify-between px-8 md:px-14 py-3 flex-shrink-0">
             <div className="flex gap-2">
               {PROJECTS.map((_, i) => (
@@ -295,6 +297,7 @@ export default function Projects() {
                 />
               ))}
             </div>
+
             <div className="text-[12px] tracking-[0.14em]" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
               {String(activeIdx + 1).padStart(2, '0')} of {String(NUM).padStart(2, '0')}
             </div>

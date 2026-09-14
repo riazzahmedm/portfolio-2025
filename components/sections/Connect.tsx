@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { motion, useDragControls, AnimatePresence } from 'framer-motion'
-import SectionFooter from '@/components/layout/SectionFooter'
 import { Play, GripHorizontal } from 'lucide-react'
 
 // ── Shared hover tooltip ───────────────────────────────────────────────────────
@@ -401,7 +400,6 @@ export default function Connect() {
         </motion.div>
       </div>
 
-      <SectionFooter current={6} />
     </div>
   )
 }

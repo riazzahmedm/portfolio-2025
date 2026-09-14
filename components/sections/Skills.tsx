@@ -144,7 +144,7 @@ export default function Skills() {
           </motion.div>
         </div>
 
-        <SectionFooter current={3} />
+        <SectionFooter current={3} hideLabel />
       </div>
     </SectionShell>
   )

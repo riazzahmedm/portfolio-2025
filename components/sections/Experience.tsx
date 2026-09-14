@@ -198,7 +198,7 @@ export default function Experience() {
         </div>
       </div>
 
-      <SectionFooter current={4} />
+      <SectionFooter current={4} hideLabel />
     </SectionShell>
   )
 }

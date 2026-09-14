@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import SectionShell from '@/components/ui/SectionShell'
 import SectionTag from '@/components/ui/SectionTag'
-import SectionFooter from '@/components/layout/SectionFooter'
 import TerminalBlock from '@/components/ui/TerminalBlock'
 import { Send, Phone, Link, Loader2 } from 'lucide-react'
 import { TERMINAL_LINES } from '@/lib/data'
@@ -15,6 +14,8 @@ const SOCIALS = [
   { icon: Phone,        label: 'WhatsApp',  value: '+91 80728 52495',                          href: 'https://wa.me/918072852495',                                color: 'var(--lavender)' },
   { icon: Link,         label: 'LinkedIn', value: 'in/riaz-ahmed',                           href: 'https://www.linkedin.com/in/riaz-ahmed-665a9715b/',         color: 'var(--lavender)' },
 ]
+
+// function HangingSpiderman() { ... } // TODO: add proper Spiderman PNG, then restore interactive pendulum
 
 function SpiderIcon({ size = 20 }: { size?: number }) {
   return (
@@ -142,6 +143,7 @@ export default function Contact() {
 
       {/* ── DESKTOP layout ── */}
       <div className="hidden md:grid flex-1 grid-cols-2 min-h-0 mt-14">
+        {/* <HangingSpiderman /> */}
 
         {/* LEFT — Terminal + Socials */}
         <div className="flex flex-col justify-center px-14 lg:px-20 xl:px-32 2xl:px-48 py-0 border-r transition-colors duration-300 gap-5" style={{ borderColor: 'var(--border)' }}>
@@ -243,11 +245,10 @@ export default function Contact() {
       {/* Footer */}
       <div className="flex-shrink-0">
         <div className="flex items-center justify-center px-8 py-2 border-t transition-colors duration-300" style={{ borderColor: 'var(--border)' }}>
-          <span className="text-[12px] tracking-[0.16em] uppercase transition-colors duration-300" style={{ color: 'var(--text-faint)', fontFamily: 'var(--ff-mono)' }}>
-            © Riaz Ahmed · built with Next.js, caffeine &amp; too many tokens
+          <span className="text-[9px] md:text-[12px] tracking-[0.1em] md:tracking-[0.16em] uppercase transition-colors duration-300" style={{ color: 'var(--text-faint)', fontFamily: 'var(--ff-mono)' }}>
+            Riaz Ahmed — built with Next.js, caffeine &amp; too many tokens
           </span>
         </div>
-        <SectionFooter current={8} hideLabel />
       </div>
     </SectionShell>
   )
