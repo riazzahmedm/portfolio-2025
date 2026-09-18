@@ -7,11 +7,13 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
   const rafRef = useRef<number | null>(null)
 
   useEffect(() => {
+    // Let the browser handle mobile scroll natively — Lenis fights touch momentum
+    if (window.innerWidth < 768) return
+
     const lenis = new Lenis({
       duration: 1.4,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      touchMultiplier: 2,
       infinite: false,
     })
 

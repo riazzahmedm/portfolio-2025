@@ -1,7 +1,7 @@
 'use client'
 import { useRef, useEffect, useState } from 'react'
 import Image from 'next/image'
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import SectionTag from '@/components/ui/SectionTag'
 import SectionFooter from '@/components/layout/SectionFooter'
 import { PROJECTS } from '@/lib/data'
@@ -106,22 +106,161 @@ const SPELLS = [
   'nox',
 ]
 
-// ─── Main section ─────────────────────────────────────────────────────────────
-export default function Projects() {
+// ─── Shared card body ─────────────────────────────────────────────────────────
+function ProjectCard({ project, i }: { project: typeof PROJECTS[number]; i: number }) {
+  const slug = project.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+  return (
+    <div
+      className="project-card-h group rounded-xl overflow-hidden flex flex-col"
+      style={{
+        boxShadow: '0 0 0 1px rgba(255,255,255,0.08), 0 8px 32px rgba(0,0,0,0.6)',
+        background: 'var(--surface)',
+        scrollSnapAlign: 'center',
+      }}
+    >
+      <MockupScreen
+        gradient={project.mockupGradient}
+        accent={project.mockupAccent}
+        type={project.type}
+        image={project.mockupImage}
+      />
+      <div className="p-5 flex flex-col gap-3 flex-1">
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="text-[11px] tracking-[0.22em] uppercase mb-1" style={{ color: project.mockupAccent, fontFamily: 'var(--ff-mono)' }}>
+              {project.year}
+            </div>
+            <div className="text-[17px] font-bold tracking-tight uppercase" style={{ color: 'var(--text-primary)', fontFamily: 'var(--ff-display)' }}>
+              {project.name}
+            </div>
+          </div>
+          {project.link && (
+            <a
+              href={project.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="opacity-40 mt-1 block"
+              style={{ color: project.mockupAccent }}
+              onClick={e => e.stopPropagation()}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 13L13 3M13 3H6M13 3V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </a>
+          )}
+        </div>
+        <p className="text-[13px] leading-relaxed flex-1" style={{ color: 'var(--text-muted)', fontFamily: 'var(--ff-body)' }}>
+          {project.description}
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {project.tags.map((tag) => (
+            <span
+              key={tag}
+              className="text-[10px] tracking-[0.14em] uppercase px-2 py-1 rounded-full border"
+              style={{ color: 'var(--text-secondary)', borderColor: 'rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.05)', fontFamily: 'var(--ff-mono)' }}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+        <div className="text-[11px] tracking-[0.14em] pt-2" style={{ color: '#e8ff00', fontFamily: 'var(--ff-mono)', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.08)' }}>
+          {SPELLS[i % SPELLS.length]} {slug}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Mobile layout — native horizontal snap scroll ────────────────────────────
+function ProjectsMobile() {
+  const [activeIdx, setActiveIdx] = useState(0)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const NUM = PROJECTS.length
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const onScroll = () => {
+      const cardWidth = el.scrollWidth / NUM
+      setActiveIdx(Math.round(el.scrollLeft / cardWidth))
+    }
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [NUM])
+
+  return (
+    <div
+      id="projects"
+      className="projects-outer py-14"
+      style={{ '--section-bg': '#050810', '--section-orb': 'rgba(130,255,31,0.10)' } as React.CSSProperties}
+    >
+      <div className="dot-grid absolute inset-0 z-0 pointer-events-none" />
+      <div className="vignette absolute inset-0 z-0 pointer-events-none" />
+      <div className="section-watermark" style={{ bottom: '-2rem', right: '2rem', color: 'var(--text-faint)' }}>05</div>
+
+      <div className="relative z-10 flex flex-col gap-4">
+        <div className="px-5 pt-2 pb-1">
+          <SectionTag num="05" label="Spells Cast in Production" />
+          <div className="h-px w-full mt-2" style={{ background: 'var(--border)' }} />
+        </div>
+
+        {/* Native horizontal scroll — browser handles momentum/physics */}
+        <div
+          ref={scrollRef}
+          className="overflow-x-auto"
+          style={{
+            scrollSnapType: 'x mandatory',
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }}
+        >
+          <div className="flex gap-4 px-5" style={{ width: 'max-content', paddingRight: '1.25rem' }}>
+            {PROJECTS.map((project, i) => (
+              <ProjectCard key={project.name} project={project} i={i} />
+            ))}
+          </div>
+        </div>
+
+        {/* Dot nav */}
+        <div className="flex items-center justify-between px-5 py-1">
+          <div className="flex gap-2">
+            {PROJECTS.map((_, i) => (
+              <div
+                key={i}
+                className="rounded-full transition-all duration-300"
+                style={{
+                  width: activeIdx === i ? '20px' : '6px',
+                  height: '6px',
+                  background: activeIdx === i ? 'var(--lime)' : 'var(--text-dim)',
+                }}
+              />
+            ))}
+          </div>
+          <div className="text-[12px] tracking-[0.14em]" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
+            {String(activeIdx + 1).padStart(2, '0')} of {String(NUM).padStart(2, '0')}
+          </div>
+        </div>
+
+        <SectionFooter current={5} hideLabel />
+      </div>
+    </div>
+  )
+}
+
+// ─── Desktop layout — scroll-jacked horizontal track ─────────────────────────
+function ProjectsDesktop() {
   const outerRef = useRef<HTMLDivElement>(null)
   const trackRef = useRef<HTMLDivElement>(null)
   const [scrollRange, setScrollRange] = useState(0)
   const [activeIdx, setActiveIdx] = useState(0)
   const NUM = PROJECTS.length
-  // extra 2 viewport heights: 1 for entry, 1 for exit buffer
   const outerHeight = `${(NUM + 2) * 100}vh`
 
-  // measure how far the track needs to travel
   useEffect(() => {
     const measure = () => {
       if (trackRef.current) {
         const cardWidth = Math.min(0.78 * window.innerWidth, 460)
-        // Stop when the last card is centered in the viewport
         const dist = trackRef.current.scrollWidth - cardWidth / 2 - window.innerWidth / 2
         setScrollRange(Math.max(0, dist))
       }
@@ -131,21 +270,13 @@ export default function Projects() {
     return () => window.removeEventListener('resize', measure)
   }, [])
 
-  // scroll progress through the OUTER tall container
   const { scrollYProgress } = useScroll({
     target: outerRef,
     offset: ['start start', 'end end'],
   })
 
-  // smooth x transform — spring adds a touch of inertia on top of Lenis
-  const xRaw = useTransform(
-    scrollYProgress,
-    [0.05, 0.95],
-    [0, -scrollRange],
-  )
-  const x = useSpring(xRaw, { stiffness: 180, damping: 40, restDelta: 0.5 })
+  const x = useTransform(scrollYProgress, [0.05, 0.95], [0, -scrollRange])
 
-  // derive active card from scroll progress
   useEffect(() => {
     const unsub = scrollYProgress.on('change', (v) => {
       const clamped = Math.max(0, Math.min(1, (v - 0.05) / 0.9))
@@ -162,18 +293,12 @@ export default function Projects() {
       style={{ height: outerHeight, '--section-bg': '#050810', '--section-orb': 'rgba(130,255,31,0.10)' } as React.CSSProperties}
     >
       <div className="projects-sticky">
-        {/* Shared decorations */}
         <div className="dot-grid absolute inset-0 z-0" />
         <div className="vignette absolute inset-0 z-0" />
         <div className="red-orb absolute z-0" style={{ bottom: '-200px', left: '-100px' }} />
-        <div
-          className="section-watermark"
-          style={{ bottom: '-2rem', right: '2rem', color: 'var(--text-faint)' }}
-        >05</div>
+        <div className="section-watermark" style={{ bottom: '-2rem', right: '2rem', color: 'var(--text-faint)' }}>05</div>
 
-        {/* Content */}
         <div className="relative z-10 h-full flex flex-col pt-14">
-          {/* Header */}
           <div className="px-8 md:px-14 lg:px-20 xl:px-32 2xl:px-48 pt-8 pb-3 flex-shrink-0">
             <SectionTag num="05" label="Spells Cast in Production" />
             <div className="h-px w-full relative" style={{ background: 'var(--border)' }}>
@@ -188,7 +313,6 @@ export default function Projects() {
             </div>
           </div>
 
-          {/* Horizontal track — driven by scroll progress */}
           <div className="flex-1 overflow-hidden relative">
             <motion.div
               ref={trackRef}
@@ -219,7 +343,6 @@ export default function Projects() {
                       type={project.type}
                       image={project.mockupImage}
                     />
-
                     <div className="p-5 flex flex-col gap-3 flex-1">
                       <div className="flex items-start justify-between">
                         <div>
@@ -255,11 +378,9 @@ export default function Projects() {
                           </div>
                         )}
                       </div>
-
                       <p className="text-[13px] leading-relaxed flex-1" style={{ color: 'var(--text-muted)', fontFamily: 'var(--ff-body)' }}>
                         {project.description}
                       </p>
-
                       <div className="flex flex-wrap gap-1.5">
                         {project.tags.map((tag) => (
                           <span
@@ -271,7 +392,6 @@ export default function Projects() {
                           </span>
                         ))}
                       </div>
-
                       <div className="text-[11px] tracking-[0.14em] pt-2" style={{ color: '#e8ff00', fontFamily: 'var(--ff-mono)', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.08)' }}>
                         {SPELLS[i % SPELLS.length]} {slug}
                       </div>
@@ -282,7 +402,6 @@ export default function Projects() {
             </motion.div>
           </div>
 
-          {/* Dot nav + counter + keep scrolling hint */}
           <div className="flex items-center justify-between px-8 md:px-14 py-3 flex-shrink-0">
             <div className="flex gap-2">
               {PROJECTS.map((_, i) => (
@@ -297,7 +416,6 @@ export default function Projects() {
                 />
               ))}
             </div>
-
             <div className="text-[12px] tracking-[0.14em]" style={{ color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
               {String(activeIdx + 1).padStart(2, '0')} of {String(NUM).padStart(2, '0')}
             </div>
@@ -308,4 +426,18 @@ export default function Projects() {
       </div>
     </div>
   )
+}
+
+// ─── Main section — picks layout based on viewport ───────────────────────────
+export default function Projects() {
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  return isMobile ? <ProjectsMobile /> : <ProjectsDesktop />
 }

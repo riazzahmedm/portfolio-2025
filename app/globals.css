@@ -310,6 +310,15 @@ html.light #testimonials .dot-grid {
   height: 72%;
 }
 
+/* Hide scrollbar on mobile horizontal track */
+@media (max-width: 767px) {
+  .project-card-h {
+    height: auto;
+    min-height: 420px;
+  }
+  .overflow-x-auto::-webkit-scrollbar { display: none; }
+}
+
 /* ─── Slide-in animations ─────────────────────────────────────────── */
 @keyframes slideUpFade {
   from { opacity: 0; transform: translateY(48px); }
