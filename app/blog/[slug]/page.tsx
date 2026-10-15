@@ -114,7 +114,7 @@ export default function BlogPostPage() {
       {/* ── Cover image ── */}
       {post.cover_image && (
         <div style={{ maxWidth: '720px', margin: '0 auto', padding: '0 20px' }}>
-          <div style={{ position: 'relative', maxHeight: '420px', overflow: 'hidden', borderRadius: '20px' }}>
+          <div style={{ position: 'relative', maxHeight: '420px', overflow: 'hidden', borderRadius: '20px 20px 0 0' }}>
             <img src={post.cover_image} alt={post.title} style={{ width: '100%', maxHeight: '420px', objectFit: 'cover', display: 'block' }} />
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, var(--bg))' }} />
           </div>
