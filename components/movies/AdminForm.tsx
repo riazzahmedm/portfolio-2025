@@ -665,7 +665,14 @@ export default function AdminForm({
 
     if (res.ok) {
       toast.success('Logged!', { description: body.title as string })
-      clear(); setForm(blank); onSuccess()
+      if (type === 'series') {
+        // Keep the selected title + season so user can log next episode immediately
+        setSelectedEpisode(null)
+        setForm(f => ({ ...blank, watchedOn: f.watchedOn, platform: f.platform }))
+      } else {
+        clear(); setForm(blank)
+      }
+      onSuccess()
     } else {
       const d = await res.json()
       const msg = d.error ?? 'Something went wrong'
