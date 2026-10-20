@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/admin-auth'
 
 export async function GET() {
+  if (!(await isAdmin())) return Response.json({ error: 'Unauthorized' }, { status: 401 })
   const { data, error } = await supabase
     .from('shop_bundle_deals')
     .select('*, category:shop_categories(id, name)')

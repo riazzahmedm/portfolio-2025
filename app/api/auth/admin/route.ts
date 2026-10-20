@@ -10,6 +10,9 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const { password } = await req.json()
+  if (!process.env.ADMIN_PASSWORD) {
+    return Response.json({ error: 'Server misconfigured — ADMIN_PASSWORD not set' }, { status: 500 })
+  }
   if (password !== process.env.ADMIN_PASSWORD) {
     return Response.json({ error: 'Wrong password' }, { status: 401 })
   }

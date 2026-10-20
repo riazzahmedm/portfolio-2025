@@ -24,9 +24,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (!(await isAdmin())) return Response.json({ error: 'Unauthorized' }, { status: 401 })
   const { id } = await params
   const body = await req.json()
+  // Whitelist only editable fields — never pass raw body to .update()
+  const patch: Record<string, unknown> = {}
+  const allowed = ['name', 'description', 'images', 'is_active', 'image_fit', 'image_position', 'sort_order', 'category_id'] as const
+  for (const key of allowed) {
+    if (key in body) patch[key] = body[key]
+  }
   const { data, error } = await supabase
     .from('shop_products')
-    .update(body)
+    .update(patch)
     .eq('id', id)
     .select()
     .single()
