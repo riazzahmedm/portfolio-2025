@@ -188,7 +188,7 @@ function PaymentForm() {
 
 export default function PaymentPage() {
   return (
-    <Suspense>
+    <Suspense fallback={null}>
       <PaymentForm />
     </Suspense>
   )

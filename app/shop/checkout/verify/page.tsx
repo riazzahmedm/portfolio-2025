@@ -13,7 +13,8 @@ function VerifyForm() {
   const { clearCart } = useCart()
   const [code,      setCode]      = useState('')
   const [loading,   setLoading]   = useState(false)
-  const [resending, setResending] = useState(false)
+  const [resending,  setResending]  = useState(false)
+  const [resendAt,   setResendAt]   = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
   async function verify(e: React.FormEvent) {
@@ -57,6 +58,10 @@ function VerifyForm() {
   }
 
   async function resend() {
+    if (Date.now() < resendAt) {
+      toast.error(`Wait ${Math.ceil((resendAt - Date.now()) / 1000)}s before resending`)
+      return
+    }
     setResending(true)
     await fetch('/api/shop/auth/send-otp', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -64,6 +69,7 @@ function VerifyForm() {
     })
     toast.success('New code sent')
     setCode('')
+    setResendAt(Date.now() + 60_000)
     inputRef.current?.focus()
     setResending(false)
   }
@@ -114,7 +120,7 @@ function VerifyForm() {
         </form>
 
         <div style={{ textAlign: 'center' }}>
-          <button onClick={resend} disabled={resending} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '13px', fontFamily: 'var(--ff-mono)' }}>
+          <button onClick={resend} disabled={resending || Date.now() < resendAt} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: (resending || Date.now() < resendAt) ? 'not-allowed' : 'pointer', fontSize: '13px', fontFamily: 'var(--ff-mono)' }}>
             {resending ? 'Sending...' : "Didn't receive it? Resend"}
           </button>
         </div>
@@ -125,7 +131,7 @@ function VerifyForm() {
 
 export default function VerifyPage() {
   return (
-    <Suspense>
+    <Suspense fallback={null}>
       <VerifyForm />
     </Suspense>
   )
