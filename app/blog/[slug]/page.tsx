@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import type { BlogPost } from '@/lib/blog.types'
 import { readingTime } from '@/lib/reading-time'
 import BlockRenderer from '@/components/blog/BlockRenderer'
+import RelatedPosts from '@/components/blog/RelatedPosts'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 
 export default function BlogPostPage() {
@@ -198,6 +199,8 @@ export default function BlogPostPage() {
         {/* Content blocks */}
         <BlockRenderer blocks={post.content} />
       </article>
+
+      <RelatedPosts current={post} />
     </div>
   )
 }

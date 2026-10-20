@@ -9,6 +9,7 @@ import LogCard from '@/components/movies/LogCard'
 import WatchlistCard from '@/components/movies/WatchlistCard'
 import FilterTabs, { type LogFilter } from '@/components/movies/FilterTabs'
 import AdminForm from '@/components/movies/AdminForm'
+import NowWatching from '@/components/movies/NowWatching'
 import { AnimatePresence } from 'framer-motion'
 import Loader from '@/components/ui/Loader'
 
@@ -735,6 +736,8 @@ export default function MoviesPage() {
           Films watched. Feelings logged.
         </p>
       </div>
+
+      <NowWatching />
 
       {/* ── Filters + Grid ── */}
       <main className="wl-main" style={{ maxWidth: '1280px', margin: '0 auto', padding: '28px 24px 60px' }}>
