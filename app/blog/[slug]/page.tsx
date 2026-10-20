@@ -25,7 +25,7 @@ export default function BlogPostPage() {
       .catch(() => toast.error('Post not found'))
       .finally(() => setLoading(false))
 
-    fetch('/api/auth/blog').then(r => r.json()).then(d => setIsAdmin(d.authed))
+    fetch('/api/auth/admin').then(r => r.json()).then(d => setIsAdmin(d.authed))
   }, [slug])
 
   async function handleDelete() {

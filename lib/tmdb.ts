@@ -14,12 +14,14 @@ export const tmdbImg = (path: string | null, size = 'w500') =>
 
 export async function searchMovies(query: string) {
   const res  = await fetch(url('/search/movie', `&query=${encodeURIComponent(query)}`))
+  if (!res.ok) throw new Error(`TMDB ${res.status}`)
   const data = await res.json()
   return (data.results ?? []).slice(0, 8)
 }
 
 export async function searchTV(query: string) {
   const res  = await fetch(url('/search/tv', `&query=${encodeURIComponent(query)}`))
+  if (!res.ok) throw new Error(`TMDB ${res.status}`)
   const data = await res.json()
   return (data.results ?? []).slice(0, 8)
 }
@@ -27,6 +29,7 @@ export async function searchTV(query: string) {
 /** Fetch a single movie by TMDB ID — used when user pastes a TMDB URL */
 export async function getMovieById(id: number) {
   const res  = await fetch(url(`/movie/${id}`))
+  if (!res.ok) throw new Error(`TMDB ${res.status}`)
   const data = await res.json()
   if (data.success === false) return null
   return data
@@ -35,6 +38,7 @@ export async function getMovieById(id: number) {
 /** Fetch a single TV show by TMDB ID */
 export async function getTVById(id: number) {
   const res  = await fetch(url(`/tv/${id}`))
+  if (!res.ok) throw new Error(`TMDB ${res.status}`)
   const data = await res.json()
   if (data.success === false) return null
   // normalise to movie-shape so the form can treat them the same
@@ -53,12 +57,14 @@ export async function matchMovie(title: string, year: string) {
 
 export async function getTVSeason(id: number, season: number) {
   const res = await fetch(url(`/tv/${id}/season/${season}`))
+  if (!res.ok) throw new Error(`TMDB ${res.status}`)
   return res.json()
 }
 
 /** TV show top-level details (season count etc.) — lightweight, no append. */
 export async function getTVDetails(id: number) {
   const res = await fetch(url(`/tv/${id}`))
+  if (!res.ok) throw new Error(`TMDB ${res.status}`)
   return res.json()
 }
 
@@ -66,6 +72,7 @@ export async function getTVDetails(id: number) {
 
 export async function getCredits(id: number, type: 'movie' | 'tv') {
   const res  = await fetch(url(`/${type}/${id}/credits`))
+  if (!res.ok) throw new Error(`TMDB ${res.status}`)
   const data = await res.json()
 
   const cast = (data.cast ?? []).slice(0, 20).map((p: {
@@ -126,9 +133,9 @@ export interface TMDBMeta {
  * Uses append_to_response so it's a single TMDB API call.
  */
 export async function enrichMovie(tmdbId: number): Promise<TMDBMeta> {
-  const data = await fetch(
-    url(`/movie/${tmdbId}`, '&append_to_response=credits,keywords,release_dates')
-  ).then(r => r.json())
+  const _res = await fetch(url(`/movie/${tmdbId}`, '&append_to_response=credits,keywords,release_dates'))
+  if (!_res.ok) throw new Error(`TMDB ${_res.status}`)
+  const data = await _res.json()
 
   // Director
   const director = (data.credits?.crew ?? [])
@@ -180,9 +187,9 @@ export async function enrichMovie(tmdbId: number): Promise<TMDBMeta> {
  * Fetch everything we want for a TV SHOW in one request.
  */
 export async function enrichTV(tmdbId: number): Promise<TMDBMeta> {
-  const data = await fetch(
-    url(`/tv/${tmdbId}`, '&append_to_response=credits,keywords,content_ratings')
-  ).then(r => r.json())
+  const _res = await fetch(url(`/tv/${tmdbId}`, '&append_to_response=credits,keywords,content_ratings'))
+  if (!_res.ok) throw new Error(`TMDB ${_res.status}`)
+  const data = await _res.json()
 
   // Show creator (equivalent of director)
   const director = (data.created_by ?? [])[0]?.name ?? null
@@ -271,6 +278,7 @@ export async function getWatchProviders(
   regions = ['IN', 'US'],
 ): Promise<WatchProviders> {
   const res  = await fetch(url(`/${type}/${id}/watch/providers`))
+  if (!res.ok) throw new Error(`TMDB ${res.status}`)
   const data = await res.json()
   const results = data.results ?? {}
 

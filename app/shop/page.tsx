@@ -76,7 +76,7 @@ export default function ShopPage() {
       setTags(tgs)
       setDeals(Array.isArray(bndls) ? bndls : [])
       setAllProducts(Array.isArray(all) ? all : [])
-    })
+    }).catch(() => { setLoading(false) })
   }, [track])
 
   // Cycle inline deal card with glare sweep

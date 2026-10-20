@@ -230,7 +230,7 @@ export default function TrackerPage() {
 
   useEffect(() => {
     fetch('/api/series-progress').then(r => r.json()).then(d => { setItems(Array.isArray(d) ? d : []); setLoading(false) }).catch(() => setLoading(false))
-    fetch('/api/auth/movies').then(r => r.json()).then(d => setIsAdmin(d.authed))
+    fetch('/api/auth/admin').then(r => r.json()).then(d => setIsAdmin(d.authed))
   }, [])
 
   async function updateProgress(id: string, field: 'current_season' | 'current_episode' | 'status', value: number | string) {

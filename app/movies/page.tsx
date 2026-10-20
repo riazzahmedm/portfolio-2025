@@ -479,7 +479,7 @@ export default function MoviesPage() {
   useEffect(() => {
     fetchLogs('movie')
     fetchWatchlist()
-    fetch('/api/auth/movies').then(r => r.json()).then(d => setIsAdmin(d.authed))
+    fetch('/api/auth/admin').then(r => r.json()).then(d => setIsAdmin(d.authed))
     // Save scroll on unmount (navigating away)
     return () => { sessionStorage.setItem('movies-scroll', String(window.scrollY)) }
   }, [fetchLogs, fetchWatchlist])

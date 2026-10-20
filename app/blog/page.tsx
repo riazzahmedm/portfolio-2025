@@ -49,7 +49,7 @@ export default function BlogPage() {
 
   useEffect(() => {
     fetchPosts()
-    fetch('/api/auth/blog').then(r => r.json()).then(d => setIsAdmin(d.authed))
+    fetch('/api/auth/admin').then(r => r.json()).then(d => setIsAdmin(d.authed))
   }, [fetchPosts])
 
   const allTags = Array.from(

@@ -161,7 +161,7 @@ export default function ListsPage() {
       .then(r => r.json())
       .then(d => { setLists(Array.isArray(d) ? d : []); setLoading(false) })
       .catch(() => setLoading(false))
-    fetch('/api/auth/movies').then(r => r.json()).then(d => setIsAdmin(d.authed))
+    fetch('/api/auth/admin').then(r => r.json()).then(d => setIsAdmin(d.authed))
   }, [])
 
   return (

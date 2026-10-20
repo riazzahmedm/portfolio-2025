@@ -243,7 +243,7 @@ export default function ListDetailPage() {
       .then(r => r.json())
       .then(d => { setList(d); setLoading(false) })
       .catch(() => setLoading(false))
-    fetch('/api/auth/movies').then(r => r.json()).then(d => setIsAdmin(d.authed))
+    fetch('/api/auth/admin').then(r => r.json()).then(d => setIsAdmin(d.authed))
   }, [slug])
 
   async function deleteItem(itemId: string, title: string) {
