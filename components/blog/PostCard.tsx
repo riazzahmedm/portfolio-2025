@@ -2,14 +2,13 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Share2 } from 'lucide-react'
-import type { BlogPost } from '@/lib/blog.types'
-import { readingTime } from '@/lib/reading-time'
+import type { BlogPostSummary } from '@/lib/blog.types'
 import BlogStoryModal from './BlogStoryModal'
 
-export default function PostCard({ post, isAdmin }: { post: BlogPost; isAdmin: boolean }) {
+export default function PostCard({ post, isAdmin }: { post: BlogPostSummary; isAdmin: boolean }) {
   const [showStory, setShowStory] = useState(false)
 
-  const mins  = readingTime(post)
+  const mins  = post.reading_minutes
   const date  = post.published_at ?? post.created_at
   const month = new Date(date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
 

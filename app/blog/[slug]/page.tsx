@@ -1,79 +1,77 @@
-'use client'
-import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Pencil, Trash2, Calendar, Clock } from 'lucide-react'
-import { toast } from 'sonner'
-import type { BlogPost } from '@/lib/blog.types'
+import { ArrowLeft, Calendar, Clock } from 'lucide-react'
 import { readingTime } from '@/lib/reading-time'
+import { getPost } from '@/lib/blog.server'
+import { isAdmin } from '@/lib/admin-auth'
+import { SITE_NAME, SITE_URL } from '@/lib/site'
 import BlockRenderer from '@/components/blog/BlockRenderer'
 import RelatedPosts from '@/components/blog/RelatedPosts'
-import ConfirmModal from '@/components/ui/ConfirmModal'
+import PostAdminActions from '@/components/blog/PostAdminActions'
 
-export default function BlogPostPage() {
-  const { slug }   = useParams<{ slug: string }>()
-  const router     = useRouter()
-  const [post,     setPost]     = useState<BlogPost | null>(null)
-  const [loading,  setLoading]  = useState(true)
-  const [isAdmin,  setIsAdmin]  = useState(false)
-  const [deleting, setDeleting] = useState(false)
-  const [confirm,  setConfirm]  = useState(false)
+type Params = { params: Promise<{ slug: string }> }
 
-  useEffect(() => {
-    fetch(`/api/blog/${slug}`)
-      .then(r => r.ok ? r.json() : Promise.reject())
-      .then(setPost)
-      .catch(() => toast.error('Post not found'))
-      .finally(() => setLoading(false))
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const { slug } = await params
+  const post = await getPost(slug)
+  if (!post) return { title: 'Post not found' }
 
-    fetch('/api/auth/admin').then(r => r.json()).then(d => setIsAdmin(d.authed))
-  }, [slug])
+  const description = post.excerpt?.trim() || `${post.title} — notes and essays by ${SITE_NAME}.`
+  const url         = `/blog/${post.slug}`
 
-  async function handleDelete() {
-    setDeleting(true)
-    const res = await fetch(`/api/blog/${slug}`, { method: 'DELETE' })
-    if (res.ok) {
-      toast.success('Post deleted')
-      router.push('/blog')
-    } else {
-      toast.error('Failed to delete')
-      setDeleting(false)
-    }
+  return {
+    title:       post.title,
+    description,
+    keywords:    post.tags,
+    alternates:  { canonical: url },
+    openGraph: {
+      type:           'article',
+      url,
+      title:          post.title,
+      description,
+      siteName:       SITE_NAME,
+      publishedTime:  post.published_at ?? post.created_at,
+      modifiedTime:   post.updated_at,
+      authors:        [SITE_NAME],
+      tags:           post.tags,
+    },
+    twitter: {
+      card:        'summary_large_image',
+      title:       post.title,
+      description,
+    },
   }
+}
 
-  if (loading) {
-    return (
-      <div style={{ minHeight: '100dvh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '13px', color: 'var(--text-dim)' }}>Loading…</div>
-      </div>
-    )
-  }
-
-  if (!post) {
-    return (
-      <div style={{ minHeight: '100dvh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
-        <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '13px', color: 'var(--text-dim)' }}>Post not found.</div>
-        <Link href="/blog" style={{ color: '#82ff1f', fontFamily: 'var(--ff-mono)', fontSize: '12px' }}>← Back to blog</Link>
-      </div>
-    )
-  }
+export default async function BlogPostPage({ params }: Params) {
+  const { slug } = await params
+  const [post, admin] = await Promise.all([getPost(slug), isAdmin()])
+  if (!post) notFound()
 
   const date  = post.published_at ?? post.created_at
   const mins  = readingTime(post)
   const month = new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 
+  const jsonLd = {
+    '@context':      'https://schema.org',
+    '@type':         'BlogPosting',
+    headline:        post.title,
+    description:     post.excerpt ?? undefined,
+    image:           post.cover_image ?? `${SITE_URL}/blog/${post.slug}/opengraph-image`,
+    datePublished:   post.published_at ?? post.created_at,
+    dateModified:    post.updated_at,
+    author:          { '@type': 'Person', name: SITE_NAME, url: SITE_URL },
+    keywords:        post.tags.join(', '),
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}/blog/${post.slug}` },
+  }
+
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg)', color: 'var(--text-primary)', fontFamily: 'var(--ff-body)' }}>
-
-      {confirm && (
-        <ConfirmModal
-          title="Delete post"
-          description={`"${post.title}" will be permanently removed.`}
-          onConfirm={handleDelete}
-          onCancel={() => setConfirm(false)}
-          danger
-        />
-      )}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
       {/* ── Sticky header ── */}
       <header style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(5,5,5,0.88)', backdropFilter: 'blur(18px)' }}>
@@ -86,29 +84,7 @@ export default function BlogPostPage() {
               {post.title}
             </div>
           </div>
-          {isAdmin && (
-            <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
-              <Link href={`/blog/admin?edit=${post.slug}`} style={{
-                display: 'flex', alignItems: 'center', gap: '6px',
-                padding: '7px 12px', borderRadius: '100px',
-                border: '1px solid rgba(130,255,31,0.25)', background: 'rgba(130,255,31,0.06)',
-                color: '#82ff1f', textDecoration: 'none', fontSize: '12px', fontFamily: 'var(--ff-mono)',
-              }}>
-                <Pencil size={12} />
-              </Link>
-              <button
-                onClick={() => setConfirm(true)}
-                disabled={deleting}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '6px',
-                  padding: '7px 12px', borderRadius: '100px',
-                  border: '1px solid rgba(224,96,96,0.25)', background: 'rgba(224,96,96,0.06)',
-                  color: '#e06060', cursor: 'pointer', fontSize: '12px', fontFamily: 'var(--ff-mono)',
-                }}>
-                <Trash2 size={12} />
-              </button>
-            </div>
-          )}
+          {admin && <PostAdminActions slug={post.slug} title={post.title} />}
         </div>
       </header>
 
@@ -116,6 +92,7 @@ export default function BlogPostPage() {
       {post.cover_image && (
         <div style={{ maxWidth: '720px', margin: '0 auto', padding: '0 20px' }}>
           <div style={{ position: 'relative', maxHeight: '420px', overflow: 'hidden', borderRadius: '20px 20px 0 0' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={post.cover_image} alt={post.title} style={{ width: '100%', maxHeight: '420px', objectFit: 'cover', display: 'block' }} />
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, var(--bg))' }} />
           </div>
@@ -126,7 +103,7 @@ export default function BlogPostPage() {
       <article style={{ maxWidth: '720px', margin: '0 auto', padding: post.cover_image ? '0 20px 80px' : '48px 20px 80px' }}>
 
         {/* Draft badge */}
-        {!post.published && isAdmin && (
+        {!post.published && admin && (
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: '6px',
             padding: '5px 12px', borderRadius: '100px', marginBottom: '20px',
@@ -141,7 +118,7 @@ export default function BlogPostPage() {
         {post.tags.length > 0 && (
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px', marginTop: post.cover_image ? '32px' : '0' }}>
             {post.tags.map(t => (
-              <Link key={t} href={`/blog?tag=${t}`} style={{
+              <Link key={t} href={`/blog?tag=${encodeURIComponent(t)}`} style={{
                 fontSize: '10px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.12em',
                 textTransform: 'uppercase', color: '#82ff1f',
                 background: 'rgba(130,255,31,0.1)', border: '1px solid rgba(130,255,31,0.2)',

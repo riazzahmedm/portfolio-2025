@@ -4,6 +4,7 @@ import './globals.css'
 import { ThemeProvider } from '@/lib/theme'
 import CustomCursor from '@/components/ui/CustomCursor'
 import { Toaster } from 'sonner'
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site'
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -34,13 +35,33 @@ const spaceMono = Space_Mono({
   display: 'swap',
 })
 
+const TITLE = `${SITE_NAME} — Senior Software Engineer`
+
 export const metadata: Metadata = {
-  title: 'Riaz Ahmed — Senior Software Engineer',
-  description: 'Building immersive digital products with React, Next.js & React Native. 5+ years · 40+ projects · Chennai, India.',
+  metadataBase: new URL(SITE_URL),
+  title:       TITLE,
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  authors:     [{ name: SITE_NAME, url: SITE_URL }],
+  creator:     SITE_NAME,
+  keywords:    ['Riaz Ahmed', 'senior software engineer', 'React', 'Next.js', 'React Native', 'Chennai'],
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
+  },
   openGraph: {
-    title: 'Riaz Ahmed — Senior Software Engineer',
-    description: 'Building immersive digital products with React, Next.js & React Native.',
-    type: 'website',
+    title:       TITLE,
+    description: SITE_DESCRIPTION,
+    url:         SITE_URL,
+    siteName:    SITE_NAME,
+    locale:      'en_US',
+    type:        'website',
+  },
+  twitter: {
+    card:        'summary_large_image',
+    title:       TITLE,
+    description: SITE_DESCRIPTION,
   },
 }
 

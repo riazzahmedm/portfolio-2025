@@ -23,6 +23,9 @@ export interface HtmlBlock {
 
 export type ContentBlock = TextBlock | ImageBlock | VideoBlock | HtmlBlock
 
+/** A post without its body — what listing pages need, plus a precomputed read time. */
+export type BlogPostSummary = Omit<BlogPost, 'content'> & { reading_minutes: number }
+
 export interface BlogPost {
   id:           string
   title:        string

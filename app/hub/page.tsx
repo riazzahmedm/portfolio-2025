@@ -5,6 +5,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Riaz Ahmed',
   description: 'Portfolio, Shop, Movies and Blog by Riaz Ahmed.',
+  alternates: { canonical: '/hub' },
 }
 
 const CARDS = [

@@ -7,6 +7,7 @@ import CartBanner from '@/components/shop/CartBanner'
 export const metadata: Metadata = {
   title: 'Shop — Art prints from Riaz',
   description: 'Original digital art prints — stickers, posters and more.',
+  alternates: { canonical: '/shop' },
 }
 
 export default function ShopLayout({ children }: { children: React.ReactNode }) {
