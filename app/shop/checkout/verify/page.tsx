@@ -3,6 +3,7 @@ import { useState, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { useCart } from '@/hooks/useCart'
+import { clearStoredCoupon } from '@/hooks/useCoupon'
 
 const PENDING_KEY = 'shop-pending-checkout'
 
@@ -53,6 +54,7 @@ function VerifyForm() {
 
     const { id: orderId } = await orderRes.json()
     sessionStorage.removeItem(PENDING_KEY)
+    clearStoredCoupon()
     clearCart()
     router.replace(`/shop/checkout/payment?order=${orderId}`)
   }

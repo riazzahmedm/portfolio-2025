@@ -3,44 +3,37 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { Trash2, ArrowRight } from 'lucide-react'
-import { toast } from 'sonner'
-import { useCart, applyBundleDeal } from '@/hooks/useCart'
+import { Trash2, ArrowRight, X } from 'lucide-react'
+import { useCart } from '@/hooks/useCart'
+import { useCoupon } from '@/hooks/useCoupon'
 import { useShopSession } from '@/hooks/useShopSession'
+import { applyBundleDeal } from '@/lib/shop-pricing'
 import type { ShopBundleDeal } from '@/lib/shop.types'
 
 export default function CartPage() {
   const { items, updateQty, removeItem } = useCart()
   const { track } = useShopSession()
   const router = useRouter()
-  const [deals,          setDeals]          = useState<ShopBundleDeal[]>([])
-  const [couponCode,     setCouponCode]     = useState('')
-  const [couponError,    setCouponError]    = useState('')
-  const [couponDiscount, setCouponDiscount] = useState(0)
-  const [couponApplied,  setCouponApplied]  = useState('')
-  const [validating,     setValidating]     = useState(false)
+  const [deals, setDeals] = useState<ShopBundleDeal[]>([])
+  const [couponInput, setCouponInput] = useState('')
+  const [couponEdited, setCouponEdited] = useState(false)
 
   useEffect(() => {
     fetch('/api/admin/shop/discounts/bundles').then(r => r.json()).then(setDeals)
   }, [])
 
   const { subtotal, discount: bundleDiscount, total: bundleTotal, appliedDeals } = applyBundleDeal(items, deals)
-  const finalTotal = Math.max(0, bundleTotal - couponDiscount)
+  const coupon = useCoupon(bundleTotal)
+  const finalTotal = Math.max(0, bundleTotal - coupon.discount)
+
+  // Show a stored coupon even when it is no longer valid, so it can be edited or removed.
+  const couponValue = couponEdited ? couponInput : couponInput || coupon.code
 
   async function validateCoupon() {
-    if (!couponCode.trim()) return
-    setValidating(true); setCouponError('')
-    const res = await fetch('/api/shop/coupons/validate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: couponCode.trim(), subtotal: bundleTotal }),
-    })
-    const data = await res.json()
-    if (!res.ok) { setCouponError(data.error); setValidating(false); return }
-    setCouponDiscount(data.discount)
-    setCouponApplied(couponCode.trim().toUpperCase())
-    toast.success(`Coupon applied — ₹${data.discount} off`)
-    setValidating(false)
+    if (!couponValue.trim()) return
+    await coupon.apply(couponValue)
+    setCouponInput('')
+    setCouponEdited(false)
   }
 
   function goToCheckout() {
@@ -165,7 +158,7 @@ export default function CartPage() {
         </div>
       )}
 
-      {couponApplied ? (
+      {coupon.code && coupon.discount > 0 ? (
         <div style={{
           background: 'linear-gradient(135deg, #00101a 0%, #001a2a 60%, #000f1a 100%)',
           border: '1px solid rgba(107,69,212,0.35)',
@@ -179,42 +172,50 @@ export default function CartPage() {
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
             <div>
               <div style={{ fontFamily: 'var(--ff-display)', fontSize: 'clamp(18px, 5vw, 26px)', letterSpacing: '-0.01em', textTransform: 'uppercase', color: 'var(--lavender)', lineHeight: 1.1 }}>
-                {couponApplied}
+                {coupon.code}
               </div>
               <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '10px', color: 'rgba(180,150,255,0.65)', letterSpacing: '0.06em', marginTop: '6px' }}>
-                Discount applied at total
+                {coupon.validating ? 'Rechecking…' : 'Discount applied at total'}
               </div>
             </div>
-            <div style={{
-              flexShrink: 0,
-              background: 'rgba(107,69,212,0.15)', border: '1px solid rgba(107,69,212,0.35)',
-              borderRadius: '999px', padding: '4px 14px',
-              fontFamily: 'var(--ff-mono)', fontSize: '13px', color: 'var(--lavender)', fontWeight: 600,
-              whiteSpace: 'nowrap',
-            }}>
-              ₹{couponDiscount.toFixed(0)} saved
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+              <div style={{
+                background: 'rgba(107,69,212,0.15)', border: '1px solid rgba(107,69,212,0.35)',
+                borderRadius: '999px', padding: '4px 14px',
+                fontFamily: 'var(--ff-mono)', fontSize: '13px', color: 'var(--lavender)', fontWeight: 600,
+                whiteSpace: 'nowrap',
+              }}>
+                ₹{coupon.discount.toFixed(0)} saved
+              </div>
+              <button
+                onClick={coupon.remove}
+                aria-label="Remove coupon"
+                style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '4px', display: 'flex' }}
+              >
+                <X size={14} />
+              </button>
             </div>
           </div>
         </div>
       ) : (
         <>
-          <div style={{ display: 'flex', gap: '10px', marginBottom: couponError ? '10px' : '24px' }}>
+          <div style={{ display: 'flex', gap: '10px', marginBottom: coupon.error ? '10px' : '24px' }}>
             <input
               type="text"
               placeholder="Coupon code"
-              value={couponCode}
-              onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponError('') }}
-              style={{ flex: 1, padding: '10px 14px', background: 'var(--surface)', border: `1px solid ${couponError ? 'rgba(255,80,80,0.4)' : 'var(--border-input)'}`, borderRadius: '10px', color: 'var(--text-primary)', fontSize: '14px', fontFamily: 'var(--ff-mono)', outline: 'none' }}
+              value={couponValue}
+              onChange={e => { setCouponEdited(true); setCouponInput(e.target.value.toUpperCase()) }}
+              style={{ flex: 1, padding: '10px 14px', background: 'var(--surface)', border: `1px solid ${coupon.error ? 'rgba(255,80,80,0.4)' : 'var(--border-input)'}`, borderRadius: '10px', color: 'var(--text-primary)', fontSize: '14px', fontFamily: 'var(--ff-mono)', outline: 'none' }}
             />
             <button
               onClick={validateCoupon}
-              disabled={validating || !couponCode.trim()}
+              disabled={coupon.validating || !couponValue.trim()}
               style={{ padding: '10px 20px', borderRadius: '10px', background: '#6b45d4', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 600, fontFamily: 'var(--ff-body)' }}
             >
-              {validating ? '...' : 'Apply'}
+              {coupon.validating ? '...' : 'Apply'}
             </button>
           </div>
-          {couponError && (
+          {coupon.error && (
             <div style={{
               display: 'flex', alignItems: 'flex-start', gap: '10px',
               background: 'rgba(255,60,60,0.06)', border: '1px solid rgba(255,60,60,0.2)',
@@ -223,7 +224,7 @@ export default function CartPage() {
               <span style={{ fontSize: '14px', color: 'rgba(255,100,100,0.7)', marginTop: '2px' }}>✗</span>
               <div>
                 <div style={{ fontFamily: 'var(--ff-display)', fontSize: '13px', letterSpacing: '0.04em', textTransform: 'uppercase', color: 'rgba(255,100,100,0.9)' }}>
-                  {couponError}
+                  {coupon.error}
                 </div>
               </div>
             </div>
@@ -234,7 +235,7 @@ export default function CartPage() {
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '14px', padding: '20px', marginBottom: '24px' }}>
         <Row label="Subtotal" value={`₹${subtotal.toFixed(0)}`} />
         {bundleDiscount > 0 && <Row label="Bundle deal" value={`−₹${bundleDiscount.toFixed(0)}`} highlight="lime" />}
-        {couponDiscount > 0 && <Row label={`Coupon (${couponApplied})`} value={`−₹${couponDiscount.toFixed(0)}`} highlight="lime" />}
+        {coupon.discount > 0 && <Row label={`Coupon (${coupon.code})`} value={`−₹${coupon.discount.toFixed(0)}`} highlight="lime" />}
         <div style={{ borderTop: '1px solid var(--border)', margin: '12px 0' }} />
         <Row label="Total" value={`₹${finalTotal.toFixed(0)}`} bold />
       </div>

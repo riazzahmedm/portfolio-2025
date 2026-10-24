@@ -2,7 +2,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { useCart, applyBundleDeal } from '@/hooks/useCart'
+import { useCart } from '@/hooks/useCart'
+import { useCoupon } from '@/hooks/useCoupon'
+import { applyBundleDeal } from '@/lib/shop-pricing'
 import type { ShippingAddress, ShopBundleDeal } from '@/lib/shop.types'
 
 const PENDING_KEY = 'shop-pending-checkout'
@@ -27,9 +29,9 @@ export default function CheckoutPage() {
     if (ready && items.length === 0) router.replace('/shop/cart')
   }, [ready, items.length, router])
 
-  const { total: bundleTotal } = applyBundleDeal(items, deals)
-  const couponDiscount = 0
-  const finalTotal = Math.max(0, bundleTotal - couponDiscount)
+  const { subtotal: subtotalRaw, discount: bundleDiscount, total: bundleTotal } = applyBundleDeal(items, deals)
+  const coupon = useCoupon(bundleTotal)
+  const finalTotal = Math.max(0, bundleTotal - coupon.discount)
 
   function update(field: keyof ShippingAddress, value: string) {
     setForm(f => ({ ...f, [field]: value }))
@@ -56,8 +58,7 @@ export default function CheckoutPage() {
       return
     }
 
-    const subtotalRaw = items.reduce((s, i) => s + i.price * i.qty, 0)
-    const discountAmount = couponDiscount + Math.max(0, subtotalRaw - bundleTotal)
+    const discountAmount = bundleDiscount + coupon.discount
 
     sessionStorage.setItem(PENDING_KEY, JSON.stringify({
       items,
@@ -65,6 +66,7 @@ export default function CheckoutPage() {
       subtotal: subtotalRaw,
       discount_amount: discountAmount,
       total: finalTotal,
+      ...(coupon.discount > 0 && coupon.code ? { coupon_code: coupon.code } : {}),
     }))
 
     setLoading(false)
@@ -94,10 +96,29 @@ export default function CheckoutPage() {
         <Field label="Pincode *"    value={form.pincode}     onChange={v => update('pincode', v)} placeholder="11375" />
 
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '12px', padding: '16px', marginTop: '8px' }}>
+          {bundleDiscount > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
+              <span style={{ color: 'var(--text-secondary)' }}>Bundle deal</span>
+              <span style={{ fontFamily: 'var(--ff-mono)', color: 'var(--lime)' }}>−₹{bundleDiscount.toFixed(0)}</span>
+            </div>
+          )}
+          {coupon.discount > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
+              <span style={{ color: 'var(--text-secondary)' }}>Coupon ({coupon.code})</span>
+              <span style={{ fontFamily: 'var(--ff-mono)', color: 'var(--lime)' }}>−₹{coupon.discount.toFixed(0)}</span>
+            </div>
+          )}
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: 700 }}>
             <span style={{ color: 'var(--text-secondary)' }}>Total</span>
-            <span style={{ fontFamily: 'var(--ff-mono)', color: 'var(--lavender)' }}>₹{finalTotal.toFixed(0)}</span>
+            <span style={{ fontFamily: 'var(--ff-mono)', color: 'var(--lavender)' }}>
+              {coupon.validating ? '…' : `₹${finalTotal.toFixed(0)}`}
+            </span>
           </div>
+          {coupon.error && (
+            <div style={{ fontSize: '11px', color: 'rgba(255,100,100,0.9)', marginTop: '8px', fontFamily: 'var(--ff-mono)' }}>
+              Coupon {coupon.code} not applied — {coupon.error}
+            </div>
+          )}
           <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '6px', fontFamily: 'var(--ff-mono)' }}>
             We'll send an OTP to verify your email before payment
           </div>

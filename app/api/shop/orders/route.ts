@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { getCustomer } from '@/lib/customer-auth'
+import { applyBundleDeal, couponDiscount, couponIneligibilityReason } from '@/lib/shop-pricing'
 import type { CartItem, ShippingAddress } from '@/lib/shop.types'
 
 export async function GET() {
@@ -51,58 +52,44 @@ export async function POST(req: Request) {
     }
   }
 
-  // 3. Compute server-side subtotal from DB prices
-  const serverSubtotal = body.items.reduce((sum, item) => {
-    return sum + variantMap.get(item.variantId)!.price * item.qty
-  }, 0)
+  // 3. Compute server-side subtotal from DB prices — never trust client prices
+  const pricedItems: CartItem[] = body.items.map(item => ({
+    ...item,
+    price: variantMap.get(item.variantId)!.price,
+  }))
 
-  const totalQty = body.items.reduce((s, i) => s + i.qty, 0)
-
-  // 4. Re-apply bundle deals server-side
-  let serverBundleDiscount = 0
+  // 4. Re-apply bundle deals server-side with the same rules the cart used
   const { data: bundles } = await supabase
     .from('shop_bundle_deals')
-    .select('min_qty, price, category_id')
+    .select('id, name, min_qty, price, category_id, is_active')
     .eq('is_active', true)
-    .order('min_qty', { ascending: false })
 
-  for (const deal of (bundles ?? [])) {
-    if (deal.category_id) {
-      const catItems = body.items.filter(i => i.category_id === deal.category_id)
-      const catQty = catItems.reduce((s, i) => s + i.qty, 0)
-      if (catQty >= deal.min_qty) {
-        const catSubtotal = catItems.reduce((sum, i) => sum + variantMap.get(i.variantId)!.price * i.qty, 0)
-        serverBundleDiscount = Math.max(serverBundleDiscount, catSubtotal - deal.price * catQty)
-      }
-    } else {
-      if (totalQty >= deal.min_qty) {
-        serverBundleDiscount = Math.max(serverBundleDiscount, serverSubtotal - deal.price * totalQty)
-      }
-    }
-  }
+  const bundleResult      = applyBundleDeal(pricedItems, bundles ?? [])
+  const serverSubtotal    = bundleResult.subtotal
 
-  let serverDiscountAmount = serverBundleDiscount
+  let serverDiscountAmount = bundleResult.discount
+  let appliedCouponCode: string | null = null
 
   // 5. Re-apply coupon server-side
   if (body.coupon_code) {
+    const code = body.coupon_code.toUpperCase().trim()
     const { data: coupon } = await supabase
       .from('shop_coupons')
       .select('*')
-      .eq('code', body.coupon_code.toUpperCase().trim())
+      .eq('code', code)
       .eq('is_active', true)
       .single()
 
-    if (coupon) {
-      const afterBundle = serverSubtotal - serverBundleDiscount
-      const notExpired = !coupon.expires_at || new Date(coupon.expires_at) > new Date()
-      const hasUses    = !coupon.max_uses || coupon.uses_count < coupon.max_uses
-      if (afterBundle >= coupon.min_order_amount && notExpired && hasUses) {
-        const couponDiscount = coupon.type === 'percentage'
-          ? afterBundle * (coupon.value / 100)
-          : coupon.value
-        serverDiscountAmount += couponDiscount
-      }
+    if (!coupon) {
+      return Response.json({ error: `Coupon ${code} is no longer available — remove it and try again` }, { status: 400 })
     }
+
+    const afterBundle = bundleResult.total
+    const reason = couponIneligibilityReason(coupon, afterBundle)
+    if (reason) return Response.json({ error: reason }, { status: 400 })
+
+    serverDiscountAmount += couponDiscount(coupon, afterBundle)
+    appliedCouponCode      = code
   }
 
   const serverTotal = Math.max(0, serverSubtotal - serverDiscountAmount)
@@ -121,7 +108,7 @@ export async function POST(req: Request) {
       subtotal:         serverSubtotal,
       discount_amount:  serverDiscountAmount,
       total:            serverTotal,
-      coupon_code:      body.coupon_code ?? null,
+      coupon_code:      appliedCouponCode,
     })
     .select()
     .single()
@@ -150,9 +137,9 @@ export async function POST(req: Request) {
       .gte('stock_qty', item.qty) // guard against race condition
   }))
 
-  if (body.coupon_code) {
+  if (appliedCouponCode) {
     try {
-      await supabase.rpc('increment_coupon_uses', { coupon_code: body.coupon_code })
+      await supabase.rpc('increment_coupon_uses', { coupon_code: appliedCouponCode })
     } catch {/* non-critical */}
   }
 
