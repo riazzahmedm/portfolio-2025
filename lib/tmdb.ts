@@ -7,15 +7,35 @@ function url(path: string, extra = '') {
   return `${BASE}${path}?api_key=${key()}${extra}`
 }
 
+/** status 0 means the request never got a response (timeout, DNS or connection failure). */
 export class TmdbError extends Error {
-  constructor(public status: number) { super(`TMDB ${status}`) }
+  constructor(public status: number, public reason = `TMDB ${status}`) { super(reason) }
+  get unreachable() { return this.status === 0 }
 }
 
-/** Fetches a TMDB endpoint and returns its JSON; throws TmdbError on any non-2xx. */
+const ATTEMPT_TIMEOUT_MS = 5_000
+const MAX_ATTEMPTS = 2
+
+/**
+ * Fetches a TMDB endpoint and returns its JSON. Each attempt times out after 5s and
+ * network failures, 429s and 5xx are retried once; other non-2xx throw a TmdbError at once.
+ */
 async function tmdbJson(path: string, extra = '') {
-  const res = await fetch(url(path, extra))
-  if (!res.ok) throw new TmdbError(res.status)
-  return res.json()
+  let last: TmdbError = new TmdbError(0, 'TMDB request failed')
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch(url(path, extra), { signal: AbortSignal.timeout(ATTEMPT_TIMEOUT_MS) })
+      if (res.ok) return res.json()
+      last = new TmdbError(res.status)
+      if (res.status < 500 && res.status !== 429) break
+    } catch (err) {
+      const cause = (err as { cause?: { code?: string } })?.cause?.code ?? (err as Error)?.name
+      last = new TmdbError(0, `could not reach api.themoviedb.org (${cause})`)
+    }
+    console.error(`[tmdb] ${path} attempt ${attempt}/${MAX_ATTEMPTS}: ${last.reason}`)
+  }
+  throw last
 }
 
 /** Like tmdbJson, but a 404 (unknown id) resolves to null. */
@@ -26,8 +46,13 @@ async function tmdbJsonOrNull(path: string) {
 
 /** Maps an error thrown by this module to a JSON response for API routes. */
 export function tmdbErrorResponse(err: unknown) {
-  const status = err instanceof TmdbError && err.status === 404 ? 404 : 502
-  return Response.json({ error: status === 404 ? 'Not found on TMDB' : 'TMDB request failed' }, { status })
+  if (err instanceof TmdbError) {
+    if (err.status === 404) return Response.json({ error: 'Not found on TMDB' }, { status: 404 })
+    if (err.unreachable) {
+      return Response.json({ error: "Couldn't reach TMDB — check your internet connection or DNS" }, { status: 504 })
+    }
+  }
+  return Response.json({ error: 'TMDB request failed' }, { status: 502 })
 }
 
 export const tmdbImg = (path: string | null, size = 'w500') =>

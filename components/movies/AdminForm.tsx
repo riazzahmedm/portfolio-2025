@@ -471,8 +471,10 @@ export default function AdminForm({
       try {
         const res  = await fetch(`/api/tmdb/search?q=${encodeURIComponent(query)}&type=${tmdbType}`)
         const data = await res.json()
+        if (!res.ok) toast.error(data?.error ?? 'Search failed', { id: 'tmdb-search' })
         setResults(Array.isArray(data) ? data : [])
       } catch {
+        toast.error('Search failed — check your connection', { id: 'tmdb-search' })
         setResults([])
       }
     }, 380)
