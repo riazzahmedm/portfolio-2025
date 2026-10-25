@@ -105,10 +105,11 @@ export default function NowWatching() {
         .nw-ph { background: rgba(255,255,255,0.06); }
 
         .nw-stub { position: relative; flex: 1; min-width: 0; padding: 14px 16px 14px 18px; display: flex; flex-direction: column; justify-content: center; gap: 7px; }
-        .nw-stub::before { content: ''; position: absolute; left: 0; top: 16px; bottom: 16px; border-left: 1.5px dashed rgba(255,255,255,0.16); }
-        .nw-stub::after, .nw-stub .nw-notch { content: ''; position: absolute; left: -7px; width: 16px; height: 16px; border-radius: 50%; background: var(--bg, #050505); }
-        .nw-stub::after { top: -9px; left: -8px; }
-        .nw-stub .nw-notch { bottom: -9px; left: -8px; }
+        /* real elements + a gradient, not a dashed border: fractional dashed borders vanish on some phone screens */
+        .nw-perf { position: absolute; left: -1px; top: 18px; bottom: 18px; width: 2px; pointer-events: none; background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.4) 0 4px, transparent 4px 9px); }
+        .nw-notch { position: absolute; left: -8px; width: 16px; height: 16px; border-radius: 50%; background: var(--bg, #050505); pointer-events: none; }
+        .nw-notch-top { top: -9px; }
+        .nw-notch-bottom { bottom: -9px; }
 
         .nw-type { display: flex; align-items: center; gap: 8px; font: 9px var(--ff-mono); letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
         .nw-type b { font-weight: 400; color: #b8a0ff; }
@@ -155,7 +156,9 @@ export default function NowWatching() {
               <div className="nw-glare" />
 
               <div className="nw-stub">
-                <span className="nw-notch" />
+                <span className="nw-perf" aria-hidden="true" />
+                <span className="nw-notch nw-notch-top" aria-hidden="true" />
+                <span className="nw-notch nw-notch-bottom" aria-hidden="true" />
                 <div className="nw-type">
                   <span className="nw-bars"><i /><i /><i /></span>
                   <b>{it.kind === 'series' ? 'Series' : 'Movie'}</b>
