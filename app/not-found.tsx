@@ -1,5 +1,12 @@
 import Link from 'next/link'
 
+const QUICK_LINKS = [
+  { href: '/blog',   label: 'blog' },
+  { href: '/movies', label: 'watchlog' },
+  { href: '/shop',   label: 'shop' },
+  { href: '/hub',    label: 'hub' },
+]
+
 export default function NotFound() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center relative" style={{ background: '#050505' }}>
@@ -34,8 +41,9 @@ export default function NotFound() {
           </Link>
 
           <div style={{ marginTop: '24px', display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/blog"    className="not-found-link">/ blog</Link>
-            <Link href="/watched" className="not-found-link">/ watched</Link>
+            {QUICK_LINKS.map(l => (
+              <Link key={l.href} href={l.href} className="not-found-link">/ {l.label}</Link>
+            ))}
           </div>
         </div>
       </div>

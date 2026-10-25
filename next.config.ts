@@ -9,6 +9,16 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    // Likely mistyped or legacy URLs go to the real section instead of a 404
+    return [
+      { source: '/blogs',         destination: '/blog',   permanent: false },
+      { source: '/blogs/:slug',   destination: '/blog/:slug', permanent: false },
+      { source: '/watched',       destination: '/movies', permanent: false },
+      { source: '/watchlog',      destination: '/movies', permanent: false },
+      { source: '/watchlist',     destination: '/movies', permanent: false },
+    ]
+  },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]
   },
