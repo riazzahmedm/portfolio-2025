@@ -3,6 +3,7 @@ import { Oswald, Space_Grotesk, Space_Mono, Playfair_Display } from 'next/font/g
 import './globals.css'
 import { ThemeProvider } from '@/lib/theme'
 import CustomCursor from '@/components/ui/CustomCursor'
+import PullToRefresh from '@/components/ui/PullToRefresh'
 import { Toaster } from 'sonner'
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site'
 
@@ -71,6 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body style={{ background: 'var(--bg)', color: 'var(--text-primary)', fontFamily: 'var(--ff-body)' }}>
         <ThemeProvider>
           <CustomCursor />
+          <PullToRefresh />
           {children}
           <Toaster
             position="bottom-right"
