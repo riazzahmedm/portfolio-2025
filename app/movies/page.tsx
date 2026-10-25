@@ -615,7 +615,9 @@ export default function MoviesPage() {
           .wl-toggle-label    { display: none !important; }
           .wl-search          { margin-bottom: 8px !important; }
           .wl-vibe-row        { margin-bottom: 8px !important; }
-          .wl-tabs-row        { margin-bottom: 14px !important; }
+          .wl-tabs-row        { margin-top: 1.75rem !important; margin-bottom: 14px !important; }
+          /* fade the right edge of rows that scroll sideways so the overflow is obvious */
+          .wl-scroll-fade     { padding-right: 28px; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }
         }
         @keyframes wl-bounce {
           from { transform: translateY(0);    opacity: 0.35; }
@@ -903,7 +905,7 @@ export default function MoviesPage() {
             </div>
 
             {/* Vibe filter pills — horizontal scroll row */}
-            <div className="wl-vibe-row" style={{ display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none', marginBottom: '10px', paddingBottom: '2px' } as React.CSSProperties}>
+            <div className="wl-vibe-row wl-scroll-fade" style={{ display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none', marginBottom: '10px', paddingBottom: '2px' } as React.CSSProperties}>
               {VIBES.map(v => {
                 const on = vibeFilter === v.key
                 return (

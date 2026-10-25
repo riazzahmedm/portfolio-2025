@@ -88,10 +88,10 @@ export default function NowWatching() {
         .nw-ph { background: rgba(255,255,255,0.06); }
 
         .nw-stub { position: relative; flex: 1; min-width: 0; padding: 14px 16px 14px 18px; display: flex; flex-direction: column; justify-content: center; gap: 7px; }
-        .nw-stub::before { content: ''; position: absolute; left: 0; top: 14px; bottom: 14px; border-left: 1.5px dashed rgba(255,255,255,0.16); }
-        .nw-stub::after, .nw-stub .nw-notch { content: ''; position: absolute; left: -7px; width: 14px; height: 14px; border-radius: 50%; background: var(--bg, #050505); border: 1px solid rgba(255,255,255,0.09); }
-        .nw-stub::after { top: -8px; }
-        .nw-stub .nw-notch { bottom: -8px; }
+        .nw-stub::before { content: ''; position: absolute; left: 0; top: 16px; bottom: 16px; border-left: 1.5px dashed rgba(255,255,255,0.16); }
+        .nw-stub::after, .nw-stub .nw-notch { content: ''; position: absolute; left: -7px; width: 16px; height: 16px; border-radius: 50%; background: var(--bg, #050505); }
+        .nw-stub::after { top: -9px; left: -8px; }
+        .nw-stub .nw-notch { bottom: -9px; left: -8px; }
 
         .nw-type { display: flex; align-items: center; gap: 8px; font: 9px var(--ff-mono); letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
         .nw-type b { font-weight: 400; color: #b8a0ff; }
@@ -102,7 +102,8 @@ export default function NowWatching() {
 
         .nw-title { font: 600 15px/1.25 var(--ff-body); color: #fff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .nw-big { font: 400 26px/1 var(--ff-display); letter-spacing: 0.06em; color: #fff; }
-        .nw-big small { font: 10px var(--ff-mono); letter-spacing: 0.18em; color: rgba(255,255,255,0.4); margin-left: 8px; text-transform: uppercase; }
+        .nw-big { display: flex; align-items: center; gap: 10px; }
+        .nw-sep { width: 1px; height: 16px; background: rgba(255,255,255,0.25); }
         .nw-sub { font: 11px var(--ff-mono); letter-spacing: 0.06em; color: rgba(255,255,255,0.5); }
 
         .nw-ticks { display: flex; gap: 3px; margin-top: 2px; }
@@ -146,7 +147,7 @@ export default function NowWatching() {
 
                 {it.kind === 'series' ? (
                   <>
-                    <div className="nw-big">S{it.series.current_season}<small>·</small>E{it.series.current_episode}</div>
+                    <div className="nw-big"><span>S{it.series.current_season}</span><span className="nw-sep" /><span>E{it.series.current_episode}</span></div>
                     {pct !== null && (
                       <div className="nw-ticks" aria-label={`${Math.round(pct * 100)}% through`}>
                         {Array.from({ length: TICKS }, (_, i) => <i key={i} className={i < filled ? 'on' : ''} />)}

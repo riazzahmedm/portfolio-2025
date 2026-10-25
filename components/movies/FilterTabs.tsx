@@ -18,7 +18,7 @@ export default function FilterTabs({
   onChange: (f: LogFilter) => void
 }) {
   return (
-    <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' } as React.CSSProperties}>
+    <div className="wl-scroll-fade" style={{ display: 'flex', gap: '8px', overflowX: 'auto', minWidth: 0, WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' } as React.CSSProperties}>
       {TABS.map(tab => {
         const on = active === tab.key
         return (
