@@ -1,4 +1,4 @@
-import { getWatchProviders } from '@/lib/tmdb'
+import { getWatchProviders, tmdbErrorResponse } from '@/lib/tmdb'
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
@@ -7,6 +7,9 @@ export async function GET(req: Request) {
 
   if (!id) return Response.json(null, { status: 400 })
 
-  const providers = await getWatchProviders(id, type)
-  return Response.json(providers)
+  try {
+    return Response.json(await getWatchProviders(id, type))
+  } catch (err) {
+    return tmdbErrorResponse(err)
+  }
 }

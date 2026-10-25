@@ -72,11 +72,11 @@ export default function ShopPage() {
       fetch('/api/shop/bundles').then(r => r.json()),
       fetch('/api/shop/products').then(r => r.json()),
     ]).then(([cats, tgs, bndls, all]) => {
-      setCategories(cats)
-      setTags(tgs)
+      setCategories(Array.isArray(cats) ? cats : [])
+      setTags(Array.isArray(tgs) ? tgs : [])
       setDeals(Array.isArray(bndls) ? bndls : [])
       setAllProducts(Array.isArray(all) ? all : [])
-    }).catch(() => { setLoading(false) })
+    }).catch(() => {})
   }, [track])
 
   // Cycle inline deal card with glare sweep
@@ -97,8 +97,10 @@ export default function ShopPage() {
     if (activeCat !== 'all') params.set('category', activeCat)
     if (activeTag !== 'all') params.set('tag', activeTag)
     fetch(`/api/shop/products?${params}`)
-      .then(r => r.json())
-      .then(data => { setProducts(data); setLoading(false) })
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setProducts(Array.isArray(data) ? data : []))
+      .catch(() => setProducts([]))
+      .finally(() => setLoading(false))
   }, [activeCat, activeTag])
 
   return (

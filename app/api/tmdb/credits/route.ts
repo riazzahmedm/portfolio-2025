@@ -1,4 +1,4 @@
-import { getCredits } from '@/lib/tmdb'
+import { getCredits, tmdbErrorResponse } from '@/lib/tmdb'
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
@@ -7,6 +7,9 @@ export async function GET(req: Request) {
 
   if (!id) return Response.json({ error: 'Missing id' }, { status: 400 })
 
-  const people = await getCredits(id, type)
-  return Response.json(people)
+  try {
+    return Response.json(await getCredits(id, type))
+  } catch (err) {
+    return tmdbErrorResponse(err)
+  }
 }

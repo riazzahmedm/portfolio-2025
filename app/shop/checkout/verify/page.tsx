@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef, Suspense } from 'react'
+import { useState, useRef, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { useCart } from '@/hooks/useCart'
@@ -15,7 +15,7 @@ function VerifyForm() {
   const [code,      setCode]      = useState('')
   const [loading,   setLoading]   = useState(false)
   const [resending,  setResending]  = useState(false)
-  const [resendAt,   setResendAt]   = useState(0)
+  const [cooldown,   setCooldown]   = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
   async function verify(e: React.FormEvent) {
@@ -59,21 +59,35 @@ function VerifyForm() {
     router.replace(`/shop/checkout/payment?order=${orderId}`)
   }
 
+  useEffect(() => {
+    if (cooldown <= 0) return
+    const t = setTimeout(() => setCooldown(c => c - 1), 1000)
+    return () => clearTimeout(t)
+  }, [cooldown])
+
   async function resend() {
-    if (Date.now() < resendAt) {
-      toast.error(`Wait ${Math.ceil((resendAt - Date.now()) / 1000)}s before resending`)
-      return
-    }
+    if (cooldown > 0 || resending) return
     setResending(true)
-    await fetch('/api/shop/auth/send-otp', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    })
-    toast.success('New code sent')
-    setCode('')
-    setResendAt(Date.now() + 60_000)
-    inputRef.current?.focus()
-    setResending(false)
+    try {
+      const res = await fetch('/api/shop/auth/send-otp', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        toast.error(err.error ?? 'Could not send a new code')
+        if (res.status === 429) setCooldown(60)
+        return
+      }
+      toast.success('New code sent')
+      setCode('')
+      setCooldown(60)
+      inputRef.current?.focus()
+    } catch {
+      toast.error('Could not send a new code')
+    } finally {
+      setResending(false)
+    }
   }
 
   return (
@@ -122,8 +136,8 @@ function VerifyForm() {
         </form>
 
         <div style={{ textAlign: 'center' }}>
-          <button onClick={resend} disabled={resending || Date.now() < resendAt} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: (resending || Date.now() < resendAt) ? 'not-allowed' : 'pointer', fontSize: '13px', fontFamily: 'var(--ff-mono)' }}>
-            {resending ? 'Sending...' : "Didn't receive it? Resend"}
+          <button onClick={resend} disabled={resending || cooldown > 0} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: (resending || cooldown > 0) ? 'not-allowed' : 'pointer', fontSize: '13px', fontFamily: 'var(--ff-mono)' }}>
+            {resending ? 'Sending...' : cooldown > 0 ? `Resend available in ${cooldown}s` : "Didn't receive it? Resend"}
           </button>
         </div>
       </div>

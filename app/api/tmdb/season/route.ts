@@ -1,4 +1,4 @@
-import { getTVDetails, getTVSeason } from '@/lib/tmdb'
+import { getTVDetails, getTVSeason, tmdbErrorResponse } from '@/lib/tmdb'
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
@@ -7,11 +7,12 @@ export async function GET(req: Request) {
 
   if (!id) return Response.json({ error: 'Missing id' }, { status: 400 })
 
-  if (season) {
-    const data = await getTVSeason(id, Number(season))
+  try {
+    const data = season
+      ? await getTVSeason(id, Number(season))
+      : await getTVDetails(id)
     return Response.json(data)
+  } catch (err) {
+    return tmdbErrorResponse(err)
   }
-
-  const data = await getTVDetails(id)
-  return Response.json(data)
 }

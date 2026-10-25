@@ -10,6 +10,7 @@ interface Series {
   current_season:  number
   current_episode: number
   status:          string
+  total_seasons:   number | null
   total_episodes:  number | null
   last_updated:    string
 }
@@ -35,7 +36,11 @@ export default function NowWatching() {
       </div>
       <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px' }}>
         {items.map(s => {
-          const pct = s.total_episodes ? Math.min(100, Math.round((s.current_episode / s.total_episodes) * 100)) : null
+          // current_episode counts within the season, total_episodes spans the show: estimate watched with an average season length
+          const perSeason = s.total_episodes && s.total_seasons ? s.total_episodes / s.total_seasons : null
+          const pct = s.total_episodes && perSeason
+            ? Math.min(100, Math.round((((s.current_season - 1) * perSeason + s.current_episode) / s.total_episodes) * 100))
+            : null
           return (
             <Link key={s.id} href="/movies/tracker" style={{
               display: 'flex', gap: '12px', alignItems: 'center', flexShrink: 0, minWidth: '240px',

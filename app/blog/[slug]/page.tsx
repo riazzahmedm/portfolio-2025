@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Calendar, Clock } from 'lucide-react'
 import { readingTime } from '@/lib/reading-time'
-import { getPost } from '@/lib/blog.server'
+import { getPost, getRelatedPosts } from '@/lib/blog.server'
 import { isAdmin } from '@/lib/admin-auth'
 import { SITE_NAME, SITE_URL } from '@/lib/site'
 import BlockRenderer from '@/components/blog/BlockRenderer'
@@ -48,6 +48,7 @@ export default async function BlogPostPage({ params }: Params) {
   const { slug } = await params
   const [post, admin] = await Promise.all([getPost(slug), isAdmin()])
   if (!post) notFound()
+  const related = post.published ? await getRelatedPosts(post.slug, post.tags).catch(() => []) : []
 
   const date  = post.published_at ?? post.created_at
   const mins  = readingTime(post)
@@ -70,7 +71,7 @@ export default async function BlogPostPage({ params }: Params) {
     <div style={{ minHeight: '100dvh', background: 'var(--bg)', color: 'var(--text-primary)', fontFamily: 'var(--ff-body)' }}>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
       />
 
       {/* ── Sticky header ── */}
@@ -177,7 +178,7 @@ export default async function BlogPostPage({ params }: Params) {
         <BlockRenderer blocks={post.content} />
       </article>
 
-      <RelatedPosts current={post} />
+      <RelatedPosts posts={related} />
     </div>
   )
 }

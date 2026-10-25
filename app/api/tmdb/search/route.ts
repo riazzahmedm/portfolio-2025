@@ -1,4 +1,4 @@
-import { searchMovies, searchTV, getMovieById, getTVById } from '@/lib/tmdb'
+import { searchMovies, searchTV, getMovieById, getTVById, tmdbErrorResponse } from '@/lib/tmdb'
 
 /** Extract a numeric TMDB id from a URL like https://www.themoviedb.org/movie/79660-3 or a plain number */
 function parseTmdbId(q: string): number | null {
@@ -17,13 +17,17 @@ export async function GET(req: Request) {
 
   if (!query) return Response.json([])
 
-  // If the user pasted a TMDB URL or numeric ID, fetch directly
-  const tmdbId = parseTmdbId(query)
-  if (tmdbId) {
-    const result = type === 'tv' ? await getTVById(tmdbId) : await getMovieById(tmdbId)
-    return Response.json(result ? [result] : [])
-  }
+  try {
+    // If the user pasted a TMDB URL or numeric ID, fetch directly
+    const tmdbId = parseTmdbId(query)
+    if (tmdbId) {
+      const result = type === 'tv' ? await getTVById(tmdbId) : await getMovieById(tmdbId)
+      return Response.json(result ? [result] : [])
+    }
 
-  const results = type === 'tv' ? await searchTV(query) : await searchMovies(query)
-  return Response.json(results)
+    const results = type === 'tv' ? await searchTV(query) : await searchMovies(query)
+    return Response.json(results)
+  } catch (err) {
+    return tmdbErrorResponse(err)
+  }
 }

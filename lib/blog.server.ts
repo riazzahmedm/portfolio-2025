@@ -35,6 +35,25 @@ export const getPublishedPostList = cache(async (): Promise<BlogPostSummary[]> =
   }))
 })
 
+/** Up to `limit` other published posts sharing tags with this one, most overlap first, then newest. */
+export async function getRelatedPosts(slug: string, tags: string[], limit = 3): Promise<BlogPostSummary[]> {
+  const norm = (t: string) => t.trim().toLowerCase()
+  const mine = new Set(tags.map(norm))
+  if (mine.size === 0) return []
+
+  const all = await getPublishedPostList()
+  return all
+    .filter(p => p.slug !== slug)
+    .map(p => ({ p, score: p.tags.filter(t => mine.has(norm(t))).length }))
+    .filter(x => x.score > 0)
+    .sort((a, b) =>
+      b.score - a.score ||
+      new Date(b.p.published_at ?? b.p.created_at).getTime() - new Date(a.p.published_at ?? a.p.created_at).getTime()
+    )
+    .slice(0, limit)
+    .map(x => x.p)
+}
+
 /** Published posts, newest first — used by the sitemap. */
 export async function getPublishedPosts(): Promise<Pick<BlogPost, 'slug' | 'updated_at' | 'published_at'>[]> {
   const { data, error } = await supabase
