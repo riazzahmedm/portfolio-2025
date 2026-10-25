@@ -11,7 +11,7 @@ import FilterTabs, { type LogFilter } from '@/components/movies/FilterTabs'
 import AdminForm from '@/components/movies/AdminForm'
 import NowWatching from '@/components/movies/NowWatching'
 import TiltToggle from '@/components/movies/TiltToggle'
-import CinemaHero from '@/components/movies/CinemaHero'
+import AmbientHeader from '@/components/movies/AmbientHeader'
 import { AnimatePresence } from 'framer-motion'
 import Loader from '@/components/ui/Loader'
 
@@ -572,7 +572,7 @@ export default function MoviesPage() {
       <AnimatePresence mode="wait">
         {!loaded && <Loader key="loader" onComplete={() => setLoaded(true)} />}
       </AnimatePresence>
-      <div style={{ minHeight: '100dvh', background: 'var(--bg)', color: 'var(--text-primary)', fontFamily: 'var(--ff-body)' }}>
+      <div style={{ minHeight: '100dvh', position: 'relative', isolation: 'isolate', background: 'var(--bg)', color: 'var(--text-primary)', fontFamily: 'var(--ff-body)' }}>
 
       {/* ── Log-from-watchlist drawer ── */}
       {loggingItem && loggingItem.tmdb_id !== null && (
@@ -719,7 +719,7 @@ export default function MoviesPage() {
         </div>
       </header>
 
-      <CinemaHero logs={logs} />
+      <AmbientHeader logs={logs} />
 
       <TiltToggle />
       <NowWatching />
