@@ -26,11 +26,8 @@ export default function NotFound() {
           <h1 style={{ fontFamily: 'var(--ff-display)', fontSize: 'clamp(2rem,6vw,4rem)', color: 'white', marginBottom: '1rem', lineHeight: 1 }}>
             WRONG TURN
           </h1>
-          <p className="text-[11px] leading-relaxed mb-2 italic" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--ff-mono)' }}>
-            No trail marked here. This page never made it to the summit.
-          </p>
-          <p className="text-[9px] tracking-[0.1em] mb-8" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--ff-mono)' }}>
-            {`// every other route is one click away`}
+          <p className="text-[11px] leading-relaxed mb-8 italic" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--ff-mono)' }}>
+            You took the road less travelled. It ends here.
           </p>
           <Link
             href="/hub"
