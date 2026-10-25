@@ -129,15 +129,9 @@ function FilterDropdown({ label, value, options, onChange }: {
 // ── Skeleton ─────────────────────────────────────────────────────────────────
 function Skeleton() {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '16px' }}>
+    <div className="wl-grid">
       {Array.from({ length: 12 }).map((_, i) => (
-        <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '14px', overflow: 'hidden' }}>
-          <div style={{ aspectRatio: '2/3', background: 'rgba(255,255,255,0.04)', animation: 'pulse 1.6s ease infinite' }} />
-          <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ height: '13px', borderRadius: '4px', background: 'rgba(255,255,255,0.05)', width: '80%' }} />
-            <div style={{ height: '10px', borderRadius: '4px', background: 'rgba(255,255,255,0.03)', width: '50%' }} />
-          </div>
-        </div>
+        <div key={i} className="gc gc-skel" />
       ))}
     </div>
   )
@@ -847,7 +841,7 @@ export default function MoviesPage() {
                 Nothing saved yet. Hit the bookmark icon on any title from Log Entry search.
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '16px' }}>
+              <div className="wl-grid">
                 {watchlist.map(item => (
                   <WatchlistCard
                     key={item.id}
@@ -1022,7 +1016,7 @@ export default function MoviesPage() {
                 {hasFilters ? 'No results. Try different filters.' : 'Nothing logged yet.'}
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '16px' }}>
+              <div className="wl-grid">
                 {filtered.map(log => (
                   <LogCard key={log.id} log={log} isAdmin={isAdmin} showType={filter === 'all'} onDeleted={handleDeleted} onEdit={isAdmin ? setEditingLog : undefined} />
                 ))}

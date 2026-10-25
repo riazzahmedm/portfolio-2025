@@ -463,3 +463,17 @@ html.gyro-on .tilt-glare { display: block; opacity: 1; }
   border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 2px 8px -2px rgba(0,0,0,0.7); }
 .gc-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 @media (max-width: 640px) { .gc-plate { left: 6px; right: 6px; bottom: 6px; padding: 9px 11px; min-height: 74px; border-radius: 18px; } }
+
+/* ── Card grid: a fixed column count per screen width, taller cards on large screens ── */
+.wl-grid { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 640px)  { .wl-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 880px)  { .wl-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 1000px) { .wl-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+@media (min-width: 1240px) { .wl-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 18px; } }
+@media (min-width: 1000px) {
+  .gc { aspect-ratio: 3 / 5; }
+  .gc-plate { padding: 12px 14px; min-height: 92px; }
+  .gc-title { font-size: 14px; }
+  .gc-sub, .gc-row { font-size: 10.5px; }
+}
+.gc-skel { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); animation: pulse 1.6s ease infinite; }
