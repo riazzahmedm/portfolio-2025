@@ -66,11 +66,13 @@ function PlatformBadge({ platform }: { platform: string }) {
 export default function LogCard({
   log,
   isAdmin,
+  showType = true,
   onDeleted,
   onEdit,
 }: {
   log:        MovieLog
   isAdmin?:   boolean
+  showType?:  boolean   // the Movie/Series badge is redundant when the list is already filtered by type
   onDeleted?: (id: string) => void
   onEdit?:    (log: MovieLog) => void
 }) {
@@ -137,7 +139,7 @@ export default function LogCard({
         <div className="tilt-glare" />
 
         {/* Type badge */}
-        <div className="gc-pill" style={{ color: TYPE_COLOR[log.type] }}>{TYPE_LABEL[log.type]}</div>
+        {showType && <div className="gc-pill" style={{ color: TYPE_COLOR[log.type] }}>{TYPE_LABEL[log.type]}</div>}
 
         {/* Action buttons */}
         <div style={{
@@ -146,20 +148,20 @@ export default function LogCard({
           opacity: hovered ? 1 : 0, transition: 'opacity 0.18s',
         }}>
           {tmdbResult && (
-            <button className="gc-btn" onClick={() => setShowPreview(true)} title="Quick preview" style={{ color: '#b8a0ff' }}>
+            <button className="gc-btn" onClick={() => setShowPreview(true)} title="Quick preview" style={{ color: '#d6c8ff' }}>
               <Eye size={13} />
             </button>
           )}
-          <button className="gc-btn" onClick={() => setShowStory(true)} title="Share to Instagram Story" style={{ color: 'rgba(255,255,255,0.8)' }}>
+          <button className="gc-btn" onClick={() => setShowStory(true)} title="Share to Instagram Story" style={{ color: '#ffffff' }}>
             <Share2 size={13} />
           </button>
           {isAdmin && onEdit && (
-            <button className="gc-btn" onClick={() => onEdit(log)} title="Edit" style={{ color: '#b8a0ff' }}>
+            <button className="gc-btn" onClick={() => onEdit(log)} title="Edit" style={{ color: '#d6c8ff' }}>
               <Pencil size={13} />
             </button>
           )}
           {isAdmin && (
-            <button className="gc-btn" onClick={() => setConfirmOpen(true)} disabled={deleting} title="Delete" style={{ color: '#ff6b6b' }}>
+            <button className="gc-btn" onClick={() => setConfirmOpen(true)} disabled={deleting} title="Delete" style={{ color: '#ff8585' }}>
               <Trash2 size={13} />
             </button>
           )}
@@ -180,9 +182,19 @@ export default function LogCard({
           <div className="gc-spec" />
           {seriesPrefix && <div className="gc-prefix">{seriesPrefix}</div>}
 
-          <Link href={`/movies/${log.id}`} style={{ textDecoration: 'none' }}>
-            <div className="gc-title">{log.title}</div>
-          </Link>
+          <div className="gc-titlerow">
+            <Link href={`/movies/${log.id}`} style={{ textDecoration: 'none' }}>
+              <div className="gc-title">{log.title}</div>
+            </Link>
+            {log.favorite_person && (
+              <span className="gc-avatar" title={`Favourite: ${log.favorite_person.name}`} aria-label={`Favourite: ${log.favorite_person.name}`}>
+                {log.favorite_person.profile_url
+                  // eslint-disable-next-line @next/next/no-img-element
+                  ? <img src={log.favorite_person.profile_url} alt="" />
+                  : '👤'}
+              </span>
+            )}
+          </div>
 
           {(subtitle || log.vibe) && (
             <div className="gc-line">
@@ -196,19 +208,6 @@ export default function LogCard({
             <span style={{ whiteSpace: 'nowrap' }}>{shortDate(log.watched_on)}</span>
           </div>
         </div>
-
-        {/* Favourite person — pill under the type badge */}
-        {log.favorite_person && (
-          <div className="gc-who">
-            <i>
-              {log.favorite_person.profile_url
-                // eslint-disable-next-line @next/next/no-img-element
-                ? <img src={log.favorite_person.profile_url} alt="" />
-                : '👤'}
-            </i>
-            <span>{log.favorite_person.name}</span>
-          </div>
-        )}
       </div>
 
       {showStory && <StoryCardModal log={log} onClose={() => setShowStory(false)} />}

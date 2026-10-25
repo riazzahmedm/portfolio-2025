@@ -426,16 +426,17 @@ html.gyro-on .tilt-glare { display: block; opacity: 1; }
 .gc-pill {
   position: absolute; top: 10px; left: 10px; z-index: 2; padding: 4px 11px; border-radius: 99px;
   font: 9px var(--ff-mono); letter-spacing: 0.18em; text-transform: uppercase;
-  background: linear-gradient(135deg, rgba(255,255,255,0.22), rgba(255,255,255,0.06));
-  -webkit-backdrop-filter: blur(12px) saturate(1.7); backdrop-filter: blur(12px) saturate(1.7);
-  border: 1px solid rgba(255,255,255,0.3); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 4px 12px -4px rgba(0,0,0,0.55);
+  background: linear-gradient(135deg, rgba(20,20,28,0.7), rgba(12,12,18,0.55));
+  -webkit-backdrop-filter: blur(12px) saturate(1.6); backdrop-filter: blur(12px) saturate(1.6);
+  border: 1px solid rgba(255,255,255,0.3); box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 4px 12px -4px rgba(0,0,0,0.6);
 }
 .gc-btn {
-  width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;
-  background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
-  -webkit-backdrop-filter: blur(12px) saturate(1.7); backdrop-filter: blur(12px) saturate(1.7);
-  border: 1px solid rgba(255,255,255,0.28); box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 4px 12px -4px rgba(0,0,0,0.55);
+  width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  background: linear-gradient(135deg, rgba(20,20,28,0.78), rgba(10,10,16,0.66));
+  -webkit-backdrop-filter: blur(12px) saturate(1.6); backdrop-filter: blur(12px) saturate(1.6);
+  border: 1px solid rgba(255,255,255,0.34); box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 6px 14px -4px rgba(0,0,0,0.75);
 }
+.gc-btn svg { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
 .gc-btn:disabled { cursor: not-allowed; opacity: 0.5; }
 .gc-plate {
   position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 2; min-height: 78px; padding: 10px 12px;
@@ -455,15 +456,10 @@ html.gyro-on .tilt-glare { display: block; opacity: 1; }
 .gc-sub { font: 10px var(--ff-mono); color: rgba(255,255,255,0.65); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .gc-line { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .gc-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 2px; font: 9px var(--ff-mono); color: rgba(255,255,255,0.7); }
-/* favourite person: glass pill under the type badge */
-.gc-who {
-  position: absolute; top: 38px; left: 10px; z-index: 2; max-width: calc(100% - 64px); display: flex; align-items: center; gap: 6px; padding: 3px 10px 3px 4px; border-radius: 99px;
-  font: 10px var(--ff-body); color: rgba(255,255,255,0.9);
-  background: linear-gradient(135deg, rgba(20,20,28,0.55), rgba(20,20,28,0.35));
-  -webkit-backdrop-filter: blur(12px) saturate(1.6); backdrop-filter: blur(12px) saturate(1.6);
-  border: 1px solid rgba(255,255,255,0.22); box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
-}
-.gc-who i { width: 18px; height: 18px; border-radius: 50%; overflow: hidden; flex: none; background: #1a1a1a; display: flex; align-items: center; justify-content: center; font-size: 10px; font-style: normal; }
-.gc-who i img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.gc-who span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* favourite person: round avatar in the plate's title row (name in the tooltip), so nothing sits on the poster */
+.gc-titlerow { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.gc-titlerow > a { flex: 1; min-width: 0; }
+.gc-avatar { width: 22px; height: 22px; border-radius: 50%; overflow: hidden; flex: none; margin: -3px 0; background: #1a1a1a; display: flex; align-items: center; justify-content: center; font-size: 11px;
+  border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 2px 8px -2px rgba(0,0,0,0.7); }
+.gc-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 @media (max-width: 640px) { .gc-plate { left: 6px; right: 6px; bottom: 6px; padding: 9px 11px; min-height: 74px; border-radius: 18px; } }

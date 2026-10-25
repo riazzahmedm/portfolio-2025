@@ -1024,7 +1024,7 @@ export default function MoviesPage() {
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '16px' }}>
                 {filtered.map(log => (
-                  <LogCard key={log.id} log={log} isAdmin={isAdmin} onDeleted={handleDeleted} onEdit={isAdmin ? setEditingLog : undefined} />
+                  <LogCard key={log.id} log={log} isAdmin={isAdmin} showType={filter === 'all'} onDeleted={handleDeleted} onEdit={isAdmin ? setEditingLog : undefined} />
                 ))}
               </div>
             )}
