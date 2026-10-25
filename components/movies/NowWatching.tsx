@@ -99,7 +99,7 @@ export default function NowWatching() {
         .nw-row::-webkit-scrollbar { display: none; }
 
         .nw-card {
-          --mx: 0; --my: 0; --ty: 0px; --gx: 50%; --gy: 0%;
+          --mx: 0; --my: 0; --ty: 0px; --gx: 50%; --gy: 0%; --perf: rgba(255,255,255,0.4);
           position: relative; flex: 0 0 auto; width: min(340px, 86vw); min-height: 132px; display: flex; overflow: hidden;
           padding: 0; border: 0; margin: 0; font: inherit; text-align: left; cursor: pointer; appearance: none; -webkit-appearance: none;
           border-radius: 18px; text-decoration: none; color: inherit; scroll-snap-align: start;
@@ -109,10 +109,26 @@ export default function NowWatching() {
           will-change: transform;
         }
         .nw-card.is-tilting { transition: transform 0.08s linear, box-shadow 0.3s ease; }
-        .nw-card:hover { --ty: -4px; box-shadow: inset 0 1px 0 rgba(130,255,31,0.22), 0 18px 36px -22px rgba(130,255,31,0.3), 0 10px 22px -14px rgba(0,0,0,0.85); }
+        .nw-card:hover { --ty: -4px; --perf: rgba(255,255,255,0.75); box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(255,255,255,0.05), 0 22px 40px -22px rgba(0,0,0,0.95), 0 8px 18px -10px rgba(0,0,0,0.8); }
+        /* laminated ticket: a diagonal specular band slides with the pointer, with holographic foil inside it */
         .nw-glare {
-          position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity 0.3s ease;
-          background: radial-gradient(circle at var(--gx) var(--gy), rgba(255,255,255,0.16), transparent 55%);
+          position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; border-radius: inherit;
+          opacity: 0; transition: opacity 0.35s ease;
+          background:
+            linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0) 38%),
+            linear-gradient(112deg,
+              transparent calc(var(--gx) - 26%),
+              rgba(255,255,255,0.07) calc(var(--gx) - 12%),
+              rgba(255,255,255,0.3) var(--gx),
+              rgba(255,255,255,0.07) calc(var(--gx) + 12%),
+              transparent calc(var(--gx) + 26%));
+        }
+        .nw-glare::before {
+          content: ''; position: absolute; inset: 0; mix-blend-mode: color-dodge; opacity: 0.38;
+          background: linear-gradient(112deg, #ff7ac8, #ffd97a, #7affc4, #7ac8ff, #b57aff, #ff7ac8);
+          background-size: 320% 100%; background-position: var(--gx) 50%;
+          -webkit-mask-image: linear-gradient(112deg, transparent calc(var(--gx) - 24%), #000 var(--gx), transparent calc(var(--gx) + 24%));
+                  mask-image: linear-gradient(112deg, transparent calc(var(--gx) - 24%), #000 var(--gx), transparent calc(var(--gx) + 24%));
         }
         .nw-card:hover .nw-glare { opacity: 1; }
         .nw-poster img, .nw-poster .nw-ph { transition: transform 0.5s cubic-bezier(.2,.8,.2,1); transform: translate(calc(var(--mx) * 7px), calc(var(--my) * 7px)); }
@@ -135,7 +151,7 @@ export default function NowWatching() {
 
         .nw-stub { position: relative; flex: 1; min-width: 0; padding: 14px 16px 14px 18px; display: flex; flex-direction: column; justify-content: center; gap: 7px; }
         /* real elements + a gradient, not a dashed border: fractional dashed borders vanish on some phone screens */
-        .nw-perf { position: absolute; left: -1px; top: 18px; bottom: 18px; width: 2px; pointer-events: none; background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.4) 0 4px, transparent 4px 9px); }
+        .nw-perf { position: absolute; left: -1px; top: 18px; bottom: 18px; width: 2px; pointer-events: none; background: repeating-linear-gradient(to bottom, var(--perf) 0 4px, transparent 4px 9px); transition: background 0.3s; }
         .nw-notch { position: absolute; left: -8px; width: 16px; height: 16px; border-radius: 50%; background: var(--bg, #050505); pointer-events: none; }
         .nw-notch-top { top: -9px; }
         .nw-notch-bottom { bottom: -9px; }
