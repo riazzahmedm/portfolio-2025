@@ -11,6 +11,7 @@ import FilterTabs, { type LogFilter } from '@/components/movies/FilterTabs'
 import AdminForm from '@/components/movies/AdminForm'
 import NowWatching from '@/components/movies/NowWatching'
 import TiltToggle from '@/components/movies/TiltToggle'
+import CinemaHero from '@/components/movies/CinemaHero'
 import { AnimatePresence } from 'framer-motion'
 import Loader from '@/components/ui/Loader'
 
@@ -718,45 +719,7 @@ export default function MoviesPage() {
         </div>
       </header>
 
-      {/* ── Hero heading ── */}
-      <div className="wl-hero" style={{ maxWidth: '1280px', margin: '0 auto', padding: '48px 24px 0' }}>
-        {/* Eyebrow */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px',
-        }}>
-          <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '10px', letterSpacing: '0.28em', textTransform: 'uppercase', color: '#b8a0ff' }}>Personal Archive</span>
-          <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, rgba(184,160,255,0.35), transparent)' }} />
-        </div>
-
-        {/* Main title */}
-        <h1 style={{
-          margin: 0,
-          fontFamily: 'var(--ff-display)',
-          fontWeight: 400,
-          fontSize: 'clamp(3rem, 10vw, 6rem)',
-          letterSpacing: '0.06em',
-          textTransform: 'uppercase',
-          lineHeight: 0.95,
-          background: 'linear-gradient(135deg, #ffffff 0%, rgba(184,160,255,0.85) 60%, rgba(130,255,31,0.6) 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-        } as React.CSSProperties}>
-          Watchlog
-        </h1>
-
-        {/* Tagline */}
-        <p className="wl-tagline" style={{
-          margin: '10px 0 0',
-          fontFamily: 'var(--ff-mono)', fontSize: '10px',
-          letterSpacing: '0.14em', textTransform: 'uppercase',
-          color: 'rgba(255,255,255,0.3)',
-          display: 'flex', alignItems: 'center', gap: '10px',
-        }}>
-          <span style={{ width: '20px', height: '1px', background: 'rgba(255,255,255,0.2)', display: 'inline-block', flexShrink: 0 }} />
-          Films watched. Feelings logged.
-        </p>
-      </div>
+      <CinemaHero logs={logs} />
 
       <TiltToggle />
       <NowWatching />
