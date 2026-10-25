@@ -542,6 +542,12 @@ export default function MoviesPage() {
     setSearch(''); setVibeFilter(''); setYearFilter(''); setGenreFilter('')
   }
 
+  // Filters only see entries that are loaded, so while one is active keep pulling pages until everything is in
+  useEffect(() => {
+    if (view !== 'log' || !hasFilters || !hasMore || loading || loadingMore) return
+    loadMore()
+  }, [view, hasFilters, hasMore, loading, loadingMore, loadMore])
+
   function handleDeleted(id: string) { setLogs(prev => prev.filter(l => l.id !== id)) }
   function handleEditSaved(updated?: MovieLog) {
     setEditingLog(null)
@@ -1040,6 +1046,11 @@ export default function MoviesPage() {
                 borderRadius: '16px', padding: '24px',
               }}>
                 <CalendarHeatmap logs={filtered} />
+              </div>
+            ) : filtered.length === 0 && hasFilters && (hasMore || loadingMore) ? (
+              /* Filters only see entries loaded so far, and more pages are still arriving — don't call it empty yet */
+              <div role="status" style={{ textAlign: 'center', padding: '80px 0', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)', fontSize: '13px', letterSpacing: '0.1em' }}>
+                Searching your log… {logs.length} of {total}
               </div>
             ) : filtered.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)', fontSize: '14px' }}>
