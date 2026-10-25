@@ -1,9 +1,14 @@
 /**
- * Canonical site URL, used for metadata, sitemap and robots.
- * Set NEXT_PUBLIC_SITE_URL (e.g. https://riazahmed.com) when a custom domain is live;
- * otherwise the Vercel alias from vercel.json is used.
+ * Canonical site URL, used for metadata, sitemap and robots. In order of preference:
+ *  1. NEXT_PUBLIC_SITE_URL, an explicit override
+ *  2. Vercel's production domain (the shortest one on the project), so adding a custom domain later needs no code change
+ *  3. the default below, for local development
  */
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://riazz-portfolio.vercel.app').replace(/\/$/, '')
+const vercelDomain = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : undefined
+
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? vercelDomain ?? 'https://riazz.vercel.app').replace(/\/$/, '')
 
 export const SITE_NAME = 'Riaz Ahmed'
 
