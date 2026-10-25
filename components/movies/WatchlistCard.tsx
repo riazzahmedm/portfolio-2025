@@ -15,11 +15,11 @@ function WhereToWatch({ info }: { info?: WatchProvidersLite | null }) {
     const more  = info.streaming.length - shown.length
     const names = info.streaming.map(s => s.name).join(', ')
     return (
-      <span title={`Streaming on ${names}`} aria-label={`Streaming on ${names}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+      <span title={`Streaming on ${names}`} aria-label={`Streaming on ${names}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', minWidth: 0 }}>
         {shown.map(s => (
           s.logo
             // eslint-disable-next-line @next/next/no-img-element
-            ? <img key={s.name} src={s.logo} alt="" onError={e => { e.currentTarget.style.display = 'none' }} style={{ width: '20px', height: '20px', borderRadius: '6px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 2px 6px -2px rgba(0,0,0,0.7)' }} />
+            ? <img key={s.name} src={s.logo} alt="" onError={e => { e.currentTarget.style.display = 'none' }} style={{ width: '18px', height: '18px', borderRadius: '5px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 2px 6px -2px rgba(0,0,0,0.7)' }} />
             : <span key={s.name} style={{ fontSize: '9px' }}>{s.name}</span>
         ))}
         {more > 0 && <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.7)' }}>+{more}</span>}
@@ -130,7 +130,7 @@ export default function WatchlistCard({
         )}
 
         <div className="gc-row">
-          {item.tmdb_rating ? <span style={{ color: '#fbbf24' }}>★ {item.tmdb_rating}</span> : <span />}
+          {item.tmdb_rating ? <span style={{ color: '#fbbf24', whiteSpace: 'nowrap', flex: 'none' }}>★ {Number(item.tmdb_rating).toFixed(1)}</span> : <span />}
           <WhereToWatch info={providers} />
         </div>
       </div>

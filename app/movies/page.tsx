@@ -6,7 +6,7 @@ import { ArrowLeft, Plus, Film, Tv, X, Search, ChevronDown, Bookmark, Sparkles, 
 import type { MovieLog, WatchlistItem, TMDBResult, WatchProvidersLite } from '@/lib/movies.types'
 import { VIBES } from '@/lib/movies.types'
 import LogCard from '@/components/movies/LogCard'
-import WatchlistCard from '@/components/movies/WatchlistCard'
+import WatchLaterBoard from '@/components/movies/WatchLaterBoard'
 import FilterTabs, { type LogFilter } from '@/components/movies/FilterTabs'
 import AdminForm from '@/components/movies/AdminForm'
 import NowWatching from '@/components/movies/NowWatching'
@@ -855,18 +855,13 @@ export default function MoviesPage() {
                 Nothing saved yet. Hit the bookmark icon on any title from Log Entry search.
               </div>
             ) : (
-              <div className="wl-grid">
-                {watchlist.map(item => (
-                  <WatchlistCard
-                    key={item.id}
-                    item={item}
-                    isAdmin={isAdmin}
-                    onRemoved={handleWatchlistRemoved}
-                    onLog={setLoggingItem}
-                    providers={item.tmdb_id ? providers[`${item.type === 'series' ? 'tv' : 'movie'}:${item.tmdb_id}`] : undefined}
-                  />
-                ))}
-              </div>
+              <WatchLaterBoard
+                items={watchlist}
+                providers={providers}
+                isAdmin={isAdmin}
+                onRemoved={handleWatchlistRemoved}
+                onLog={setLoggingItem}
+              />
             )}
           </>
         ) : (
