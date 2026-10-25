@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Riaz Ahmed',
-  description: 'Portfolio, Art, Shop, Movies and Blog by Riaz Ahmed.',
+  description: 'Portfolio, Shop, Movies, Blog and Art by Riaz Ahmed.',
   alternates: { canonical: '/hub' },
 }
 
@@ -25,24 +25,13 @@ const CARDS: {
     kicker: 'Featured',
   },
   {
-    href: '/art',
-    label: 'Art',
-    sub: 'Digital art & illustration',
-    accent: '#f59e0b',
-    accentDim: 'rgba(245,158,11,0.12)',
-    accentGlow: 'rgba(245,158,11,0.2)',
-    tag: '02',
-    kicker: 'Gallery',
-    offSite: true,
-  },
-  {
     href: '/shop',
     label: 'Shop',
     sub: 'Original digital art prints',
     accent: '#ffffff',
     accentDim: 'rgba(255,255,255,0.06)',
     accentGlow: 'rgba(255,255,255,0.08)',
-    tag: '03',
+    tag: '02',
     kicker: 'Store',
   },
   {
@@ -52,7 +41,7 @@ const CARDS: {
     accent: '#b8a0ff',
     accentDim: 'rgba(184,160,255,0.12)',
     accentGlow: 'rgba(184,160,255,0.18)',
-    tag: '04',
+    tag: '03',
     kicker: 'Watchlist',
   },
   {
@@ -62,8 +51,19 @@ const CARDS: {
     accent: '#82ff1f',
     accentDim: 'rgba(130,255,31,0.1)',
     accentGlow: 'rgba(130,255,31,0.16)',
-    tag: '05',
+    tag: '04',
     kicker: 'Journal',
+  },
+  {
+    href: '/art',
+    label: 'Art',
+    sub: 'Digital art & illustration',
+    accent: '#f59e0b',
+    accentDim: 'rgba(245,158,11,0.12)',
+    accentGlow: 'rgba(245,158,11,0.2)',
+    tag: '05',
+    kicker: 'Gallery',
+    offSite: true,
   },
 ]
 
