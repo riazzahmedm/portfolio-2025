@@ -8,6 +8,7 @@ import { VIBES, PLATFORMS } from '@/lib/movies.types'
 import StoryCardModal from './StoryCardModal'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import TMDBPreviewModal from './TMDBPreviewModal'
+import { tiltProps } from '@/lib/tilt'
 
 const TYPE_COLOR: Record<string, string> = {
   movie:   '#82ff1f',
@@ -113,6 +114,8 @@ export default function LogCard({
   return (
     <>
       <div
+        className="tilt"
+        {...tiltProps}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
@@ -122,10 +125,9 @@ export default function LogCard({
           overflow:      'hidden',
           display:       'flex',
           flexDirection: 'column',
-          transform:     hovered ? 'translateY(-3px)' : 'none',
-          transition:    'border-color 0.2s, transform 0.2s',
         }}
       >
+        <div className="tilt-glare" />
         {/* Poster */}
         <div style={{ position: 'relative', aspectRatio: '2/3', background: '#0a0a0a', flexShrink: 0 }}>
           {log.poster_url ? (

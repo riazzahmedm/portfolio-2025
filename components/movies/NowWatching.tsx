@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { PLATFORMS } from '@/lib/movies.types'
+import { tiltProps } from '@/lib/tilt'
 
 interface Series {
   id:              string
@@ -33,26 +34,6 @@ function seriesProgress(s: Series): number | null {
   if (!s.total_episodes || !s.total_seasons) return null
   const perSeason = s.total_episodes / s.total_seasons
   return Math.min(1, ((s.current_season - 1) * perSeason + s.current_episode) / s.total_episodes)
-}
-
-function tilt(e: React.PointerEvent<HTMLAnchorElement>) {
-  if (e.pointerType !== 'mouse') return
-  const el = e.currentTarget
-  const r  = el.getBoundingClientRect()
-  const x  = (e.clientX - r.left) / r.width
-  const y  = (e.clientY - r.top) / r.height
-  el.classList.add('is-tilting')
-  el.style.setProperty('--mx', (x - 0.5).toFixed(3))
-  el.style.setProperty('--my', (y - 0.5).toFixed(3))
-  el.style.setProperty('--gx', `${(x * 100).toFixed(1)}%`)
-  el.style.setProperty('--gy', `${(y * 100).toFixed(1)}%`)
-}
-
-function untilt(e: React.PointerEvent<HTMLAnchorElement>) {
-  const el = e.currentTarget
-  el.classList.remove('is-tilting')
-  el.style.setProperty('--mx', '0')
-  el.style.setProperty('--my', '0')
 }
 
 const platformLabel = (key: string | null) => PLATFORMS.find(p => p.key === key)?.label ?? null
@@ -95,13 +76,13 @@ export default function NowWatching() {
           --mx: 0; --my: 0; --ty: 0px; --gx: 50%; --gy: 0%;
           position: relative; flex: 0 0 auto; width: min(340px, 86vw); min-height: 132px; display: flex; overflow: hidden;
           border-radius: 18px; text-decoration: none; color: inherit; scroll-snap-align: start;
-          border: 1px solid rgba(255,255,255,0.09); background: #0b0b0d; isolation: isolate;
+          background: #0b0b0d; isolation: isolate; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 10px 24px -16px rgba(0,0,0,0.9);
           transform: perspective(900px) rotateX(calc(var(--my) * -16deg)) rotateY(calc(var(--mx) * 18deg)) translateY(var(--ty));
-          transition: transform 0.5s cubic-bezier(.2,.8,.2,1), border-color 0.22s ease, box-shadow 0.3s ease;
+          transition: transform 0.5s cubic-bezier(.2,.8,.2,1), box-shadow 0.3s ease;
           will-change: transform;
         }
-        .nw-card.is-tilting { transition: transform 0.08s linear, border-color 0.22s ease, box-shadow 0.3s ease; }
-        .nw-card:hover { --ty: -4px; border-color: rgba(130,255,31,0.45); box-shadow: 0 22px 44px -20px rgba(130,255,31,0.4), 0 10px 24px -12px rgba(0,0,0,0.9); }
+        .nw-card.is-tilting { transition: transform 0.08s linear, box-shadow 0.3s ease; }
+        .nw-card:hover { --ty: -4px; box-shadow: inset 0 1px 0 rgba(130,255,31,0.25), 0 22px 44px -20px rgba(130,255,31,0.45), 0 10px 24px -12px rgba(0,0,0,0.9); }
         .nw-glare {
           position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity 0.3s ease;
           background: radial-gradient(circle at var(--gx) var(--gy), rgba(255,255,255,0.16), transparent 55%);
@@ -164,7 +145,7 @@ export default function NowWatching() {
           const platform = it.kind === 'movie' ? platformLabel(it.movie.platform) : null
 
           return (
-            <Link key={it.key} href={it.href} className="nw-card" data-kind={it.kind} onPointerMove={tilt} onPointerLeave={untilt}>
+            <Link key={it.key} href={it.href} className="nw-card" data-kind={it.kind} {...tiltProps}>
               {it.poster && <div className="nw-glow" style={{ backgroundImage: `url(${it.poster})` }} />}
               <div className="nw-shade" />
 

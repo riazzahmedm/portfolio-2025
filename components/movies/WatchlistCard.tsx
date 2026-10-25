@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import type { WatchlistItem, TMDBResult } from '@/lib/movies.types'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import TMDBPreviewModal from '@/components/movies/TMDBPreviewModal'
+import { tiltProps } from '@/lib/tilt'
 
 export default function WatchlistCard({
   item,
@@ -52,6 +53,8 @@ export default function WatchlistCard({
   return (
     <>
     <div
+      className="tilt"
+      {...tiltProps}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -59,10 +62,9 @@ export default function WatchlistCard({
         border:        `1px solid ${hovered ? 'rgba(184,160,255,0.25)' : 'var(--border-card)'}`,
         borderRadius:  '14px', overflow: 'hidden',
         display:       'flex', flexDirection: 'column',
-        transform:     hovered ? 'translateY(-3px)' : 'none',
-        transition:    'border-color 0.2s, transform 0.2s',
       }}
     >
+      <div className="tilt-glare" />
       {/* Poster */}
       <div style={{ position: 'relative', aspectRatio: '2/3', background: '#0a0a0a', flexShrink: 0 }}>
         {item.poster_url
