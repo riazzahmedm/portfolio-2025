@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Film, Tv, X, Search, ChevronDown, Bookmark, Sparkles, LayoutGrid, CalendarDays, List, Radio } from 'lucide-react'
+import { ArrowLeft, Plus, Film, Tv, X, Search, ChevronDown, Bookmark, Sparkles, LayoutGrid, CalendarDays, List, Radio, SlidersHorizontal } from 'lucide-react'
 import type { MovieLog, WatchlistItem, TMDBResult } from '@/lib/movies.types'
 import { VIBES } from '@/lib/movies.types'
 import LogCard from '@/components/movies/LogCard'
@@ -29,6 +29,18 @@ function Stat({ icon, value, label }: { icon: React.ReactNode; value: number; la
       <div style={{ fontSize: '10px', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)' }}>
         {label}
       </div>
+    </div>
+  )
+}
+
+// ── Labelled group inside the filter panel ───────────────────────────────────
+function FilterGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: 0 }}>
+      <div style={{ fontSize: '9px', letterSpacing: '0.24em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--ff-mono)' }}>
+        {label}
+      </div>
+      {children}
     </div>
   )
 }
@@ -299,6 +311,7 @@ export default function MoviesPage() {
 
   // ── Filter state ──
   const [search,          setSearch]          = useState('')
+  const [filtersOpen,     setFiltersOpen]     = useState(false)
   const [vibeFilter,      setVibeFilter]      = useState('')
   const [yearFilter,      setYearFilter]      = useState('')
   const [genreFilter,     setGenreFilter]     = useState('')
@@ -523,6 +536,7 @@ export default function MoviesPage() {
     .filter(l => !yearFilter     || l.year === Number(yearFilter))
     .filter(l => !genreFilter    || (l.genres ?? []).includes(genreFilter))
   const hasFilters = !!(search || vibeFilter || yearFilter || genreFilter)
+  const activeFilterCount = [vibeFilter, yearFilter, genreFilter].filter(Boolean).length
 
   function clearFilters() {
     setSearch(''); setVibeFilter(''); setYearFilter(''); setGenreFilter('')
@@ -609,16 +623,14 @@ export default function MoviesPage() {
           .wl-header-inner    { padding: 12px 16px; }
           .wl-hero            { padding: 20px 16px 0 !important; }
           .wl-main            { padding: 14px 16px 60px !important; }
-          .wl-vibe-pill       { padding: 5px 10px !important; font-size: 11px !important; }
-          .wl-filter-row      { flex-wrap: nowrap !important; gap: 6px !important; margin-bottom: 10px !important; }
-          .wl-filter-row .wl-spacer { display: none !important; }
-          .wl-toggle-label    { display: none !important; }
-          .wl-search          { margin-bottom: 8px !important; }
-          .wl-vibe-row        { margin-bottom: 8px !important; }
+          .wl-filter-panel    { padding: 14px !important; }
           .wl-tabs-row        { margin-top: 1.75rem !important; margin-bottom: 14px !important; }
           /* fade the right edge of rows that scroll sideways so the overflow is obvious */
           .wl-scroll-fade     { padding-right: 28px; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }
         }
+        .wl-filter-panel { animation: wl-panel-in 0.2s ease-out; }
+        @keyframes wl-panel-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .wl-filter-panel { animation: none; } }
         @keyframes wl-bounce {
           from { transform: translateY(0);    opacity: 0.35; }
           to   { transform: translateY(-7px); opacity: 1;    }
@@ -880,99 +892,135 @@ export default function MoviesPage() {
         ) : (
           /* ── Watchlog view ── */
           <>
-            {/* Search bar */}
-            <div className="wl-search" style={{ position: 'relative', marginBottom: '12px' }}>
-              <Search size={14} style={{ position: 'absolute', left: '13px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.28)', pointerEvents: 'none' }} />
-              <input
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Search titles…"
-                style={{
-                  width: '100%', padding: '10px 38px',
-                  background: 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${search ? 'rgba(184,160,255,0.35)' : 'rgba(255,255,255,0.1)'}`,
-                  borderRadius: '12px', color: '#fff',
-                  fontSize: '14px', fontFamily: 'var(--ff-body)',
-                  outline: 'none', boxSizing: 'border-box',
-                  transition: 'border-color 0.2s',
-                }}
-              />
-              {search && (
-                <button onClick={() => setSearch('')} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', padding: '4px', display: 'flex' }}>
-                  <X size={13} />
-                </button>
-              )}
-            </div>
-
-            {/* Vibe filter pills — horizontal scroll row */}
-            <div className="wl-vibe-row wl-scroll-fade" style={{ display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none', marginBottom: '10px', paddingBottom: '2px' } as React.CSSProperties}>
-              {VIBES.map(v => {
-                const on = vibeFilter === v.key
-                return (
-                  <button key={v.key} type="button"
-                    className="wl-vibe-pill"
-                    onClick={() => setVibeFilter(on ? '' : v.key)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '5px',
-                      padding: '7px 13px', borderRadius: '100px', cursor: 'pointer',
-                      border:      `1px solid ${on ? v.color + '66' : 'rgba(255,255,255,0.08)'}`,
-                      background:  on ? v.color + '18' : 'transparent',
-                      color:       on ? v.color : 'rgba(255,255,255,0.4)',
-                      fontSize:    '12px', fontFamily: 'var(--ff-body)',
-                      flexShrink:  0, whiteSpace: 'nowrap', transition: 'all 0.18s',
-                    }}>
-                    <span style={{ fontSize: '13px' }}>{v.emoji}</span>
-                    {v.label}
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* Filter dropdowns + view toggle row */}
-            <div className="wl-filter-row" style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
-              <FilterDropdown label="Year"  value={yearFilter}  options={availableYears}  onChange={setYearFilter}  />
-              <FilterDropdown label="Genre" value={genreFilter} options={availableGenres} onChange={setGenreFilter} />
-              {hasFilters && (
-                <button type="button" onClick={clearFilters}
+            {/* Search + filter button */}
+            <div className="wl-search" style={{ display: 'flex', gap: '10px', alignItems: 'stretch', marginBottom: filtersOpen ? '12px' : '20px' }}>
+              <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
+                <Search size={14} style={{ position: 'absolute', left: '13px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.28)', pointerEvents: 'none' }} />
+                <input
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Search titles…"
                   style={{
-                    display: 'flex', alignItems: 'center', gap: '5px',
-                    padding: '7px 13px', borderRadius: '100px', cursor: 'pointer',
-                    border: '1px solid rgba(224,80,80,0.3)',
-                    background: 'rgba(224,80,80,0.08)',
-                    color: '#e06060', fontSize: '12px', fontFamily: 'var(--ff-mono)',
-                    letterSpacing: '0.1em', whiteSpace: 'nowrap',
-                  }}>
-                  <X size={11} /> Clear
-                </button>
-              )}
-              {/* Spacer */}
-              <div className="wl-spacer" style={{ flex: 1 }} />
-              {/* Grid / Calendar toggle */}
-              <div style={{ display: 'flex', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', flexShrink: 0 }}>
-                {([
-                  { mode: 'grid'     as const, icon: <LayoutGrid  size={12} />, label: 'Grid'     },
-                  { mode: 'calendar' as const, icon: <CalendarDays size={12} />, label: 'Calendar' },
-                ] as const).map(({ mode, icon, label }) => {
-                  const on = logDisplayMode === mode
-                  return (
-                    <button key={mode} type="button" onClick={() => setLogDisplayMode(mode)}
-                      title={label}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '5px',
-                        padding: '7px 13px', cursor: 'pointer',
-                        background: on ? 'rgba(184,160,255,0.12)' : 'transparent',
-                        border: 'none', borderRight: mode === 'grid' ? '1px solid rgba(255,255,255,0.1)' : 'none',
-                        color: on ? '#b8a0ff' : 'rgba(255,255,255,0.35)',
-                        fontSize: '11px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em',
-                        transition: 'all 0.18s',
-                      }}>
-                      {icon}
-                      <span className="wl-toggle-label">{label}</span>
-                    </button>
-                  )
-                })}
+                    width: '100%', padding: '10px 38px',
+                    background: 'rgba(255,255,255,0.04)',
+                    border: `1px solid ${search ? 'rgba(184,160,255,0.35)' : 'rgba(255,255,255,0.1)'}`,
+                    borderRadius: '12px', color: '#fff',
+                    fontSize: '14px', fontFamily: 'var(--ff-body)',
+                    outline: 'none', boxSizing: 'border-box',
+                    transition: 'border-color 0.2s',
+                  }}
+                />
+                {search && (
+                  <button onClick={() => setSearch('')} aria-label="Clear search" style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', padding: '4px', display: 'flex' }}>
+                    <X size={13} />
+                  </button>
+                )}
               </div>
+
+              <button
+                type="button"
+                aria-label="Filters"
+                aria-expanded={filtersOpen}
+                aria-controls="wl-filter-panel"
+                title="Filters"
+                onClick={() => setFiltersOpen(o => !o)}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  padding: '0 16px', borderRadius: '12px', cursor: 'pointer', flexShrink: 0,
+                  border:     `1px solid ${filtersOpen || activeFilterCount ? 'rgba(184,160,255,0.45)' : 'rgba(255,255,255,0.1)'}`,
+                  background: filtersOpen || activeFilterCount ? 'rgba(184,160,255,0.12)' : 'rgba(255,255,255,0.04)',
+                  color:      filtersOpen || activeFilterCount ? '#b8a0ff' : 'rgba(255,255,255,0.5)',
+                  transition: 'all 0.18s',
+                }}
+              >
+                <SlidersHorizontal size={15} />
+                {activeFilterCount > 0 && (
+                  <span style={{ fontSize: '10px', fontFamily: 'var(--ff-mono)', background: 'rgba(184,160,255,0.25)', borderRadius: '100px', padding: '1px 7px', lineHeight: 1.6 }}>
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
             </div>
+
+            {/* Filter panel */}
+            {filtersOpen && (
+              <div id="wl-filter-panel" className="wl-filter-panel" style={{
+                marginBottom: '20px', padding: '18px', borderRadius: '16px',
+                border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.025)',
+                display: 'flex', flexDirection: 'column', gap: '20px',
+              }}>
+                <FilterGroup label="Mood">
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {VIBES.map(v => {
+                      const on = vibeFilter === v.key
+                      return (
+                        <button key={v.key} type="button"
+                          onClick={() => setVibeFilter(on ? '' : v.key)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '5px',
+                            padding: '7px 13px', borderRadius: '100px', cursor: 'pointer',
+                            border:      `1px solid ${on ? v.color + '66' : 'rgba(255,255,255,0.08)'}`,
+                            background:  on ? v.color + '18' : 'transparent',
+                            color:       on ? v.color : 'rgba(255,255,255,0.45)',
+                            fontSize:    '12px', fontFamily: 'var(--ff-body)',
+                            whiteSpace:  'nowrap', transition: 'all 0.18s',
+                          }}>
+                          <span style={{ fontSize: '13px' }}>{v.emoji}</span>
+                          {v.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </FilterGroup>
+
+                <div style={{ display: 'flex', gap: '28px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                  <FilterGroup label="Refine">
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      <FilterDropdown label="Year"  value={yearFilter}  options={availableYears}  onChange={setYearFilter}  />
+                      <FilterDropdown label="Genre" value={genreFilter} options={availableGenres} onChange={setGenreFilter} />
+                    </div>
+                  </FilterGroup>
+
+                  <FilterGroup label="View">
+                    <div style={{ display: 'flex', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', alignSelf: 'flex-start' }}>
+                      {([
+                        { mode: 'grid'     as const, icon: <LayoutGrid   size={12} />, label: 'Grid'     },
+                        { mode: 'calendar' as const, icon: <CalendarDays size={12} />, label: 'Calendar' },
+                      ] as const).map(({ mode, icon, label }) => {
+                        const on = logDisplayMode === mode
+                        return (
+                          <button key={mode} type="button" onClick={() => setLogDisplayMode(mode)}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: '6px',
+                              padding: '8px 14px', cursor: 'pointer',
+                              background: on ? 'rgba(184,160,255,0.12)' : 'transparent',
+                              border: 'none', borderRight: mode === 'grid' ? '1px solid rgba(255,255,255,0.1)' : 'none',
+                              color: on ? '#b8a0ff' : 'rgba(255,255,255,0.4)',
+                              fontSize: '11px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em',
+                              transition: 'all 0.18s',
+                            }}>
+                            {icon}
+                            {label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </FilterGroup>
+                </div>
+
+                {hasFilters && (
+                  <button type="button" onClick={clearFilters}
+                    style={{
+                      alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: '5px',
+                      padding: '7px 13px', borderRadius: '100px', cursor: 'pointer',
+                      border: '1px solid rgba(224,80,80,0.3)', background: 'rgba(224,80,80,0.08)',
+                      color: '#e06060', fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em',
+                    }}>
+                    <X size={11} /> Clear all
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Type tabs + entry count */}
             <div className="wl-tabs-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', gap: '12px', marginTop: '4rem' }}>
