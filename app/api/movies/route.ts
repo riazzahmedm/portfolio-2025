@@ -10,6 +10,33 @@ const NOT_IN_PROGRESS = 'status.is.null,status.neq.watching'
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
 
+  // ?otd=MM-DD — what was watched on this month and day in earlier years ("On this day")
+  const otd = searchParams.get('otd')
+  if (otd) {
+    const m = /^(\d{2})-(\d{2})$/.exec(otd)
+    const month = m ? Number(m[1]) : 0
+    const day   = m ? Number(m[2]) : 0
+    if (!m || month < 1 || month > 12 || day < 1 || day > 31) {
+      return Response.json({ error: 'Use otd=MM-DD' }, { status: 400 })
+    }
+    // watched_on is a date column, so match each earlier year explicitly instead of pattern-matching
+    // (skipping years where the date doesn't exist, e.g. 29 Feb in a non-leap year, which Postgres would reject)
+    const years: string[] = []
+    for (let y = new Date().getFullYear() - 1; y >= 2000; y--) {
+      if (new Date(y, month - 1, day).getMonth() === month - 1) years.push(`watched_on.eq.${y}-${m[1]}-${m[2]}`)
+    }
+    if (years.length === 0) return Response.json([])
+    const { data, error } = await supabase
+      .from('logs')
+      .select('id, tmdb_id, title, poster_url, year, type, vibe, watched_on, season, episode')
+      .or(years.join(','))
+      .or(NOT_IN_PROGRESS)
+      .order('watched_on', { ascending: false })
+      .limit(60)
+    if (error) return dbError(error)
+    return Response.json(data ?? [])
+  }
+
   // ?status=watching[&type=movie] — a short, newest-first list for the "now watching" strip
   const status = searchParams.get('status')
   if (status === 'watched' || status === 'watching' || status === 'dropped') {

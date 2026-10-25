@@ -12,6 +12,7 @@ import AdminForm from '@/components/movies/AdminForm'
 import NowWatching from '@/components/movies/NowWatching'
 import TiltToggle from '@/components/movies/TiltToggle'
 import AmbientHeader from '@/components/movies/AmbientHeader'
+import OnThisDay from '@/components/movies/OnThisDay'
 import { AnimatePresence } from 'framer-motion'
 import Loader from '@/components/ui/Loader'
 
@@ -717,6 +718,7 @@ export default function MoviesPage() {
 
       <TiltToggle />
       <NowWatching />
+      <OnThisDay />
 
       {/* ── Filters + Grid ── */}
       <main className="wl-main" style={{ maxWidth: '1280px', margin: '0 auto', padding: '28px 24px 60px' }}>
