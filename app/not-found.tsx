@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 const QUICK_LINKS = [
+  { href: '/',       label: 'portfolio' },
   { href: '/blog',   label: 'blog' },
   { href: '/movies', label: 'watchlog' },
   { href: '/shop',   label: 'shop' },

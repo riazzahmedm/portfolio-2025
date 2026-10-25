@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
     return [
       { source: '/blogs',         destination: '/blog',   permanent: false },
       { source: '/blogs/:slug',   destination: '/blog/:slug', permanent: false },
+      { source: '/portfolio',     destination: '/',       permanent: false },
       { source: '/watched',       destination: '/movies', permanent: false },
       { source: '/watchlog',      destination: '/movies', permanent: false },
       { source: '/watchlist',     destination: '/movies', permanent: false },
