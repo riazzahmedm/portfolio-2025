@@ -1,17 +1,12 @@
 'use client'
-import { useState } from 'react'
-import { toast } from 'sonner'
 import AdminForm from '@/components/movies/AdminForm'
 
 export default function MoviesAdmin() {
-  const [key, setKey] = useState(0)
-
+  // AdminForm resets itself after a save (movies clear fully; series keep title + season
+  // so episodes can be logged back to back), so it must not be remounted here.
   return (
     <div style={{ padding: '0 0 40px' }}>
-      <AdminForm
-        key={key}
-        onSuccess={() => { toast.success('Entry saved'); setKey(k => k + 1) }}
-      />
+      <AdminForm onSuccess={() => {}} />
     </div>
   )
 }
