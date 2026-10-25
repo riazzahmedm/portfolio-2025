@@ -418,3 +418,52 @@ html.gyro-on .tilt-glare { display: block; opacity: 1; }
   .tilt, .tilt:hover { transition: none; transform: none; }
   .tilt-glare { display: none; }
 }
+
+/* ── Smoked-glass cards (watchlog grid): the poster fills the card, details sit on a frosted dark plate ── */
+.gc { aspect-ratio: 2 / 3; border-radius: 16px; overflow: hidden; background: #0a0a0a; isolation: isolate; }
+.gc-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.gc-fallback { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+.gc-pill {
+  position: absolute; top: 10px; left: 10px; z-index: 2; padding: 4px 11px; border-radius: 99px;
+  font: 9px var(--ff-mono); letter-spacing: 0.18em; text-transform: uppercase;
+  background: linear-gradient(135deg, rgba(255,255,255,0.22), rgba(255,255,255,0.06));
+  -webkit-backdrop-filter: blur(12px) saturate(1.7); backdrop-filter: blur(12px) saturate(1.7);
+  border: 1px solid rgba(255,255,255,0.3); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 4px 12px -4px rgba(0,0,0,0.55);
+}
+.gc-btn {
+  width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
+  -webkit-backdrop-filter: blur(12px) saturate(1.7); backdrop-filter: blur(12px) saturate(1.7);
+  border: 1px solid rgba(255,255,255,0.28); box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 4px 12px -4px rgba(0,0,0,0.55);
+}
+.gc-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+.gc-plate {
+  position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 2; min-height: 78px; padding: 10px 12px;
+  border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px;
+  background: linear-gradient(145deg, rgba(26,26,34,0.66), rgba(12,12,18,0.5));
+  -webkit-backdrop-filter: blur(18px) saturate(1.7); backdrop-filter: blur(18px) saturate(1.7);
+  border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 14px 30px -10px rgba(0,0,0,0.7);
+}
+.gc-plate::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.6), inset 0 -1px 1px rgba(255,255,255,0.16), inset 1px 0 0 rgba(255,255,255,0.16), inset -1px 0 0 rgba(255,255,255,0.1);
+}
+.gc-spec { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(130px 60px at var(--gx, 30%) -8%, rgba(255,255,255,0.32), transparent 72%); }
+.gc-plate > :not(.gc-spec) { position: relative; text-shadow: 0 1px 8px rgba(0,0,0,0.45); }
+.gc-prefix { font: 10px var(--ff-mono); color: #b8a0ff; }
+.gc-title { font: 600 13px/1.25 var(--ff-body); color: #fff; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.gc-sub { font: 10px var(--ff-mono); color: rgba(255,255,255,0.65); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gc-line { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.gc-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 2px; font: 9px var(--ff-mono); color: rgba(255,255,255,0.7); }
+/* favourite person: glass pill under the type badge */
+.gc-who {
+  position: absolute; top: 38px; left: 10px; z-index: 2; max-width: calc(100% - 64px); display: flex; align-items: center; gap: 6px; padding: 3px 10px 3px 4px; border-radius: 99px;
+  font: 10px var(--ff-body); color: rgba(255,255,255,0.9);
+  background: linear-gradient(135deg, rgba(20,20,28,0.55), rgba(20,20,28,0.35));
+  -webkit-backdrop-filter: blur(12px) saturate(1.6); backdrop-filter: blur(12px) saturate(1.6);
+  border: 1px solid rgba(255,255,255,0.22); box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
+}
+.gc-who i { width: 18px; height: 18px; border-radius: 50%; overflow: hidden; flex: none; background: #1a1a1a; display: flex; align-items: center; justify-content: center; font-size: 10px; font-style: normal; }
+.gc-who i img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gc-who span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 640px) { .gc-plate { left: 6px; right: 6px; bottom: 6px; padding: 9px 11px; min-height: 74px; border-radius: 18px; } }
