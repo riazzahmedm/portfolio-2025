@@ -66,8 +66,6 @@ export default function NowWatching() {
           border: 1px solid rgba(130,255,31,0.35); background: rgba(130,255,31,0.07);
         }
         .nw-dot { width: 7px; height: 7px; border-radius: 50%; background: #82ff1f; box-shadow: 0 0 0 0 rgba(130,255,31,0.6); animation: nw-pulse 1.8s ease-out infinite; }
-        .nw-count { font: 10px var(--ff-mono); letter-spacing: 0.2em; color: rgba(255,255,255,0.35); }
-        .nw-rule { flex: 1; height: 1px; background: linear-gradient(to right, rgba(130,255,31,0.3), transparent); }
 
         .nw-row { display: flex; gap: 16px; overflow-x: auto; padding: 4px 2px 14px; scroll-snap-type: x proximity; scrollbar-width: none; }
         .nw-row::-webkit-scrollbar { display: none; }
@@ -133,9 +131,7 @@ export default function NowWatching() {
       `}</style>
 
       <div className="nw-head">
-        <span className="nw-chip"><span className="nw-dot" />On air</span>
-        <span className="nw-count">Now watching · {String(items.length).padStart(2, '0')}</span>
-        <span className="nw-rule" />
+        <span className="nw-chip"><span className="nw-dot" />Now watching</span>
       </div>
 
       <div className="nw-row">
