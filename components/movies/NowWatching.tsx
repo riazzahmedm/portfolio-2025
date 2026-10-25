@@ -67,7 +67,7 @@ export default function NowWatching() {
         }
         .nw-dot { width: 7px; height: 7px; border-radius: 50%; background: #82ff1f; box-shadow: 0 0 0 0 rgba(130,255,31,0.6); animation: nw-pulse 1.8s ease-out infinite; }
 
-        .nw-row { display: flex; gap: 16px; overflow-x: auto; padding: 4px 2px 14px; scroll-snap-type: x proximity; scrollbar-width: none; }
+        .nw-row { display: flex; gap: 16px; overflow-x: auto; padding: 14px 24px 44px; margin: -14px -24px -30px; scroll-snap-type: x proximity; scroll-padding-left: 24px; scrollbar-width: none; }
         .nw-row::-webkit-scrollbar { display: none; }
 
         .nw-card {
@@ -80,7 +80,7 @@ export default function NowWatching() {
           will-change: transform;
         }
         .nw-card.is-tilting { transition: transform 0.08s linear, box-shadow 0.3s ease; }
-        .nw-card:hover { --ty: -4px; box-shadow: inset 0 1px 0 rgba(130,255,31,0.25), 0 22px 44px -20px rgba(130,255,31,0.45), 0 10px 24px -12px rgba(0,0,0,0.9); }
+        .nw-card:hover { --ty: -4px; box-shadow: inset 0 1px 0 rgba(130,255,31,0.22), 0 18px 36px -22px rgba(130,255,31,0.3), 0 10px 22px -14px rgba(0,0,0,0.85); }
         .nw-glare {
           position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity 0.3s ease;
           background: radial-gradient(circle at var(--gx) var(--gy), rgba(255,255,255,0.16), transparent 55%);
@@ -127,7 +127,7 @@ export default function NowWatching() {
         @keyframes nw-pulse { 0% { box-shadow: 0 0 0 0 rgba(130,255,31,0.55); } 70% { box-shadow: 0 0 0 8px rgba(130,255,31,0); } 100% { box-shadow: 0 0 0 0 rgba(130,255,31,0); } }
         @keyframes nw-bar { 0%, 100% { height: 3px; } 50% { height: 10px; } }
         @media (prefers-reduced-motion: reduce) { .nw-dot, .nw-bars i { animation: none; } .nw-card, .nw-card:hover { transition: none; transform: none; } .nw-poster img, .nw-poster .nw-ph { transform: none; } .nw-glare { display: none; } }
-        @media (max-width: 640px) { .nw { padding: 24px 16px 0; } }
+        @media (max-width: 640px) { .nw { padding: 24px 16px 0; } .nw-row { padding: 14px 16px 44px; margin: -14px -16px -30px; scroll-padding-left: 16px; } }
       `}</style>
 
       <div className="nw-head">
