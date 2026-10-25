@@ -156,6 +156,12 @@ export interface WatchlistItem {
   added_at:    string
 }
 
+/** Where a title can be watched: streaming services first, otherwise just whether it can be rented or bought. */
+export interface WatchProvidersLite {
+  streaming: { name: string; logo: string | null }[]
+  rentBuy:   boolean
+}
+
 // ── Letterboxd CSV row ───────────────────────────────────────────────────────
 export interface LetterboxdRow {
   name:      string

@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { ArrowLeft, Plus, Film, Tv, X, Search, ChevronDown, Bookmark, Sparkles, LayoutGrid, CalendarDays, List, Radio, SlidersHorizontal } from 'lucide-react'
-import type { MovieLog, WatchlistItem, TMDBResult } from '@/lib/movies.types'
+import type { MovieLog, WatchlistItem, TMDBResult, WatchProvidersLite } from '@/lib/movies.types'
 import { VIBES } from '@/lib/movies.types'
 import LogCard from '@/components/movies/LogCard'
 import WatchlistCard from '@/components/movies/WatchlistCard'
@@ -304,6 +304,7 @@ export default function MoviesPage() {
   const [view,          setView]          = useState<'log' | 'later'>('log')
   const [watchlist,     setWatchlist]     = useState<WatchlistItem[]>([])
   const [watchlistLoad, setWatchlistLoad] = useState(false)
+  const [providers,     setProviders]     = useState<Record<string, WatchProvidersLite | null>>({})
   const [loggingItem,   setLoggingItem]   = useState<WatchlistItem | null>(null)
 
   // ── Filter state ──
@@ -473,6 +474,17 @@ export default function MoviesPage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, loadingMore])
+
+  // Where each saved title can be watched; fetched once the Watch Later list is showing
+  useEffect(() => {
+    if (view !== 'later' || watchlistLoad || watchlist.length === 0) return
+    let stale = false
+    fetch('/api/watchlist/providers')
+      .then(r => (r.ok ? r.json() : {}))
+      .then((data: Record<string, WatchProvidersLite | null>) => { if (!stale && data && typeof data === 'object') setProviders(data) })
+      .catch(() => {})
+    return () => { stale = true }
+  }, [view, watchlistLoad, watchlist.length])
 
   const fetchWatchlist = useCallback(async () => {
     setWatchlistLoad(true)
@@ -851,6 +863,7 @@ export default function MoviesPage() {
                     isAdmin={isAdmin}
                     onRemoved={handleWatchlistRemoved}
                     onLog={setLoggingItem}
+                    providers={item.tmdb_id ? providers[`${item.type === 'series' ? 'tv' : 'movie'}:${item.tmdb_id}`] : undefined}
                   />
                 ))}
               </div>

@@ -2,21 +2,45 @@
 import { useState } from 'react'
 import { Trash2, PlayCircle, Eye } from 'lucide-react'
 import { toast } from 'sonner'
-import type { WatchlistItem, TMDBResult } from '@/lib/movies.types'
+import type { WatchlistItem, TMDBResult, WatchProvidersLite } from '@/lib/movies.types'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import TMDBPreviewModal from '@/components/movies/TMDBPreviewModal'
 import { tiltProps, gyroRef } from '@/lib/tilt'
+
+/** Up to three streaming logos (names in the tooltip), or a small "Rent · Buy" when it is only available to hire. */
+function WhereToWatch({ info }: { info?: WatchProvidersLite | null }) {
+  if (!info) return null
+  if (info.streaming.length > 0) {
+    const shown = info.streaming.slice(0, 3)
+    const more  = info.streaming.length - shown.length
+    const names = info.streaming.map(s => s.name).join(', ')
+    return (
+      <span title={`Streaming on ${names}`} aria-label={`Streaming on ${names}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+        {shown.map(s => (
+          s.logo
+            // eslint-disable-next-line @next/next/no-img-element
+            ? <img key={s.name} src={s.logo} alt="" onError={e => { e.currentTarget.style.display = 'none' }} style={{ width: '20px', height: '20px', borderRadius: '6px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 2px 6px -2px rgba(0,0,0,0.7)' }} />
+            : <span key={s.name} style={{ fontSize: '9px' }}>{s.name}</span>
+        ))}
+        {more > 0 && <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.7)' }}>+{more}</span>}
+      </span>
+    )
+  }
+  return info.rentBuy ? <span style={{ color: 'rgba(255,255,255,0.6)', whiteSpace: 'nowrap' }}>Rent · Buy</span> : null
+}
 
 export default function WatchlistCard({
   item,
   isAdmin,
   onRemoved,
   onLog,
+  providers,
 }: {
   item:      WatchlistItem
   isAdmin?:  boolean
   onRemoved: (id: string) => void
   onLog:     (item: WatchlistItem) => void
+  providers?: WatchProvidersLite | null   // undefined while loading or unknown
 }) {
   const [hovered,     setHovered]     = useState(false)
   const [deleting,    setDeleting]    = useState(false)
@@ -107,7 +131,7 @@ export default function WatchlistCard({
 
         <div className="gc-row">
           {item.tmdb_rating ? <span style={{ color: '#fbbf24' }}>★ {item.tmdb_rating}</span> : <span />}
-          <span style={{ color: '#b8a0ff', letterSpacing: '0.12em' }}>later</span>
+          <WhereToWatch info={providers} />
         </div>
       </div>
     </div>
