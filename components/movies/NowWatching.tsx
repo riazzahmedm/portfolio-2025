@@ -1,11 +1,15 @@
 'use client'
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { PLATFORMS } from '@/lib/movies.types'
+import type { TMDBResult } from '@/lib/movies.types'
+import TMDBPreviewModal from '@/components/movies/TMDBPreviewModal'
 import { tiltProps, gyroRef } from '@/lib/tilt'
 
 interface Series {
   id:              string
+  tmdb_id:         number | null
+  created_at:      string | null
   title:           string
   poster_url:      string | null
   current_season:  number
@@ -17,15 +21,36 @@ interface Series {
 
 interface MovieInProgress {
   id:           string
+  tmdb_id:      number | null
+  created_at:   string | null
   title:        string
   poster_url:   string | null
+  backdrop_url: string | null
   year:         number | null
   platform:     string | null
 }
 
 type Item =
-  | { kind: 'series'; key: string; href: string; title: string; poster: string | null; series: Series }
-  | { kind: 'movie';  key: string; href: string; title: string; poster: string | null; movie: MovieInProgress }
+  | { kind: 'series'; key: string; href: string; title: string; poster: string | null; backdrop: string | null; tmdbId: number | null; addedAt: number; series: Series }
+  | { kind: 'movie';  key: string; href: string; title: string; poster: string | null; backdrop: string | null; tmdbId: number | null; addedAt: number; movie: MovieInProgress }
+
+const TMDB_PATH = /^https:\/\/image\.tmdb\.org\/t\/p\/\w+/
+const stamp = (iso: string | null) => (iso ? new Date(iso).getTime() : 0)
+
+/** Shapes an item for the shared TMDB preview modal. */
+function toPreview(it: Item): TMDBResult {
+  return {
+    id:            it.tmdbId!,
+    title:         it.kind === 'movie'  ? it.title : undefined,
+    name:          it.kind === 'series' ? it.title : undefined,
+    poster_path:   it.poster   ? it.poster.replace(TMDB_PATH, '')   : null,
+    backdrop_path: it.backdrop ? it.backdrop.replace(TMDB_PATH, '') : null,
+    release_date:   it.kind === 'movie' && it.movie.year ? `${it.movie.year}-01-01` : undefined,
+    genre_ids:     [],
+    overview:      '',
+    vote_average:  0,
+  }
+}
 
 const TICKS = 10
 
@@ -39,17 +64,20 @@ function seriesProgress(s: Series): number | null {
 const platformLabel = (key: string | null) => PLATFORMS.find(p => p.key === key)?.label ?? null
 
 export default function NowWatching() {
-  const [items, setItems] = useState<Item[]>([])
+  const router = useRouter()
+  const [items, setItems]       = useState<Item[]>([])
+  const [selected, setSelected] = useState<Item | null>(null)
 
   useEffect(() => {
     const get = (url: string) => fetch(url).then(r => (r.ok ? r.json() : [])).catch(() => [])
     Promise.all([get('/api/series-progress'), get('/api/movies?status=watching&type=movie')]).then(([series, movies]) => {
       const s: Item[] = (Array.isArray(series) ? (series as Series[]) : [])
         .filter(x => x.status === 'watching')
-        .map(x => ({ kind: 'series', key: `s-${x.id}`, href: '/movies/tracker', title: x.title, poster: x.poster_url, series: x }))
+        .map(x => ({ kind: 'series', key: `s-${x.id}`, href: '/movies/tracker', title: x.title, poster: x.poster_url, backdrop: null, tmdbId: x.tmdb_id, addedAt: stamp(x.created_at), series: x }))
       const m: Item[] = (Array.isArray(movies) ? (movies as MovieInProgress[]) : [])
-        .map(x => ({ kind: 'movie', key: `m-${x.id}`, href: `/movies/${x.id}`, title: x.title, poster: x.poster_url, movie: x }))
-      setItems([...s, ...m])
+        .map(x => ({ kind: 'movie', key: `m-${x.id}`, href: `/movies/${x.id}`, title: x.title, poster: x.poster_url, backdrop: x.backdrop_url, tmdbId: x.tmdb_id, addedAt: stamp(x.created_at), movie: x }))
+      // most recently added first, series and movies together
+      setItems([...s, ...m].sort((a, b) => b.addedAt - a.addedAt))
     })
   }, [])
 
@@ -73,6 +101,7 @@ export default function NowWatching() {
         .nw-card {
           --mx: 0; --my: 0; --ty: 0px; --gx: 50%; --gy: 0%;
           position: relative; flex: 0 0 auto; width: min(340px, 86vw); min-height: 132px; display: flex; overflow: hidden;
+          padding: 0; border: 0; margin: 0; font: inherit; text-align: left; cursor: pointer; appearance: none; -webkit-appearance: none;
           border-radius: 18px; text-decoration: none; color: inherit; scroll-snap-align: start;
           background: #0b0b0d; isolation: isolate; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 10px 24px -16px rgba(0,0,0,0.9);
           transform: perspective(900px) rotateX(calc(var(--my) * -16deg)) rotateY(calc(var(--mx) * 18deg)) translateY(var(--ty));
@@ -145,7 +174,16 @@ export default function NowWatching() {
           const platform = it.kind === 'movie' ? platformLabel(it.movie.platform) : null
 
           return (
-            <Link key={it.key} href={it.href} className="nw-card" data-kind={it.kind} ref={gyroRef} {...tiltProps}>
+            <button
+              key={it.key}
+              type="button"
+              className="nw-card"
+              data-kind={it.kind}
+              aria-haspopup="dialog"
+              onClick={() => (it.tmdbId ? setSelected(it) : router.push(it.href))}
+              ref={gyroRef}
+              {...tiltProps}
+            >
               {it.poster && <div className="nw-glow" style={{ backgroundImage: `url(${it.poster})` }} />}
               <div className="nw-shade" />
 
@@ -180,10 +218,20 @@ export default function NowWatching() {
                   </div>
                 )}
               </div>
-            </Link>
+            </button>
           )
         })}
       </div>
+
+      {selected && selected.tmdbId && (
+        <TMDBPreviewModal
+          result={toPreview(selected)}
+          mediaType={selected.kind === 'movie' ? 'movie' : 'tv'}
+          pickLabel={selected.kind === 'movie' ? 'Open entry' : 'Open tracker'}
+          onClose={() => setSelected(null)}
+          onPick={() => router.push(selected.href)}
+        />
+      )}
     </section>
   )
 }

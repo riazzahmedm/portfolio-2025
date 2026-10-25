@@ -94,12 +94,14 @@ export default function TMDBPreviewModal({
   onClose,
   onPick,
   onWatchLater,
+  pickLabel = 'Select this',
 }: {
   result:         TMDBResult
   mediaType:      'movie' | 'tv'
   onClose:        () => void
   onPick:         (r: TMDBResult) => void
   onWatchLater?:  (r: TMDBResult, genres: string[]) => void
+  pickLabel?:     string
 }) {
   const [details,  setDetails]  = useState<Details | null>(null)
   const [loading,  setLoading]  = useState(true)
@@ -112,7 +114,7 @@ export default function TMDBPreviewModal({
   useEffect(() => {
     setLoading(true)
     fetch(`/api/tmdb/details?id=${result.id}&type=${mediaType}`)
-      .then(r => r.json())
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error('details unavailable'))))
       .then(d => { setDetails(d); setLoading(false) })
       .catch(() => setLoading(false))
   }, [result.id, mediaType])
@@ -504,7 +506,7 @@ export default function TMDBPreviewModal({
               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(130,255,31,0.14)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'rgba(130,255,31,0.08)')}
             >
-              Select this
+              {pickLabel}
             </button>
             {onWatchLater && (
               <button

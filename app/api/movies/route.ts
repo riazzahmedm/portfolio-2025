@@ -3,6 +3,10 @@ import { enrich }   from '@/lib/tmdb'
 import { isAdmin }  from '@/lib/admin-auth'
 import { dbError } from '@/lib/api-error'
 
+// Entries still being watched live in the "Now watching" strip, not in the log, until they are marked watched.
+// (A plain neq would also drop rows whose status is null.)
+const NOT_IN_PROGRESS = 'status.is.null,status.neq.watching'
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
 
@@ -11,7 +15,7 @@ export async function GET(req: Request) {
   if (status === 'watched' || status === 'watching' || status === 'dropped') {
     let q = supabase
       .from('logs')
-      .select('id, title, poster_url, backdrop_url, year, platform, watched_on, type, status')
+      .select('id, tmdb_id, title, poster_url, backdrop_url, year, platform, watched_on, created_at, type, status')
       .eq('status', status)
       .order('watched_on', { ascending: false })
       .order('created_at', { ascending: false })
@@ -28,6 +32,7 @@ export async function GET(req: Request) {
     const { data, error } = await supabase
       .from('logs')
       .select('*')
+      .or(NOT_IN_PROGRESS)
       .order('watched_on', { ascending: false })
       .order('created_at', { ascending: false })
     if (error) return dbError(error)
@@ -41,13 +46,14 @@ export async function GET(req: Request) {
 
   const type  = searchParams.get('type')
   const baseQ = supabase.from('logs').select('*', { count: 'exact' })
+    .or(NOT_IN_PROGRESS)
     .order('watched_on', { ascending: false })
     .order('created_at', { ascending: false })
   const mainQ = (type === 'movie' || type === 'series') ? baseQ.eq('type', type) : baseQ
   const [main, movies, series] = await Promise.all([
     mainQ.range(from, to),
-    supabase.from('logs').select('*', { count: 'exact', head: true }).eq('type', 'movie'),
-    supabase.from('logs').select('*', { count: 'exact', head: true }).eq('type', 'series'),
+    supabase.from('logs').select('*', { count: 'exact', head: true }).or(NOT_IN_PROGRESS).eq('type', 'movie'),
+    supabase.from('logs').select('*', { count: 'exact', head: true }).or(NOT_IN_PROGRESS).eq('type', 'series'),
   ])
 
   if (main.error) return dbError(main.error)
