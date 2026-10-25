@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase'
 import { getCustomer } from '@/lib/customer-auth'
 import { applyBundleDeal, couponDiscount, couponIneligibilityReason } from '@/lib/shop-pricing'
 import type { CartItem, ShippingAddress } from '@/lib/shop.types'
+import { dbError } from '@/lib/api-error'
 
 const MAX_QTY_PER_LINE = 20
 
@@ -68,7 +69,7 @@ export async function GET() {
     .eq('customer_id', customer.id)
     .order('created_at', { ascending: false })
 
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json(data)
 }
 
@@ -212,7 +213,7 @@ export async function POST(req: Request) {
 
   if (orderError || !order) {
     await releaseAll()
-    return Response.json({ error: orderError?.message ?? 'Failed to create order' }, { status: 500 })
+    return orderError ? dbError(orderError) : Response.json({ error: 'Failed to create order' }, { status: 500 })
   }
 
   const { error: itemsError } = await supabase.from('shop_order_items').insert(
@@ -228,7 +229,7 @@ export async function POST(req: Request) {
   if (itemsError) {
     await supabase.from('shop_orders').delete().eq('id', order.id)
     await releaseAll()
-    return Response.json({ error: itemsError.message }, { status: 500 })
+    return dbError(itemsError)
   }
 
   return Response.json({ id: order.id }, { status: 201 })

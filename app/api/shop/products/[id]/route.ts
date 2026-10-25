@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/admin-auth'
+import { dbError } from '@/lib/api-error'
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -13,7 +14,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     `)
     .eq('id', id)
     .single()
-  if (error) return Response.json({ error: error.message }, { status: 404 })
+  if (error) return dbError(error, 404)
   return Response.json({
     ...data,
     tags: (data.tags ?? []).map((t: any) => t.tag).filter(Boolean),
@@ -36,7 +37,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     .eq('id', id)
     .select()
     .single()
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json(data)
 }
 
@@ -44,6 +45,6 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   if (!(await isAdmin())) return Response.json({ error: 'Unauthorized' }, { status: 401 })
   const { id } = await params
   const { error } = await supabase.from('shop_products').delete().eq('id', id)
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json({ ok: true })
 }

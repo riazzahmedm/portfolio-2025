@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/admin-auth'
+import { dbError } from '@/lib/api-error'
 
 export async function GET(
   _req: Request,
@@ -12,7 +13,7 @@ export async function GET(
     .eq('slug', slug)
     .order('rank', { referencedTable: 'movie_list_items', ascending: true })
     .single()
-  if (error) return Response.json({ error: error.message }, { status: 404 })
+  if (error) return dbError(error, 404)
   return Response.json(data)
 }
 
@@ -25,7 +26,7 @@ export async function PATCH(
   const body = await req.json()
   const { data, error } = await supabase
     .from('movie_lists').update(body).eq('slug', slug).select().single()
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json(data)
 }
 
@@ -36,6 +37,6 @@ export async function DELETE(
   if (!(await isAdmin())) return Response.json({ error: 'Unauthorized' }, { status: 401 })
   const { slug } = await params
   const { error } = await supabase.from('movie_lists').delete().eq('slug', slug)
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json({ ok: true })
 }

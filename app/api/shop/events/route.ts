@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { getCustomer } from '@/lib/customer-auth'
 import type { ShopEventType } from '@/lib/shop.types'
+import { dbError } from '@/lib/api-error'
 
 export async function POST(req: Request) {
   const body: { type: ShopEventType; session_id: string; metadata?: Record<string, unknown> } = await req.json()
@@ -18,6 +19,6 @@ export async function POST(req: Request) {
     metadata:   body.metadata ?? {},
   })
 
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json({ ok: true })
 }

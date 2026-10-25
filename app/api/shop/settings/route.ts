@@ -1,12 +1,13 @@
 import { supabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/admin-auth'
 import type { ShopSettings } from '@/lib/shop.types'
+import { dbError } from '@/lib/api-error'
 
 export async function GET() {
   const { data, error } = await supabase
     .from('shop_settings')
     .select('key, value')
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
 
   const settings = Object.fromEntries((data ?? []).map(r => [r.key, r.value])) as ShopSettings
   return Response.json(settings)
@@ -21,6 +22,6 @@ export async function PATCH(req: Request) {
     .from('shop_settings')
     .upsert(upserts, { onConflict: 'key' })
 
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json({ ok: true })
 }

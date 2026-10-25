@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/admin-auth'
+import { dbError } from '@/lib/api-error'
 
 export async function GET(
   _req: Request,
@@ -11,7 +12,7 @@ export async function GET(
     ? supabase.from('blog_posts').select('*').eq('slug', slug).single()
     : supabase.from('blog_posts').select('*').eq('slug', slug).eq('published', true).single()
   )
-  if (error) return Response.json({ error: error.message }, { status: 404 })
+  if (error) return dbError(error, 404)
   return Response.json(data)
 }
 
@@ -28,7 +29,7 @@ export async function PATCH(
 
   const { data, error } = await supabase
     .from('blog_posts').update(body).eq('slug', slug).select().single()
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json(data)
 }
 
@@ -39,6 +40,6 @@ export async function DELETE(
   if (!(await isAdmin())) return Response.json({ error: 'Unauthorized' }, { status: 401 })
   const { slug } = await params
   const { error } = await supabase.from('blog_posts').delete().eq('slug', slug)
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json({ ok: true })
 }

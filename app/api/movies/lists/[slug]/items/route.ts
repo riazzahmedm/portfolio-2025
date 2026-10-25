@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/admin-auth'
+import { dbError } from '@/lib/api-error'
 
 export async function POST(
   req: Request,
@@ -18,6 +19,6 @@ export async function POST(
     .from('movie_list_items')
     .insert({ ...body, list_id: list.id })
     .select().single()
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json(data, { status: 201 })
 }

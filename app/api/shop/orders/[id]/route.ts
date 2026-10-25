@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { getCustomer } from '@/lib/customer-auth'
+import { dbError } from '@/lib/api-error'
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const customer = await getCustomer()
@@ -37,6 +38,6 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     .select()
     .single()
 
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json(data)
 }

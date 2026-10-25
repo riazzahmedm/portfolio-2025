@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { dbError } from '@/lib/api-error'
 
 const cooldowns = new Map<string, number>()
 const COOLDOWN_MS = 60_000 // 1 minute per email
@@ -29,6 +30,6 @@ export async function POST(req: Request) {
     options: { shouldCreateUser: true },
   })
 
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json({ ok: true })
 }

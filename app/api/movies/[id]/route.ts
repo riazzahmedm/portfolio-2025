@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { enrich }   from '@/lib/tmdb'
 import { isAdmin }  from '@/lib/admin-auth'
+import { dbError } from '@/lib/api-error'
 
 export async function GET(
   _req: Request,
@@ -8,7 +9,7 @@ export async function GET(
 ) {
   const { id } = await params
   const { data, error } = await supabase.from('logs').select('*').eq('id', id).single()
-  if (error) return Response.json({ error: error.message }, { status: 404 })
+  if (error) return dbError(error, 404)
   return Response.json(data)
 }
 
@@ -30,7 +31,7 @@ export async function PATCH(
 
   const { data, error } = await supabase
     .from('logs').update(body).eq('id', id).select().single()
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json(data)
 }
 
@@ -41,6 +42,6 @@ export async function DELETE(
   if (!(await isAdmin())) return Response.json({ error: 'Unauthorized' }, { status: 401 })
   const { id } = await params
   const { error } = await supabase.from('logs').delete().eq('id', id)
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json({ ok: true })
 }

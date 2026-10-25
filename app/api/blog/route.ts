@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/admin-auth'
+import { dbError } from '@/lib/api-error'
 
 export async function GET() {
   const admin = await isAdmin()
@@ -7,7 +8,7 @@ export async function GET() {
   if (!admin) query = query.eq('published', true)
 
   const { data, error } = await query
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json(data)
 }
 
@@ -20,6 +21,6 @@ export async function POST(req: Request) {
   body.updated_at = now
 
   const { data, error } = await supabase.from('blog_posts').insert(body).select().single()
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json(data, { status: 201 })
 }

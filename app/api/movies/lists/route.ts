@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/admin-auth'
+import { dbError } from '@/lib/api-error'
 
 export async function GET() {
   const { data, error } = await supabase
@@ -7,7 +8,7 @@ export async function GET() {
     .select('*, movie_list_items(count)')
     .eq('is_public', true)
     .order('created_at', { ascending: false })
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json(data)
 }
 
@@ -19,6 +20,6 @@ export async function POST(req: Request) {
 
   const { data, error } = await supabase
     .from('movie_lists').insert({ title, slug, description, is_public }).select().single()
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json(data, { status: 201 })
 }

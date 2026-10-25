@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { enrich }   from '@/lib/tmdb'
 import { isAdmin }  from '@/lib/admin-auth'
+import { dbError } from '@/lib/api-error'
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
@@ -12,7 +13,7 @@ export async function GET(req: Request) {
       .select('*')
       .order('watched_on', { ascending: false })
       .order('created_at', { ascending: false })
-    if (error) return Response.json({ error: error.message }, { status: 500 })
+    if (error) return dbError(error)
     return Response.json(data ?? [])
   }
 
@@ -32,7 +33,7 @@ export async function GET(req: Request) {
     supabase.from('logs').select('*', { count: 'exact', head: true }).eq('type', 'series'),
   ])
 
-  if (main.error) return Response.json({ error: main.error.message }, { status: 500 })
+  if (main.error) return dbError(main.error)
   return Response.json({
     data:         main.data,
     total:        main.count   ?? 0,
@@ -64,7 +65,7 @@ export async function POST(req: Request) {
   }
 
   const { data, error } = await supabase.from('logs').insert(body).select().single()
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
 
   // Remove from Watch Later if it was queued there
   if (body.tmdb_id) {

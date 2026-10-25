@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { isAdmin } from '@/lib/admin-auth'
+import { dbError } from '@/lib/api-error'
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -36,7 +37,7 @@ export async function POST(req: Request) {
     .from('blog-images')
     .upload(filename, buffer, { contentType: file.type, upsert: false })
 
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
 
   const { data: { publicUrl } } = supabase.storage
     .from('blog-images')

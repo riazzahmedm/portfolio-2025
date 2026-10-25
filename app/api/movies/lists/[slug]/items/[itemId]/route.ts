@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/admin-auth'
+import { dbError } from '@/lib/api-error'
 
 export async function PATCH(
   req: Request,
@@ -10,7 +11,7 @@ export async function PATCH(
   const body = await req.json()
   const { data, error } = await supabase
     .from('movie_list_items').update(body).eq('id', itemId).select().single()
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json(data)
 }
 
@@ -21,6 +22,6 @@ export async function DELETE(
   if (!(await isAdmin())) return Response.json({ error: 'Unauthorized' }, { status: 401 })
   const { itemId } = await params
   const { error } = await supabase.from('movie_list_items').delete().eq('id', itemId)
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json({ ok: true })
 }

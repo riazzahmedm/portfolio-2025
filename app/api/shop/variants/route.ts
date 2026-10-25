@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/admin-auth'
+import { dbError } from '@/lib/api-error'
 
 export async function POST(req: Request) {
   if (!(await isAdmin())) return Response.json({ error: 'Unauthorized' }, { status: 401 })
@@ -14,6 +15,6 @@ export async function POST(req: Request) {
     })
     .select()
     .single()
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json(data, { status: 201 })
 }

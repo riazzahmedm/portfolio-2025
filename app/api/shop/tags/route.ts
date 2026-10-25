@@ -1,12 +1,13 @@
 import { supabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/admin-auth'
+import { dbError } from '@/lib/api-error'
 
 export async function GET() {
   const { data, error } = await supabase
     .from('shop_tags')
     .select('*')
     .order('name', { ascending: true })
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json(data)
 }
 
@@ -18,6 +19,6 @@ export async function POST(req: Request) {
     .insert({ name: body.name, slug: body.slug })
     .select()
     .single()
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json(data, { status: 201 })
 }

@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/admin-auth'
+import { dbError } from '@/lib/api-error'
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
@@ -21,7 +22,7 @@ export async function GET(req: Request) {
   if (category) query = query.eq('category_id', category)
 
   const { data, error } = await query
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
 
   // Flatten tags: [{ tag: {...} }] → [{...}]
   const products = (data ?? []).map((p: any) => ({
@@ -51,6 +52,6 @@ export async function POST(req: Request) {
     })
     .select()
     .single()
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if (error) return dbError(error)
   return Response.json(data, { status: 201 })
 }
