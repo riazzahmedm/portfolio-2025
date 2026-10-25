@@ -57,10 +57,10 @@ export default function AmbientHeader({ logs }: { logs: MovieLog[] }) {
 
         .ah-title { max-width: 1280px; margin: 0 auto; padding: 30px 24px 4px; }
         .ah-title h1 { margin: 0; font-family: var(--ff-display); font-weight: 500; font-size: clamp(2.8rem, 7vw, 5.6rem); line-height: 1;
-          letter-spacing: 0.1em; text-transform: uppercase; color: #f4f1ff; }
-        .ah-title p { margin: 10px 0 0; font-family: var(--ff-body); font-size: 15px; color: rgba(255,255,255,0.68); }
+          letter-spacing: 0.06em; text-transform: uppercase; color: #f4f1ff; }
+        .ah-title p { margin: 12px 0 0; font-family: var(--ff-serif); font-style: italic; font-weight: 400; font-size: clamp(1.05rem, 1.6vw, 1.3rem); line-height: 1.4; color: rgba(255,255,255,0.86); }
 
-        @media (max-width: 640px) { .ah-title { padding: 22px 16px 2px; } .ah-title h1 { letter-spacing: 0.08em; } }
+        @media (max-width: 640px) { .ah-title { padding: 22px 16px 2px; } .ah-title h1 { letter-spacing: 0.05em; } }
         @media (prefers-reduced-motion: reduce) { .ah-slide { transition: none; } }
       `}</style>
 
