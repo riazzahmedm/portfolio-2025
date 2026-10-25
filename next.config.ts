@@ -14,6 +14,8 @@ const nextConfig: NextConfig = {
     return [
       { source: '/blogs',         destination: '/blog',   permanent: false },
       { source: '/blogs/:slug',   destination: '/blog/:slug', permanent: false },
+      // Temporary: the Art page lives on the old portfolio site until a proper one is designed here
+      { source: '/art',           destination: 'https://riazahmedm.github.io/portfolio/art/index.html', permanent: false },
       { source: '/portfolio',     destination: '/',       permanent: false },
       { source: '/watched',       destination: '/movies', permanent: false },
       { source: '/watchlog',      destination: '/movies', permanent: false },

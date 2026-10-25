@@ -4,11 +4,16 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Riaz Ahmed',
-  description: 'Portfolio, Shop, Movies and Blog by Riaz Ahmed.',
+  description: 'Portfolio, Art, Shop, Movies and Blog by Riaz Ahmed.',
   alternates: { canonical: '/hub' },
 }
 
-const CARDS = [
+const CARDS: {
+  href: string; label: string; sub: string; accent: string; accentDim: string; accentGlow: string
+  tag: string; kicker: string
+  /** /art currently redirects to another site, so it needs a normal link rather than client-side navigation */
+  offSite?: boolean
+}[] = [
   {
     href: '/',
     label: 'Portfolio',
@@ -20,13 +25,24 @@ const CARDS = [
     kicker: 'Featured',
   },
   {
+    href: '/art',
+    label: 'Art',
+    sub: 'Digital art & illustration',
+    accent: '#f59e0b',
+    accentDim: 'rgba(245,158,11,0.12)',
+    accentGlow: 'rgba(245,158,11,0.2)',
+    tag: '02',
+    kicker: 'Gallery',
+    offSite: true,
+  },
+  {
     href: '/shop',
     label: 'Shop',
     sub: 'Original digital art prints',
     accent: '#ffffff',
     accentDim: 'rgba(255,255,255,0.06)',
     accentGlow: 'rgba(255,255,255,0.08)',
-    tag: '02',
+    tag: '03',
     kicker: 'Store',
   },
   {
@@ -36,7 +52,7 @@ const CARDS = [
     accent: '#b8a0ff',
     accentDim: 'rgba(184,160,255,0.12)',
     accentGlow: 'rgba(184,160,255,0.18)',
-    tag: '03',
+    tag: '04',
     kicker: 'Watchlist',
   },
   {
@@ -46,7 +62,7 @@ const CARDS = [
     accent: '#82ff1f',
     accentDim: 'rgba(130,255,31,0.1)',
     accentGlow: 'rgba(130,255,31,0.16)',
-    tag: '04',
+    tag: '05',
     kicker: 'Journal',
   },
 ]
@@ -223,37 +239,42 @@ export default function HubPage() {
         <h1 className="hub-title">What are you here for?</h1>
 
         <div className="hub-stack">
-          {CARDS.map(({ href, label, sub, accent, accentDim, accentGlow, tag, kicker }) => (
-            <Link
-              key={href}
-              href={href}
-              className="hub-mag"
-              style={{
+          {CARDS.map(({ href, label, sub, accent, accentDim, accentGlow, tag, kicker, offSite }) => {
+            const cardProps = {
+              href,
+              className: 'hub-mag',
+              style: {
                 '--mag-accent':        accent,
                 '--mag-accent-dim':    accentDim,
                 '--mag-accent-border': accent === '#ffffff' ? 'rgba(255,255,255,0.2)' : `${accent}66`,
                 '--mag-shadow':        accentGlow,
                 '--mag-bg-glow':       `radial-gradient(ellipse at 0% 100%, ${accentGlow} 0%, transparent 60%)`,
-              } as React.CSSProperties}
-            >
-              <span className="hub-mag-wm">{tag}</span>
+              } as React.CSSProperties,
+            }
+            const body = (
+              <>
+                <span className="hub-mag-wm">{tag}</span>
 
-              <div className="hub-mag-top">
-                <p className="hub-mag-kicker">{kicker}</p>
-                <p className="hub-mag-label">{label}</p>
-              </div>
-
-              <div>
-                <div className="hub-mag-rule" />
-                <div className="hub-mag-footer">
-                  <span className="hub-mag-sub">{sub}</span>
-                  <span className="hub-mag-arrow">
-                    <ArrowUpRight size={14} />
-                  </span>
+                <div className="hub-mag-top">
+                  <p className="hub-mag-kicker">{kicker}</p>
+                  <p className="hub-mag-label">{label}</p>
                 </div>
-              </div>
-            </Link>
-          ))}
+
+                <div>
+                  <div className="hub-mag-rule" />
+                  <div className="hub-mag-footer">
+                    <span className="hub-mag-sub">{sub}</span>
+                    <span className="hub-mag-arrow">
+                      <ArrowUpRight size={14} />
+                    </span>
+                  </div>
+                </div>
+              </>
+            )
+            return offSite
+              ? <a key={href} {...cardProps}>{body}</a>
+              : <Link key={href} {...cardProps}>{body}</Link>
+          })}
         </div>
       </div>
     </>
