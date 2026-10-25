@@ -6,6 +6,23 @@ import { dbError } from '@/lib/api-error'
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
 
+  // ?status=watching[&type=movie] — a short, newest-first list for the "now watching" strip
+  const status = searchParams.get('status')
+  if (status === 'watched' || status === 'watching' || status === 'dropped') {
+    let q = supabase
+      .from('logs')
+      .select('id, title, poster_url, backdrop_url, year, platform, watched_on, type, status')
+      .eq('status', status)
+      .order('watched_on', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(24)
+    const t = searchParams.get('type')
+    if (t === 'movie' || t === 'series' || t === 'episode') q = q.eq('type', t)
+    const { data, error } = await q
+    if (error) return dbError(error)
+    return Response.json(data ?? [])
+  }
+
   // ?all=true — returns every record (used by /wrapped stats page)
   if (searchParams.get('all') === 'true') {
     const { data, error } = await supabase

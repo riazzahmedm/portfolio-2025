@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Tv } from 'lucide-react'
+import { PLATFORMS } from '@/lib/movies.types'
 
 interface Series {
   id:              string
@@ -12,52 +12,150 @@ interface Series {
   status:          string
   total_seasons:   number | null
   total_episodes:  number | null
-  last_updated:    string
 }
 
+interface MovieInProgress {
+  id:           string
+  title:        string
+  poster_url:   string | null
+  year:         number | null
+  platform:     string | null
+}
+
+type Item =
+  | { kind: 'series'; key: string; href: string; title: string; poster: string | null; series: Series }
+  | { kind: 'movie';  key: string; href: string; title: string; poster: string | null; movie: MovieInProgress }
+
+const TICKS = 10
+
+function seriesProgress(s: Series): number | null {
+  // current_episode counts within the season, total_episodes spans the show: estimate with an average season length
+  if (!s.total_episodes || !s.total_seasons) return null
+  const perSeason = s.total_episodes / s.total_seasons
+  return Math.min(1, ((s.current_season - 1) * perSeason + s.current_episode) / s.total_episodes)
+}
+
+const platformLabel = (key: string | null) => PLATFORMS.find(p => p.key === key)?.label ?? null
+
 export default function NowWatching() {
-  const [items, setItems] = useState<Series[]>([])
+  const [items, setItems] = useState<Item[]>([])
 
   useEffect(() => {
-    fetch('/api/series-progress')
-      .then(r => r.ok ? r.json() : [])
-      .then((d: Series[]) => setItems(Array.isArray(d) ? d.filter(s => s.status === 'watching') : []))
-      .catch(() => {})
+    const get = (url: string) => fetch(url).then(r => (r.ok ? r.json() : [])).catch(() => [])
+    Promise.all([get('/api/series-progress'), get('/api/movies?status=watching&type=movie')]).then(([series, movies]) => {
+      const s: Item[] = (Array.isArray(series) ? (series as Series[]) : [])
+        .filter(x => x.status === 'watching')
+        .map(x => ({ kind: 'series', key: `s-${x.id}`, href: '/movies/tracker', title: x.title, poster: x.poster_url, series: x }))
+      const m: Item[] = (Array.isArray(movies) ? (movies as MovieInProgress[]) : [])
+        .map(x => ({ kind: 'movie', key: `m-${x.id}`, href: `/movies/${x.id}`, title: x.title, poster: x.poster_url, movie: x }))
+      setItems([...s, ...m])
+    })
   }, [])
 
   if (items.length === 0) return null
 
   return (
-    <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '28px 24px 0' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-        <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#82ff1f', boxShadow: '0 0 8px #82ff1f' }} />
-        <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '10px', letterSpacing: '0.28em', textTransform: 'uppercase', color: '#82ff1f' }}>Now watching</span>
-        <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, rgba(130,255,31,0.3), transparent)' }} />
+    <section className="nw" aria-label="Now watching">
+      <style>{`
+        .nw { max-width: 1280px; margin: 0 auto; padding: 30px 24px 0; }
+        .nw-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .nw-chip {
+          display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 10px; border-radius: 100px;
+          font: 10px var(--ff-mono); letter-spacing: 0.26em; text-transform: uppercase; color: #82ff1f;
+          border: 1px solid rgba(130,255,31,0.35); background: rgba(130,255,31,0.07);
+        }
+        .nw-dot { width: 7px; height: 7px; border-radius: 50%; background: #82ff1f; box-shadow: 0 0 0 0 rgba(130,255,31,0.6); animation: nw-pulse 1.8s ease-out infinite; }
+        .nw-count { font: 10px var(--ff-mono); letter-spacing: 0.2em; color: rgba(255,255,255,0.35); }
+        .nw-rule { flex: 1; height: 1px; background: linear-gradient(to right, rgba(130,255,31,0.3), transparent); }
+
+        .nw-row { display: flex; gap: 16px; overflow-x: auto; padding: 4px 2px 14px; scroll-snap-type: x proximity; scrollbar-width: none; }
+        .nw-row::-webkit-scrollbar { display: none; }
+
+        .nw-card {
+          position: relative; flex: 0 0 auto; width: min(340px, 86vw); min-height: 132px; display: flex; overflow: hidden;
+          border-radius: 18px; text-decoration: none; color: inherit; scroll-snap-align: start;
+          border: 1px solid rgba(255,255,255,0.09); background: #0b0b0d; isolation: isolate;
+          transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+        }
+        .nw-card:hover { transform: translateY(-3px); border-color: rgba(130,255,31,0.45); box-shadow: 0 14px 40px -18px rgba(130,255,31,0.35); }
+        .nw-card:focus-visible { outline: 2px solid #82ff1f; outline-offset: 3px; }
+
+        .nw-glow { position: absolute; inset: -30%; z-index: -1; background-size: cover; background-position: center; filter: blur(46px) saturate(1.6); opacity: 0.38; }
+        .nw-shade { position: absolute; inset: 0; z-index: -1; background: linear-gradient(100deg, rgba(8,8,10,0.55), rgba(8,8,10,0.9) 62%); }
+
+        .nw-poster { flex: 0 0 92px; position: relative; padding: 12px 0 12px 12px; display: flex; align-items: center; }
+        .nw-poster img, .nw-poster .nw-ph { width: 80px; height: 120px; border-radius: 9px; object-fit: cover; box-shadow: 0 10px 24px -8px rgba(0,0,0,0.8); }
+        .nw-ph { background: rgba(255,255,255,0.06); }
+
+        .nw-stub { position: relative; flex: 1; min-width: 0; padding: 14px 16px 14px 18px; display: flex; flex-direction: column; justify-content: center; gap: 7px; }
+        .nw-stub::before { content: ''; position: absolute; left: 0; top: 14px; bottom: 14px; border-left: 1.5px dashed rgba(255,255,255,0.16); }
+        .nw-stub::after, .nw-stub .nw-notch { content: ''; position: absolute; left: -7px; width: 14px; height: 14px; border-radius: 50%; background: var(--bg, #050505); border: 1px solid rgba(255,255,255,0.09); }
+        .nw-stub::after { top: -8px; }
+        .nw-stub .nw-notch { bottom: -8px; }
+
+        .nw-type { display: flex; align-items: center; gap: 8px; font: 9px var(--ff-mono); letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+        .nw-type b { font-weight: 400; color: #b8a0ff; }
+        .nw-card[data-kind='series'] .nw-type b { color: #82ff1f; }
+        .nw-bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 10px; }
+        .nw-bars i { width: 2px; background: #82ff1f; border-radius: 1px; animation: nw-bar 1s ease-in-out infinite; }
+        .nw-bars i:nth-child(2) { animation-delay: 0.2s; } .nw-bars i:nth-child(3) { animation-delay: 0.4s; }
+
+        .nw-title { font: 600 15px/1.25 var(--ff-body); color: #fff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .nw-big { font: 400 26px/1 var(--ff-display); letter-spacing: 0.06em; color: #fff; }
+        .nw-big small { font: 10px var(--ff-mono); letter-spacing: 0.18em; color: rgba(255,255,255,0.4); margin-left: 8px; text-transform: uppercase; }
+        .nw-sub { font: 11px var(--ff-mono); letter-spacing: 0.06em; color: rgba(255,255,255,0.5); }
+
+        .nw-ticks { display: flex; gap: 3px; margin-top: 2px; }
+        .nw-ticks i { flex: 1; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.12); }
+        .nw-ticks i.on { background: #82ff1f; box-shadow: 0 0 8px rgba(130,255,31,0.45); }
+
+        @keyframes nw-pulse { 0% { box-shadow: 0 0 0 0 rgba(130,255,31,0.55); } 70% { box-shadow: 0 0 0 8px rgba(130,255,31,0); } 100% { box-shadow: 0 0 0 0 rgba(130,255,31,0); } }
+        @keyframes nw-bar { 0%, 100% { height: 3px; } 50% { height: 10px; } }
+        @media (prefers-reduced-motion: reduce) { .nw-dot, .nw-bars i { animation: none; } .nw-card { transition: none; } }
+        @media (max-width: 640px) { .nw { padding: 24px 16px 0; } }
+      `}</style>
+
+      <div className="nw-head">
+        <span className="nw-chip"><span className="nw-dot" />On air</span>
+        <span className="nw-count">Now watching · {String(items.length).padStart(2, '0')}</span>
+        <span className="nw-rule" />
       </div>
-      <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px' }}>
-        {items.map(s => {
-          // current_episode counts within the season, total_episodes spans the show: estimate watched with an average season length
-          const perSeason = s.total_episodes && s.total_seasons ? s.total_episodes / s.total_seasons : null
-          const pct = s.total_episodes && perSeason
-            ? Math.min(100, Math.round((((s.current_season - 1) * perSeason + s.current_episode) / s.total_episodes) * 100))
-            : null
+
+      <div className="nw-row">
+        {items.map(it => {
+          const pct   = it.kind === 'series' ? seriesProgress(it.series) : null
+          const filled = pct === null ? 0 : Math.max(1, Math.round(pct * TICKS))
+          const platform = it.kind === 'movie' ? platformLabel(it.movie.platform) : null
+
           return (
-            <Link key={s.id} href="/movies/tracker" style={{
-              display: 'flex', gap: '12px', alignItems: 'center', flexShrink: 0, minWidth: '240px',
-              padding: '10px 14px 10px 10px', borderRadius: '14px', textDecoration: 'none', color: 'inherit',
-              border: '1px solid rgba(130,255,31,0.18)', background: 'rgba(130,255,31,0.04)',
-            }}>
-              {s.poster_url
-                ? <img src={s.poster_url} alt="" style={{ width: '40px', height: '58px', objectFit: 'cover', borderRadius: '6px', flexShrink: 0 }} />
-                : <div style={{ width: '40px', height: '58px', borderRadius: '6px', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Tv size={16} /></div>}
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.title}</div>
-                <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: '3px' }}>
-                  S{s.current_season} · E{s.current_episode}
+            <Link key={it.key} href={it.href} className="nw-card" data-kind={it.kind}>
+              {it.poster && <div className="nw-glow" style={{ backgroundImage: `url(${it.poster})` }} />}
+              <div className="nw-shade" />
+
+              <div className="nw-poster">
+                {it.poster ? <img src={it.poster} alt="" /> : <div className="nw-ph" />}
+              </div>
+
+              <div className="nw-stub">
+                <span className="nw-notch" />
+                <div className="nw-type">
+                  <span className="nw-bars"><i /><i /><i /></span>
+                  <b>{it.kind === 'series' ? 'Series' : 'Movie'}</b>
                 </div>
-                {pct !== null && (
-                  <div style={{ height: '3px', borderRadius: '2px', background: 'rgba(255,255,255,0.1)', marginTop: '7px', overflow: 'hidden' }}>
-                    <div style={{ width: `${pct}%`, height: '100%', background: '#82ff1f' }} />
+                <div className="nw-title">{it.title}</div>
+
+                {it.kind === 'series' ? (
+                  <>
+                    <div className="nw-big">S{it.series.current_season}<small>·</small>E{it.series.current_episode}</div>
+                    {pct !== null && (
+                      <div className="nw-ticks" aria-label={`${Math.round(pct * 100)}% through`}>
+                        {Array.from({ length: TICKS }, (_, i) => <i key={i} className={i < filled ? 'on' : ''} />)}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="nw-sub">
+                    {[it.movie.year, platform].filter(Boolean).join(' · ') || 'In progress'}
                   </div>
                 )}
               </div>
@@ -65,6 +163,6 @@ export default function NowWatching() {
           )
         })}
       </div>
-    </div>
+    </section>
   )
 }
