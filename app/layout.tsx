@@ -46,6 +46,7 @@ export const metadata: Metadata = {
   authors:     [{ name: SITE_NAME, url: SITE_URL }],
   creator:     SITE_NAME,
   keywords:    ['Riaz Ahmed', 'senior software engineer', 'React', 'Next.js', 'React Native', 'Chennai'],
+  verification: { google: 'ZtSCsUokD1uugZl8YRbwnqPH9xrGmL6Uwvq4fv5_xgc' },
   robots: {
     index: true,
     follow: true,
