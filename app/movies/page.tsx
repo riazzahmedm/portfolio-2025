@@ -10,6 +10,7 @@ import WatchlistCard from '@/components/movies/WatchlistCard'
 import FilterTabs, { type LogFilter } from '@/components/movies/FilterTabs'
 import AdminForm from '@/components/movies/AdminForm'
 import NowWatching from '@/components/movies/NowWatching'
+import TiltToggle from '@/components/movies/TiltToggle'
 import { AnimatePresence } from 'framer-motion'
 import Loader from '@/components/ui/Loader'
 
@@ -757,6 +758,7 @@ export default function MoviesPage() {
         </p>
       </div>
 
+      <TiltToggle />
       <NowWatching />
 
       {/* ── Filters + Grid ── */}

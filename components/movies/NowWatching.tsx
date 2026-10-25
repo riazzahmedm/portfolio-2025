@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { PLATFORMS } from '@/lib/movies.types'
-import { tiltProps } from '@/lib/tilt'
+import { tiltProps, gyroRef } from '@/lib/tilt'
 
 interface Series {
   id:              string
@@ -91,7 +91,10 @@ export default function NowWatching() {
         @media (hover: none), (pointer: coarse) {
           .nw-card, .nw-card:hover { transform: none; }
           .nw-glare { display: none; }
+          html:not(.gyro-on) .nw-card:active { transform: scale(0.98); }
         }
+        html.gyro-on .nw-card { transform: perspective(900px) rotateX(calc(var(--my) * -22deg)) rotateY(calc(var(--mx) * 26deg)); }
+        html.gyro-on .nw-glare { display: block; opacity: 1; }
         .nw-card:focus-visible { outline: 2px solid #82ff1f; outline-offset: 3px; }
 
         .nw-glow { position: absolute; inset: -30%; z-index: -1; background-size: cover; background-position: center; filter: blur(46px) saturate(1.6); opacity: 0.38; }
@@ -141,7 +144,7 @@ export default function NowWatching() {
           const platform = it.kind === 'movie' ? platformLabel(it.movie.platform) : null
 
           return (
-            <Link key={it.key} href={it.href} className="nw-card" data-kind={it.kind} {...tiltProps}>
+            <Link key={it.key} href={it.href} className="nw-card" data-kind={it.kind} ref={gyroRef} {...tiltProps}>
               {it.poster && <div className="nw-glow" style={{ backgroundImage: `url(${it.poster})` }} />}
               <div className="nw-shade" />
 

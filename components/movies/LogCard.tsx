@@ -8,7 +8,7 @@ import { VIBES, PLATFORMS } from '@/lib/movies.types'
 import StoryCardModal from './StoryCardModal'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import TMDBPreviewModal from './TMDBPreviewModal'
-import { tiltProps } from '@/lib/tilt'
+import { tiltProps, gyroRef } from '@/lib/tilt'
 
 const TYPE_COLOR: Record<string, string> = {
   movie:   '#82ff1f',
@@ -115,6 +115,7 @@ export default function LogCard({
     <>
       <div
         className="tilt"
+        ref={gyroRef}
         {...tiltProps}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}

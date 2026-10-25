@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 import type { WatchlistItem, TMDBResult } from '@/lib/movies.types'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import TMDBPreviewModal from '@/components/movies/TMDBPreviewModal'
-import { tiltProps } from '@/lib/tilt'
+import { tiltProps, gyroRef } from '@/lib/tilt'
 
 export default function WatchlistCard({
   item,
@@ -54,6 +54,7 @@ export default function WatchlistCard({
     <>
     <div
       className="tilt"
+      ref={gyroRef}
       {...tiltProps}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}

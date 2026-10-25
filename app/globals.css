@@ -406,7 +406,14 @@ html.light #testimonials .dot-grid {
 @media (hover: none), (pointer: coarse) {
   .tilt, .tilt:hover { transform: none; box-shadow: none; }
   .tilt-glare { display: none; }
+  /* no hover on touch: give taps a press-down instead */
+  html:not(.gyro-on) .tilt:active { transform: scale(0.975); }
 }
+/* device tilt (see lib/tilt.ts) turns the effect back on for touch screens */
+html.gyro-on .tilt {
+  transform: perspective(900px) rotateX(calc(var(--my) * -16deg)) rotateY(calc(var(--mx) * 20deg));
+}
+html.gyro-on .tilt-glare { display: block; opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
   .tilt, .tilt:hover { transition: none; transform: none; }
   .tilt-glare { display: none; }
