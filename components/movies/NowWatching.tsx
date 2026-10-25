@@ -35,6 +35,26 @@ function seriesProgress(s: Series): number | null {
   return Math.min(1, ((s.current_season - 1) * perSeason + s.current_episode) / s.total_episodes)
 }
 
+function tilt(e: React.PointerEvent<HTMLAnchorElement>) {
+  if (e.pointerType !== 'mouse') return
+  const el = e.currentTarget
+  const r  = el.getBoundingClientRect()
+  const x  = (e.clientX - r.left) / r.width
+  const y  = (e.clientY - r.top) / r.height
+  el.classList.add('is-tilting')
+  el.style.setProperty('--mx', (x - 0.5).toFixed(3))
+  el.style.setProperty('--my', (y - 0.5).toFixed(3))
+  el.style.setProperty('--gx', `${(x * 100).toFixed(1)}%`)
+  el.style.setProperty('--gy', `${(y * 100).toFixed(1)}%`)
+}
+
+function untilt(e: React.PointerEvent<HTMLAnchorElement>) {
+  const el = e.currentTarget
+  el.classList.remove('is-tilting')
+  el.style.setProperty('--mx', '0')
+  el.style.setProperty('--my', '0')
+}
+
 const platformLabel = (key: string | null) => PLATFORMS.find(p => p.key === key)?.label ?? null
 
 export default function NowWatching() {
@@ -72,18 +92,33 @@ export default function NowWatching() {
         .nw-row::-webkit-scrollbar { display: none; }
 
         .nw-card {
+          --mx: 0; --my: 0; --ty: 0px; --gx: 50%; --gy: 0%;
           position: relative; flex: 0 0 auto; width: min(340px, 86vw); min-height: 132px; display: flex; overflow: hidden;
           border-radius: 18px; text-decoration: none; color: inherit; scroll-snap-align: start;
           border: 1px solid rgba(255,255,255,0.09); background: #0b0b0d; isolation: isolate;
-          transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+          transform: perspective(900px) rotateX(calc(var(--my) * -16deg)) rotateY(calc(var(--mx) * 18deg)) translateY(var(--ty));
+          transition: transform 0.5s cubic-bezier(.2,.8,.2,1), border-color 0.22s ease, box-shadow 0.3s ease;
+          will-change: transform;
         }
-        .nw-card:hover { transform: translateY(-3px); border-color: rgba(130,255,31,0.45); box-shadow: 0 14px 40px -18px rgba(130,255,31,0.35); }
+        .nw-card.is-tilting { transition: transform 0.08s linear, border-color 0.22s ease, box-shadow 0.3s ease; }
+        .nw-card:hover { --ty: -4px; border-color: rgba(130,255,31,0.45); box-shadow: 0 22px 44px -20px rgba(130,255,31,0.4), 0 10px 24px -12px rgba(0,0,0,0.9); }
+        .nw-glare {
+          position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity 0.3s ease;
+          background: radial-gradient(circle at var(--gx) var(--gy), rgba(255,255,255,0.16), transparent 55%);
+        }
+        .nw-card:hover .nw-glare { opacity: 1; }
+        .nw-poster img, .nw-poster .nw-ph { transition: transform 0.5s cubic-bezier(.2,.8,.2,1); transform: translate(calc(var(--mx) * 7px), calc(var(--my) * 7px)); }
+        .nw-card.is-tilting .nw-poster img, .nw-card.is-tilting .nw-poster .nw-ph { transition: transform 0.08s linear; }
+        @media (hover: none), (pointer: coarse) {
+          .nw-card, .nw-card:hover { transform: none; }
+          .nw-glare { display: none; }
+        }
         .nw-card:focus-visible { outline: 2px solid #82ff1f; outline-offset: 3px; }
 
         .nw-glow { position: absolute; inset: -30%; z-index: -1; background-size: cover; background-position: center; filter: blur(46px) saturate(1.6); opacity: 0.38; }
         .nw-shade { position: absolute; inset: 0; z-index: -1; background: linear-gradient(100deg, rgba(8,8,10,0.55), rgba(8,8,10,0.9) 62%); }
 
-        .nw-poster { flex: 0 0 92px; position: relative; padding: 12px 0 12px 12px; display: flex; align-items: center; }
+        .nw-poster { flex: 0 0 108px; position: relative; padding: 12px 16px 12px 12px; display: flex; align-items: center; }
         .nw-poster img, .nw-poster .nw-ph { width: 80px; height: 120px; border-radius: 9px; object-fit: cover; box-shadow: 0 10px 24px -8px rgba(0,0,0,0.8); }
         .nw-ph { background: rgba(255,255,255,0.06); }
 
@@ -112,7 +147,7 @@ export default function NowWatching() {
 
         @keyframes nw-pulse { 0% { box-shadow: 0 0 0 0 rgba(130,255,31,0.55); } 70% { box-shadow: 0 0 0 8px rgba(130,255,31,0); } 100% { box-shadow: 0 0 0 0 rgba(130,255,31,0); } }
         @keyframes nw-bar { 0%, 100% { height: 3px; } 50% { height: 10px; } }
-        @media (prefers-reduced-motion: reduce) { .nw-dot, .nw-bars i { animation: none; } .nw-card { transition: none; } }
+        @media (prefers-reduced-motion: reduce) { .nw-dot, .nw-bars i { animation: none; } .nw-card, .nw-card:hover { transition: none; transform: none; } .nw-poster img, .nw-poster .nw-ph { transform: none; } .nw-glare { display: none; } }
         @media (max-width: 640px) { .nw { padding: 24px 16px 0; } }
       `}</style>
 
@@ -129,13 +164,15 @@ export default function NowWatching() {
           const platform = it.kind === 'movie' ? platformLabel(it.movie.platform) : null
 
           return (
-            <Link key={it.key} href={it.href} className="nw-card" data-kind={it.kind}>
+            <Link key={it.key} href={it.href} className="nw-card" data-kind={it.kind} onPointerMove={tilt} onPointerLeave={untilt}>
               {it.poster && <div className="nw-glow" style={{ backgroundImage: `url(${it.poster})` }} />}
               <div className="nw-shade" />
 
               <div className="nw-poster">
                 {it.poster ? <img src={it.poster} alt="" /> : <div className="nw-ph" />}
               </div>
+
+              <div className="nw-glare" />
 
               <div className="nw-stub">
                 <span className="nw-notch" />
