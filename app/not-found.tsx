@@ -5,7 +5,6 @@ const QUICK_LINKS = [
   { href: '/blog',   label: 'blog' },
   { href: '/movies', label: 'watchlog' },
   { href: '/shop',   label: 'shop' },
-  { href: '/hub',    label: 'hub' },
 ]
 
 export default function NotFound() {
@@ -28,13 +27,13 @@ export default function NotFound() {
             WRONG TURN
           </h1>
           <p className="text-[11px] leading-relaxed mb-2 italic" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--ff-mono)' }}>
-            Looks like this page got pushed to a deleted branch.
+            No trail marked here. This page never made it to the summit.
           </p>
           <p className="text-[9px] tracking-[0.1em] mb-8" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--ff-mono)' }}>
-            {`// the good stuff is one click away`}
+            {`// every other route is one click away`}
           </p>
           <Link
-            href="/"
+            href="/hub"
             className="inline-block text-[10px] tracking-[0.2em] uppercase px-6 py-3 rounded-sm transition-all duration-200 hover:opacity-90"
             style={{ background: 'var(--red)', color: 'white', fontFamily: 'var(--ff-mono)' }}
           >
