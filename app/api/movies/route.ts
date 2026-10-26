@@ -114,7 +114,24 @@ export async function POST(req: Request) {
     }
   }
 
-  const { data, error } = await supabase.from('logs').insert(body).select().single()
+  // Logging a title that is currently "watching" finishes that entry instead of creating a second one
+  let inProgressId: string | null = null
+  if (body.tmdb_id && body.status !== 'watching') {
+    const { data: existing } = await supabase
+      .from('logs')
+      .select('id')
+      .eq('tmdb_id', body.tmdb_id)
+      .eq('type', body.type)
+      .eq('status', 'watching')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    inProgressId = existing?.id ?? null
+  }
+
+  const { data, error } = inProgressId
+    ? await supabase.from('logs').update({ ...body, status: body.status ?? 'watched' }).eq('id', inProgressId).select().single()
+    : await supabase.from('logs').insert(body).select().single()
   if (error) return dbError(error)
 
   // Remove from Watch Later if it was queued there
