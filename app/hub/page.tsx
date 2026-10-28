@@ -11,8 +11,6 @@ export const metadata: Metadata = {
 const CARDS: {
   href: string; label: string; sub: string; accent: string; accentDim: string; accentGlow: string
   tag: string; kicker: string
-  /** /art currently redirects to another site, so it needs a normal link rather than client-side navigation */
-  offSite?: boolean
 }[] = [
   {
     href: '/',
@@ -63,7 +61,6 @@ const CARDS: {
     accentGlow: 'rgba(245,158,11,0.2)',
     tag: '05',
     kicker: 'Gallery',
-    offSite: true,
   },
 ]
 
@@ -239,7 +236,7 @@ export default function HubPage() {
         <h1 className="hub-title">What are you here for?</h1>
 
         <div className="hub-stack">
-          {CARDS.map(({ href, label, sub, accent, accentDim, accentGlow, tag, kicker, offSite }) => {
+          {CARDS.map(({ href, label, sub, accent, accentDim, accentGlow, tag, kicker }) => {
             const cardProps = {
               href,
               className: 'hub-mag',
@@ -271,9 +268,7 @@ export default function HubPage() {
                 </div>
               </>
             )
-            return offSite
-              ? <a key={href} {...cardProps}>{body}</a>
-              : <Link key={href} {...cardProps}>{body}</Link>
+            return <Link key={href} {...cardProps}>{body}</Link>
           })}
         </div>
       </div>

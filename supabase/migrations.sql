@@ -47,3 +47,22 @@ create table if not exists series_progress (
 alter table movie_lists       disable row level security;
 alter table movie_list_items  disable row level security;
 alter table series_progress   disable row level security;
+
+
+-- ── Art gallery ───────────────────────────────────────────────────────────────
+-- RLS stays ON with no policies: only the server (service role) reads and writes this table.
+create table if not exists art_pieces (
+  id           uuid primary key default gen_random_uuid(),
+  title        text not null default 'Untitled',
+  caption      text,
+  image_url    text not null,
+  width        integer,
+  height       integer,
+  tags         text[] not null default '{}',
+  product_id   uuid references shop_products(id) on delete set null,
+  sort_order   integer not null default 0,
+  is_published boolean not null default true,
+  created_at   timestamptz not null default now()
+);
+create index if not exists art_pieces_order_idx on art_pieces (sort_order, created_at desc);
+alter table art_pieces enable row level security;
