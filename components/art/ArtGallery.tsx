@@ -3,6 +3,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, ChevronLeft, ChevronRight, ShoppingBag, X } from 'lucide-react'
 import type { PublicArtPiece } from '@/lib/art.types'
+import ArtHall from '@/components/art/ArtHall'
+
+// The first pieces in the gallery order walk the hall; everything is in the grid below
+const HALL_SIZE = 12
 
 const ACCENT = '#f59e0b'
 
@@ -18,13 +22,15 @@ export default function ArtGallery({ pieces }: { pieces: PublicArtPiece[] }) {
   }, [pieces])
 
   const visible = useMemo(() => (tag ? pieces.filter(p => p.tags.includes(tag)) : pieces), [pieces, tag])
-  const index   = openId ? visible.findIndex(p => p.id === openId) : -1
-  const current = index >= 0 ? visible[index] : null
+  // The hall can open a piece the active filter hides, so fall back to the full list for the viewer
+  const list    = openId && !visible.some(p => p.id === openId) ? pieces : visible
+  const index   = openId ? list.findIndex(p => p.id === openId) : -1
+  const current = index >= 0 ? list[index] : null
 
   const step = useCallback((dir: 1 | -1) => {
-    if (!visible.length || index < 0) return
-    setOpenId(visible[(index + dir + visible.length) % visible.length].id)
-  }, [visible, index])
+    if (!list.length || index < 0) return
+    setOpenId(list[(index + dir + list.length) % list.length].id)
+  }, [list, index])
 
   useEffect(() => {
     if (!current) return
@@ -43,10 +49,10 @@ export default function ArtGallery({ pieces }: { pieces: PublicArtPiece[] }) {
   useEffect(() => {
     if (index < 0) return
     for (const d of [1, -1]) {
-      const n = visible[(index + d + visible.length) % visible.length]
+      const n = list[(index + d + list.length) % list.length]
       if (n) new Image().src = n.image_url
     }
-  }, [index, visible])
+  }, [index, list])
 
   return (
     <main style={{ minHeight: '100dvh', background: 'var(--bg)', color: 'var(--text-primary)' }}>
@@ -93,9 +99,15 @@ export default function ArtGallery({ pieces }: { pieces: PublicArtPiece[] }) {
         <header style={{ marginBottom: '28px' }}>
           <h1 style={{ margin: 0, fontFamily: 'var(--ff-display)', fontSize: 'clamp(40px, 8vw, 72px)', lineHeight: 1, letterSpacing: '0.02em', textTransform: 'uppercase', color: ACCENT }}>Art</h1>
           <p style={{ margin: '10px 0 0', maxWidth: '46ch', fontSize: '14px', lineHeight: 1.6, color: 'var(--text-secondary)' }}>
-            Digital illustration, mostly portraits. Tap a piece to see it large; prints of some are in the shop.
+            Digital illustration, mostly portraits. Walk the hall, then tap any piece to see it large. Prints of some are in the shop.
           </p>
         </header>
+
+        {pieces.length > 0 && <ArtHall pieces={pieces.slice(0, HALL_SIZE)} onOpen={setOpenId} />}
+
+        {pieces.length > HALL_SIZE && (
+          <h2 style={{ margin: '0 0 16px', fontFamily: 'var(--ff-display)', fontSize: '22px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>All work</h2>
+        )}
 
         {tags.length > 0 && (
           <div role="group" aria-label="Filter by theme" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '24px' }}>
@@ -137,7 +149,7 @@ export default function ArtGallery({ pieces }: { pieces: PublicArtPiece[] }) {
           }}>
           <div className="art-lb-stage" onClick={e => { if (e.target === e.currentTarget) setOpenId(null) }}>
             <button type="button" className="art-lb-btn" style={{ top: 'max(12px, env(safe-area-inset-top))', right: '12px' }} onClick={() => setOpenId(null)} aria-label="Close"><X size={20} /></button>
-            {visible.length > 1 && <>
+            {list.length > 1 && <>
               <button type="button" className="art-lb-btn art-lb-prev" style={{ left: '16px' }} onClick={() => step(-1)} aria-label="Previous piece"><ChevronLeft size={22} /></button>
               <button type="button" className="art-lb-btn art-lb-next" style={{ right: '16px' }} onClick={() => step(1)} aria-label="Next piece"><ChevronRight size={22} /></button>
             </>}
