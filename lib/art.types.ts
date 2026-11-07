@@ -14,3 +14,6 @@ export interface ArtPiece {
 
 /** What the public gallery gets: the shop link is only present when that product is live. */
 export type PublicArtPiece = Omit<ArtPiece, 'is_published' | 'sort_order' | 'created_at' | 'product_id'> & { shop_id: string | null }
+
+/** Pieces imported without a name are called "Untitled"; that placeholder is never shown to visitors. */
+export const hasTitle = (title: string) => title.trim().toLowerCase() !== 'untitled'
