@@ -35,7 +35,7 @@ export const getPublishedPostList = cache(async (): Promise<BlogPostSummary[]> =
   if (error || !data) return []
 
   const posts = data as BlogPost[]
-  const accents = await Promise.all(posts.map(p => getCoverAccent(p.cover_image)))
+  const accents = await Promise.all(posts.map(p => getCoverAccent(p.cover_image).catch(() => null)))
   return posts.map(({ content, ...post }, i) => ({
     ...post,
     reading_minutes: readingTime({ content, excerpt: post.excerpt }),

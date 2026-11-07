@@ -1,5 +1,4 @@
 import 'server-only'
-import sharp from 'sharp'
 import type { PostAccent } from './blog.types'
 
 const cache = new Map<string, PostAccent | null>()
@@ -22,6 +21,9 @@ export async function getCoverAccent(url: string | null): Promise<PostAccent | n
 
   let result: PostAccent | null = null
   try {
+    // Loaded here rather than at the top of the file: sharp is a native module, and if it ever fails to load on the
+    // host, that must cost a post its colour, not take the whole page down.
+    const { default: sharp } = await import('sharp')
     const res = await fetch(url, { signal: AbortSignal.timeout(5000), next: { revalidate: 86400 } })
     if (res.ok) {
       const N = 32
@@ -44,7 +46,9 @@ export async function getCoverAccent(url: string | null): Promise<PostAccent | n
         result = { dark: hslToRgb(hue, 0.92, 0.6), light: hslToRgb(hue, 0.75, 0.28) }
       }
     }
-  } catch { /* leave it null: the post just keeps the default green */ }
+  } catch (err) {
+    console.error('[blog-accent] could not read a cover colour; using the default', err instanceof Error ? err.message : err)
+  }
 
   cache.set(url, result)
   return result

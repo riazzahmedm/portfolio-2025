@@ -55,7 +55,7 @@ export default async function BlogPostPage({ params }: Params) {
   if (!post) notFound()
   const [related, accent] = await Promise.all([
     post.published ? getRelatedPosts(post.slug, post.tags).catch(() => []) : Promise.resolve([]),
-    getCoverAccent(post.cover_image),
+    getCoverAccent(post.cover_image).catch(() => null),
   ])
 
   const mins  = readingTime(post)
