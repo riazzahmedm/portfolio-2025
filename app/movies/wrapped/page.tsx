@@ -2,8 +2,10 @@
 import { useEffect, useState, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Film, Tv, Clock, RefreshCw, Share2, Flame, CalendarDays, BarChart2, Download } from 'lucide-react'
+import { navIcon, NAV_ICON_SIZE } from '@/components/ui/nav-icon'
 import type { MovieLog, FavoritePerson } from '@/lib/movies.types'
 import { VIBES, PLATFORMS, DRAWS } from '@/lib/movies.types'
+import ScrollNav from '@/components/ui/ScrollNav'
 
 // ── Animation hooks ───────────────────────────────────────────────────────────
 
@@ -894,12 +896,12 @@ export default function WrappedPage() {
       <div style={{ minHeight: '100dvh', background: 'var(--bg)' }}>
         <style>{`.msk{background:rgba(255,255,255,0.07);border-radius:8px;animation:pulse 1.6s ease-in-out infinite}`}</style>
         {/* Sticky header */}
-        <header style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(5,5,5,0.92)', backdropFilter: 'blur(18px)', padding: '14px 24px' }}>
+        <ScrollNav style={{ padding: '14px 24px' }}>
           <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div className="msk" style={{ width: '70px', height: '12px' }} />
             <div className="msk" style={{ width: '100px', height: '28px', borderRadius: '100px' }} />
           </div>
-        </header>
+        </ScrollNav>
         <div style={{ maxWidth: '800px', margin: '0 auto', padding: '48px 24px 80px', display: 'flex', flexDirection: 'column', gap: '40px' }}>
           {/* Hero big number */}
           <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
@@ -956,12 +958,7 @@ export default function WrappedPage() {
       `}</style>
 
       {/* ── Header ── */}
-      <header style={{
-        position: 'sticky', top: 0, zIndex: 50,
-        borderBottom: '1px solid var(--border)',
-        background: 'rgba(5,5,5,0.92)', backdropFilter: 'blur(18px)',
-        padding: '14px 24px',
-      }}>
+      <ScrollNav style={{ padding: '14px 24px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
           <Link href="/movies" style={{
             display: 'flex', alignItems: 'center', gap: '6px',
@@ -972,16 +969,8 @@ export default function WrappedPage() {
           </Link>
 
           {stats && (
-            <button onClick={() => setShareOpen(true)} style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '6px 14px', borderRadius: '100px', cursor: 'pointer',
-              border: '1px solid rgba(184,160,255,0.35)',
-              background: 'rgba(184,160,255,0.08)',
-              color: '#b8a0ff',
-              fontSize: '11px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-            }}>
-              <Share2 size={11} /> Share
+            <button type="button" onClick={() => setShareOpen(true)} title="Share" aria-label="Share" style={{ ...navIcon, color: '#b8a0ff' }}>
+              <Share2 size={NAV_ICON_SIZE} />
             </button>
           )}
 
@@ -1033,7 +1022,7 @@ export default function WrappedPage() {
             )}
           </div>
         </div>
-      </header>
+      </ScrollNav>
 
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 24px 100px' }}>
 

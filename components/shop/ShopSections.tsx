@@ -34,9 +34,9 @@ export default function ShopSections() {
 
         .step-card { border-top: 1px solid var(--border); transition: background 0.2s; }
         .step-card:last-child { border-bottom: 1px solid var(--border); }
-        .step-card:hover { background: var(--surface-alt); }
+        @media (hover: hover) and (pointer: fine) and (min-width: 641px) { .step-card:hover { background: var(--surface-alt); } }
         .shop-follow-btn { transition: background 0.2s, border-color 0.2s, transform 0.2s; }
-        .shop-follow-btn:hover { background: rgba(255,255,255,0.12) !important; border-color: rgba(255,255,255,0.4) !important; transform: translateY(-2px); }
+        @media (hover: hover) and (pointer: fine) and (min-width: 641px) { .shop-follow-btn:hover { background: rgba(255,255,255,0.12) !important; border-color: rgba(255,255,255,0.4) !important; transform: translateY(-2px); } }
 
         .shop-marquee-track {
           display: flex; white-space: nowrap; width: max-content;

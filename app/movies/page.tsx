@@ -2,7 +2,8 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Film, Tv, X, Search, ChevronDown, Bookmark, Sparkles, LayoutGrid, CalendarDays, List, Radio, SlidersHorizontal } from 'lucide-react'
+import { Clapperboard, Film, Tv, X, Search, ChevronDown, Bookmark, Sparkles, LayoutGrid, CalendarDays, List, Radio, SlidersHorizontal } from 'lucide-react'
+import { navIcon, navBadge } from '@/components/ui/nav-icon'
 import type { MovieLog, WatchlistItem, TMDBResult, WatchProvidersLite } from '@/lib/movies.types'
 import { VIBES } from '@/lib/movies.types'
 import LogCard from '@/components/movies/LogCard'
@@ -11,6 +12,7 @@ import FilterTabs, { type LogFilter } from '@/components/movies/FilterTabs'
 import AdminForm from '@/components/movies/AdminForm'
 import NowWatching from '@/components/movies/NowWatching'
 import TiltToggle from '@/components/movies/TiltToggle'
+import ScrollNav from '@/components/ui/ScrollNav'
 import AmbientHeader from '@/components/movies/AmbientHeader'
 import OnThisDay from '@/components/movies/OnThisDay'
 import { AnimatePresence } from 'framer-motion'
@@ -651,80 +653,39 @@ export default function MoviesPage() {
           to   { transform: translateY(-7px); opacity: 1;    }
         }
       `}</style>
-      <header style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(5,5,5,0.88)', backdropFilter: 'blur(18px)' }}>
-        <div className="wl-header-inner" style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+      <ScrollNav>
+        <div className="wl-header-inner" style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
 
-          {/* Left — back */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
-            <Link href="/hub" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', textDecoration: 'none', fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em', flexShrink: 0 }}>
-              <ArrowLeft size={13} />
+          {/* Right — actions: plain icons, the same style as the shop's cart icon (22px, no pill, 20px apart) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexShrink: 0 }}>
+            <Link href="/movies/lists" title="Lists" aria-label="Lists" style={navIcon}>
+              <List size={22} />
             </Link>
-          </div>
-
-          {/* Right — actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-            <Link href="/movies/lists" title="Lists" style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '8px 12px', borderRadius: '100px', cursor: 'pointer',
-              border: '1px solid rgba(255,255,255,0.1)',
-              background: 'transparent',
-              color: 'rgba(255,255,255,0.4)',
-              fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em',
-              textDecoration: 'none', transition: 'all 0.18s',
-            }}>
-              <List size={12} />
+            <Link href="/movies/tracker" title="Series Tracker" aria-label="Series tracker" style={navIcon}>
+              <Radio size={22} />
             </Link>
-            <Link href="/movies/tracker" title="Series Tracker" style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '8px 12px', borderRadius: '100px', cursor: 'pointer',
-              border: '1px solid rgba(255,255,255,0.1)',
-              background: 'transparent',
-              color: 'rgba(255,255,255,0.4)',
-              fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em',
-              textDecoration: 'none', transition: 'all 0.18s',
-            }}>
-              <Radio size={12} />
-            </Link>
-            <Link href="/movies/wrapped" title="Wrapped" style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '8px 12px', borderRadius: '100px', cursor: 'pointer',
-              border: '1px solid rgba(130,255,31,0.2)',
-              background: 'rgba(130,255,31,0.06)',
-              color: 'rgba(130,255,31,0.7)',
-              fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em',
-              textDecoration: 'none', transition: 'all 0.18s',
-            }}>
-              <Sparkles size={12} />
+            <Link href="/movies/wrapped" title="Wrapped" aria-label="Wrapped" style={{ ...navIcon, color: '#82ff1f' }}>
+              <Sparkles size={22} />
             </Link>
             <button
+              type="button"
               title={view === 'later' ? 'Back to log' : 'Watch Later'}
+              aria-label={view === 'later' ? 'Back to log' : 'Watch Later'}
               onClick={() => { setView(v => v === 'later' ? 'log' : 'later'); clearFilters(); setFilter('all'); setLogDisplayMode('grid') }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '6px',
-                padding: '8px 12px', borderRadius: '100px', cursor: 'pointer',
-                border: `1px solid ${view === 'later' ? 'rgba(184,160,255,0.45)' : 'rgba(255,255,255,0.1)'}`,
-                background: view === 'later' ? 'rgba(184,160,255,0.12)' : 'transparent',
-                color: view === 'later' ? '#b8a0ff' : 'rgba(255,255,255,0.45)',
-                fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em',
-                transition: 'all 0.18s',
-              }}
+              style={{ ...navIcon, color: view === 'later' ? '#b8a0ff' : 'var(--text-primary)' }}
             >
-              <Bookmark size={13} />
-              {watchlist.length > 0 && (
-                <span style={{ fontSize: '10px', background: 'rgba(184,160,255,0.2)', borderRadius: '100px', padding: '1px 6px', lineHeight: 1.6 }}>
-                  {watchlist.length}
-                </span>
-              )}
+              <Bookmark size={22} fill={view === 'later' ? 'currentColor' : 'none'} />
+              {watchlist.length > 0 && <span style={navBadge}>{watchlist.length > 99 ? '99+' : watchlist.length}</span>}
             </button>
             {isAdmin && (
-              <Link href="/admin?tab=movies" title="Log a film" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '100px', border: '1px solid rgba(184,160,255,0.28)', background: 'rgba(184,160,255,0.08)', color: '#b8a0ff', textDecoration: 'none', fontSize: '12px', letterSpacing: '0.1em', fontFamily: 'var(--ff-mono)' }}>
-                <Plus size={13} />
+              <Link href="/admin?tab=movies" title="Log a film" aria-label="Log a film" style={{ ...navIcon, color: '#b8a0ff' }}>
+                <Clapperboard size={22} />
               </Link>
             )}
           </div>
 
         </div>
-      </header>
+      </ScrollNav>
 
       <AmbientHeader logs={logs} />
 

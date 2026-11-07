@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
-import { Oswald, Space_Grotesk, Space_Mono, Playfair_Display } from 'next/font/google'
+import { Oswald, Space_Grotesk, Space_Mono, Playfair_Display, Syne } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/lib/theme'
 import CustomCursor from '@/components/ui/CustomCursor'
 import PullToRefresh from '@/components/ui/PullToRefresh'
+import HubBadge from '@/components/ui/HubBadge'
+import HoverGuard from '@/components/ui/HoverGuard'
 import { Toaster } from 'sonner'
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site'
 
@@ -26,6 +28,14 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
   variable: '--ff-body',
+  display: 'swap',
+})
+
+// Wide, gallery-poster display face for the Art page title
+const syne = Syne({
+  subsets: ['latin'],
+  weight: ['700', '800'],
+  variable: '--ff-art',
   display: 'swap',
 })
 
@@ -69,12 +79,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${oswald.variable} ${spaceGrotesk.variable} ${spaceMono.variable} ${playfair.variable}`}>
+    <html lang="en" className={`${oswald.variable} ${spaceGrotesk.variable} ${spaceMono.variable} ${playfair.variable} ${syne.variable}`}>
       <body style={{ background: 'var(--bg)', color: 'var(--text-primary)', fontFamily: 'var(--ff-body)' }}>
         <ThemeProvider>
           <CustomCursor />
           <PullToRefresh />
+          <HoverGuard />
           {children}
+          <HubBadge />
           <Toaster
             position="bottom-right"
             toastOptions={{

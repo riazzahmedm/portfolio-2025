@@ -55,6 +55,9 @@ export default function AmbientHeader({ logs }: { logs: MovieLog[] }) {
         .ah-slide img { width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1.2);
           filter: blur(22px) saturate(1.3) brightness(0.95); opacity: 0.6; }
 
+        .ah-row { display: flex; align-items: center; gap: clamp(14px, 4vw, 32px); }
+        /* The same stamp as the Art page, tilted as if pressed onto the page */
+        .ah-logo { flex: none; display: block; width: auto; height: clamp(92px, 24vw, 150px); transform: rotate(-9deg); filter: drop-shadow(0 6px 22px rgba(0,0,0,0.4)); }
         .ah-title { max-width: 1280px; margin: 0 auto; padding: 30px 24px 4px; }
         .ah-title h1 { margin: 0; font-family: var(--ff-display); font-weight: 500; font-size: clamp(2.8rem, 7vw, 5.6rem); line-height: 1;
           letter-spacing: 0.06em; text-transform: uppercase; color: #f4f1ff; }
@@ -74,8 +77,14 @@ export default function AmbientHeader({ logs }: { logs: MovieLog[] }) {
       </div>
 
       <div className="ah-title">
-        <h1>Watchlog</h1>
-        <p>Films watched. Feelings logged.</p>
+        <div className="ah-row">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="ah-logo" src="/shop-logo.png" alt="Riaz" />
+          <div>
+            <h1>Watchlog</h1>
+            <p>Films watched. Feelings logged.</p>
+          </div>
+        </div>
       </div>
     </>
   )

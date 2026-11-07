@@ -109,7 +109,7 @@ export default function NowWatching() {
           will-change: transform;
         }
         .nw-card.is-tilting { transition: transform 0.08s linear, box-shadow 0.3s ease; }
-        .nw-card:hover { --ty: -4px; --perf: rgba(255,255,255,0.75); box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(255,255,255,0.05), 0 22px 40px -22px rgba(0,0,0,0.95), 0 8px 18px -10px rgba(0,0,0,0.8); }
+        @media (hover: hover) and (pointer: fine) and (min-width: 641px) { .nw-card:hover { --ty: -4px; --perf: rgba(255,255,255,0.75); box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(255,255,255,0.05), 0 22px 40px -22px rgba(0,0,0,0.95), 0 8px 18px -10px rgba(0,0,0,0.8); } }
         /* laminated ticket: a diagonal specular band slides with the pointer, with holographic foil inside it */
         .nw-glare {
           position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; border-radius: inherit;
@@ -130,7 +130,7 @@ export default function NowWatching() {
           -webkit-mask-image: linear-gradient(112deg, transparent calc(var(--gx) - 24%), #000 var(--gx), transparent calc(var(--gx) + 24%));
                   mask-image: linear-gradient(112deg, transparent calc(var(--gx) - 24%), #000 var(--gx), transparent calc(var(--gx) + 24%));
         }
-        .nw-card:hover .nw-glare { opacity: 1; }
+        @media (hover: hover) and (pointer: fine) and (min-width: 641px) { .nw-card:hover .nw-glare { opacity: 1; } }
         .nw-poster img, .nw-poster .nw-ph { transition: transform 0.5s cubic-bezier(.2,.8,.2,1); transform: translate(calc(var(--mx) * 7px), calc(var(--my) * 7px)); }
         .nw-card.is-tilting .nw-poster img, .nw-card.is-tilting .nw-poster .nw-ph { transition: transform 0.08s linear; }
         @media (hover: none), (pointer: coarse) {

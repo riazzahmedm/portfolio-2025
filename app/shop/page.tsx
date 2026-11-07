@@ -191,13 +191,19 @@ export default function ShopPage() {
           );
           animation: shineSwipe 0.65s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
+        .shop-hero { display: flex; align-items: center; gap: clamp(14px, 4vw, 32px); }
+        .shop-hero-logo { flex: none; display: block; width: auto; height: clamp(88px, 22vw, 140px); transform: rotate(-9deg); filter: drop-shadow(0 6px 22px rgba(0,0,0,0.4)); }
       `}</style>
       <main className="shop-main" style={{ maxWidth: '1100px', margin: '0 auto' }}>
-        <div style={{ marginBottom: '24px' }}>
+        <div className="shop-hero" style={{ marginBottom: '24px' }}>
+          {/* The same tilted stamp as the Art and Watchlog headings; it slides into the top bar once you scroll */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="shop-hero-logo" src="/shop-logo.png" alt="Riaz" />
+          <div>
           <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--lavender)', marginBottom: '10px' }}>
             ◈ Limited drops
           </div>
-          <h1 style={{ fontFamily: 'var(--ff-display)', fontSize: 'clamp(22px,6vw,56px)', letterSpacing: '-0.01em', textTransform: 'uppercase', margin: 0, lineHeight: 1, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
+          <h1 style={{ fontFamily: 'var(--ff-display)', fontSize: 'clamp(22px,6vw,56px)', letterSpacing: '-0.01em', textTransform: 'uppercase', margin: 0, lineHeight: 1.05, color: 'var(--text-primary)' }}>
             Pixels › Prints ›{' '}
             <span style={{ color: 'var(--lavender)' }}>
               Yours.
@@ -206,6 +212,7 @@ export default function ShopPage() {
           <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '14px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.06em' }}>
             Original art prints. Yours to keep.
           </p>
+          </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '20px' }}>

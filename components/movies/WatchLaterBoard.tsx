@@ -127,7 +127,7 @@ export default function WatchLaterBoard({
   return (
     <div>
       <style>{`
-        .wlb-chip:hover { border-color: rgba(184,160,255,0.35) !important; color: #fff !important; }
+        @media (hover: hover) and (pointer: fine) and (min-width: 641px) { .wlb-chip:hover { border-color: rgba(184,160,255,0.35) !important; color: #fff !important; } }
         .wlb-chip:focus-visible, .wlb-select:focus-visible { outline: 2px solid #b8a0ff; outline-offset: 2px; }
         .wlb-row { display: flex; gap: 8px; align-items: center; }
         .wlb-scroll { overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }

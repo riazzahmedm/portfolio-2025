@@ -2,7 +2,9 @@
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, CheckCircle, PauseCircle, XCircle, Tv, ChevronUp, ChevronDown, Plus, Search, X, Loader2 } from 'lucide-react'
+import { navIcon, NAV_ICON_SIZE } from '@/components/ui/nav-icon'
 import { toast } from 'sonner'
+import ScrollNav from '@/components/ui/ScrollNav'
 
 interface SeriesProgress {
   id:               string
@@ -277,7 +279,7 @@ export default function TrackerPage() {
         />
       )}
 
-      <header style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(5,5,5,0.92)', backdropFilter: 'blur(18px)', padding: '14px 24px' }}>
+      <ScrollNav style={{ padding: '14px 24px' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
           <Link href="/movies" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', textDecoration: 'none', fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em' }}>
             <ArrowLeft size={13} /> Watchlog
@@ -285,17 +287,12 @@ export default function TrackerPage() {
           <div style={{ flex: 1 }} />
           <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em' }}>SERIES TRACKER</div>
           {isAdmin && (
-            <button onClick={() => setShowAdd(true)} style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '7px 14px', borderRadius: '8px', cursor: 'pointer',
-              background: 'rgba(130,255,31,0.1)', border: '1px solid rgba(130,255,31,0.25)',
-              color: '#82ff1f', fontFamily: 'var(--ff-mono)', fontSize: '11px', letterSpacing: '0.1em',
-            }}>
-              <Plus size={12} /> Add Series
+            <button type="button" onClick={() => setShowAdd(true)} title="Add series" aria-label="Add series" style={{ ...navIcon, color: '#82ff1f' }}>
+              <Tv size={NAV_ICON_SIZE} />
             </button>
           )}
         </div>
-      </header>
+      </ScrollNav>
 
       <div style={{ maxWidth: '900px', margin: '0 auto', padding: '40px 24px 80px' }}>
 

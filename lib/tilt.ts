@@ -4,7 +4,8 @@ import type { PointerEvent } from 'react'
 /* ── Mouse: pointer position → CSS variables ─────────────────────────────── */
 
 export function tiltMove(e: PointerEvent<HTMLElement>) {
-  if (e.pointerType !== 'mouse') return
+  // Mouse tilt is for a real desktop window; touch uses the gyro, and a narrow window gets no pointer effects at all
+  if (e.pointerType !== 'mouse' || window.innerWidth <= 640) return
   const el = e.currentTarget
   const r  = el.getBoundingClientRect()
   const x  = (e.clientX - r.left) / r.width

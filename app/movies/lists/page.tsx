@@ -1,8 +1,10 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, List, Plus, X, Loader2 } from 'lucide-react'
+import { ArrowLeft, List, ListPlus, Plus, X, Loader2 } from 'lucide-react'
+import { navIcon, NAV_ICON_SIZE } from '@/components/ui/nav-icon'
 import { toast } from 'sonner'
+import ScrollNav from '@/components/ui/ScrollNav'
 
 interface MovieList {
   id:          string
@@ -173,7 +175,7 @@ export default function ListsPage() {
         />
       )}
 
-      <header style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(5,5,5,0.92)', backdropFilter: 'blur(18px)', padding: '14px 24px' }}>
+      <ScrollNav style={{ padding: '14px 24px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
           <Link href="/movies" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', textDecoration: 'none', fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em' }}>
             <ArrowLeft size={13} /> Watchlog
@@ -181,17 +183,12 @@ export default function ListsPage() {
           <div style={{ flex: 1 }} />
           <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em' }}>LISTS</div>
           {isAdmin && (
-            <button onClick={() => setShowNew(true)} style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '7px 14px', borderRadius: '8px', cursor: 'pointer',
-              background: 'rgba(184,160,255,0.1)', border: '1px solid rgba(184,160,255,0.25)',
-              color: '#b8a0ff', fontFamily: 'var(--ff-mono)', fontSize: '11px', letterSpacing: '0.1em',
-            }}>
-              <Plus size={12} /> New List
+            <button type="button" onClick={() => setShowNew(true)} title="New list" aria-label="New list" style={{ ...navIcon, color: '#b8a0ff' }}>
+              <ListPlus size={NAV_ICON_SIZE} />
             </button>
           )}
         </div>
-      </header>
+      </ScrollNav>
 
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: '48px 24px 80px' }}>
         <div style={{ marginBottom: '48px' }}>

@@ -61,7 +61,7 @@ export default function OnThisDay() {
         .otd-row::-webkit-scrollbar { display: none; }
         .otd-item { flex: none; width: 250px; display: flex; gap: 12px; align-items: center; padding: 8px 14px 8px 8px; border-radius: 16px; text-decoration: none; color: inherit; scroll-snap-align: start;
           background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); transition: background 0.2s, border-color 0.2s; }
-        .otd-item:hover { background: rgba(255,255,255,0.07); border-color: rgba(184,160,255,0.35); }
+        @media (hover: hover) and (pointer: fine) and (min-width: 641px) { .otd-item:hover { background: rgba(255,255,255,0.07); border-color: rgba(184,160,255,0.35); } }
         .otd-item:focus-visible { outline: 2px solid #b8a0ff; outline-offset: 2px; }
         .otd-item img, .otd-ph { width: 46px; height: 69px; border-radius: 8px; object-fit: cover; flex: none; background: rgba(255,255,255,0.06); }
         .otd-title { font: 600 13px/1.3 var(--ff-body); color: #fff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

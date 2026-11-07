@@ -9,6 +9,7 @@ import { SITE_NAME, SITE_URL } from '@/lib/site'
 import BlockRenderer from '@/components/blog/BlockRenderer'
 import RelatedPosts from '@/components/blog/RelatedPosts'
 import PostAdminActions from '@/components/blog/PostAdminActions'
+import ScrollNav from '@/components/ui/ScrollNav'
 
 type Params = { params: Promise<{ slug: string }> }
 
@@ -75,7 +76,7 @@ export default async function BlogPostPage({ params }: Params) {
       />
 
       {/* ── Sticky header ── */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(5,5,5,0.88)', backdropFilter: 'blur(18px)' }}>
+      <ScrollNav>
         <div style={{ maxWidth: '800px', margin: '0 auto', padding: '12px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
           <Link href="/blog" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', textDecoration: 'none', fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em', flexShrink: 0 }}>
             <ArrowLeft size={13} />
@@ -87,7 +88,7 @@ export default async function BlogPostPage({ params }: Params) {
           </div>
           {admin && <PostAdminActions slug={post.slug} title={post.title} />}
         </div>
-      </header>
+      </ScrollNav>
 
       {/* ── Cover image ── */}
       {post.cover_image && (

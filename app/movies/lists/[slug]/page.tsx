@@ -2,8 +2,10 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Search, X, Loader2, Trash2, Film, Tv } from 'lucide-react'
+import { ArrowLeft, ListPlus, Plus, Search, X, Loader2, Trash2, Film, Tv } from 'lucide-react'
+import { navIcon, NAV_ICON_SIZE } from '@/components/ui/nav-icon'
 import { toast } from 'sonner'
+import ScrollNav from '@/components/ui/ScrollNav'
 
 interface ListItem {
   id: string; title: string; poster_url: string | null; type: string | null
@@ -261,11 +263,11 @@ export default function ListDetailPage() {
     <div style={{ minHeight: '100dvh', background: 'var(--bg)' }}>
       <style>{`.msk{background:rgba(255,255,255,0.07);border-radius:8px;animation:pulse 1.6s ease-in-out infinite}`}</style>
       {/* Sticky header */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(5,5,5,0.92)', backdropFilter: 'blur(18px)', padding: '14px 24px' }}>
+      <ScrollNav style={{ padding: '14px 24px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <div className="msk" style={{ width: '60px', height: '12px' }} />
         </div>
-      </header>
+      </ScrollNav>
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: '48px 24px 80px' }}>
         {/* Title + description */}
         <div style={{ marginBottom: '48px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -309,24 +311,19 @@ export default function ListDetailPage() {
         />
       )}
 
-      <header style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(5,5,5,0.92)', backdropFilter: 'blur(18px)', padding: '14px 24px' }}>
+      <ScrollNav style={{ padding: '14px 24px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
           <Link href="/movies/lists" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', textDecoration: 'none', fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em' }}>
             <ArrowLeft size={13} /> Lists
           </Link>
           <div style={{ flex: 1 }} />
           {isAdmin && (
-            <button onClick={() => setShowAdd(true)} style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '7px 14px', borderRadius: '8px', cursor: 'pointer',
-              background: 'rgba(184,160,255,0.1)', border: '1px solid rgba(184,160,255,0.25)',
-              color: '#b8a0ff', fontFamily: 'var(--ff-mono)', fontSize: '11px', letterSpacing: '0.1em',
-            }}>
-              <Plus size={12} /> Add Item
+            <button type="button" onClick={() => setShowAdd(true)} title="Add item" aria-label="Add item" style={{ ...navIcon, color: '#b8a0ff' }}>
+              <ListPlus size={NAV_ICON_SIZE} />
             </button>
           )}
         </div>
-      </header>
+      </ScrollNav>
 
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: '48px 24px 80px' }}>
         <div style={{ marginBottom: '48px' }}>

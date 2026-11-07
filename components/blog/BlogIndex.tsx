@@ -1,7 +1,8 @@
 'use client'
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Search, X } from 'lucide-react'
+import ScrollNav from '@/components/ui/ScrollNav'
+import { Plus, Search, X } from 'lucide-react'
 import { AnimatePresence } from 'framer-motion'
 import type { BlogPostSummary } from '@/lib/blog.types'
 import PostCard from '@/components/blog/PostCard'
@@ -67,11 +68,9 @@ export default function BlogIndex({ posts }: { posts: BlogPostSummary[] }) {
       `}</style>
 
       {/* ── Header ── */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(5,5,5,0.88)', backdropFilter: 'blur(18px)' }}>
-        <div className="blog-header-inner" style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-          <Link href="/hub" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', textDecoration: 'none', fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em' }}>
-            <ArrowLeft size={13} />
-          </Link>
+      {isAdmin && (
+        <ScrollNav>
+        <div className="blog-header-inner" style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', minHeight: '34px' }}>
           {isAdmin && (
             <Link href="/blog/admin" style={{
               display: 'flex', alignItems: 'center', gap: '6px',
@@ -84,7 +83,8 @@ export default function BlogIndex({ posts }: { posts: BlogPostSummary[] }) {
             </Link>
           )}
         </div>
-      </header>
+      </ScrollNav>
+      )}
 
       {/* ── Hero ── */}
       <div className="blog-hero" style={{ maxWidth: '1280px', margin: '0 auto', padding: '48px 24px 0' }}>
