@@ -2,6 +2,7 @@ import { cache } from 'react'
 import { supabase } from './supabase'
 import { isAdmin } from './admin-auth'
 import { readingTime } from './reading-time'
+import { getCoverAccent } from './blog-accent'
 import type { BlogPost, BlogPostSummary } from './blog.types'
 
 /**
@@ -19,37 +20,42 @@ export const getPost = cache(async (slug: string): Promise<BlogPost | null> => {
   return data as BlogPost
 })
 
-/** Published posts for the blog index — bodies are dropped so they don't ship in the page payload. */
+/**
+ * Published posts for the blog index, newest story first. "Newest" is when a story was written (created_at), not when its
+ * publish button was last pressed: posts published in one sitting would otherwise sort by the order of the clicks.
+ * Bodies are dropped so they don't ship in the page payload.
+ */
 export const getPublishedPostList = cache(async (): Promise<BlogPostSummary[]> => {
   const { data, error } = await supabase
     .from('blog_posts')
     .select('*')
     .eq('published', true)
-    .order('published_at', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false })
 
   if (error || !data) return []
 
-  return (data as BlogPost[]).map(({ content, ...post }) => ({
+  const posts = data as BlogPost[]
+  const accents = await Promise.all(posts.map(p => getCoverAccent(p.cover_image)))
+  return posts.map(({ content, ...post }, i) => ({
     ...post,
     reading_minutes: readingTime({ content, excerpt: post.excerpt }),
+    accent: accents[i],
   }))
 })
 
-/** Up to `limit` other published posts sharing tags with this one, most overlap first, then newest. */
+/**
+ * Up to `limit` other published posts for the "keep reading" row: posts sharing tags with this one first
+ * (most overlap, then newest), then the newest remaining posts, so a small blog never shows an empty row.
+ */
 export async function getRelatedPosts(slug: string, tags: string[], limit = 3): Promise<BlogPostSummary[]> {
   const norm = (t: string) => t.trim().toLowerCase()
   const mine = new Set(tags.map(norm))
-  if (mine.size === 0) return []
+  const time = (p: BlogPostSummary) => new Date(p.created_at).getTime()
 
-  const all = await getPublishedPostList()
-  return all
-    .filter(p => p.slug !== slug)
+  const others = (await getPublishedPostList()).filter(p => p.slug !== slug)
+  return others
     .map(p => ({ p, score: p.tags.filter(t => mine.has(norm(t))).length }))
-    .filter(x => x.score > 0)
-    .sort((a, b) =>
-      b.score - a.score ||
-      new Date(b.p.published_at ?? b.p.created_at).getTime() - new Date(a.p.published_at ?? a.p.created_at).getTime()
-    )
+    .sort((a, b) => b.score - a.score || time(b.p) - time(a.p))
     .slice(0, limit)
     .map(x => x.p)
 }

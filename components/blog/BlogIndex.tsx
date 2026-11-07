@@ -2,10 +2,12 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import ScrollNav from '@/components/ui/ScrollNav'
-import { Plus, Search, X } from 'lucide-react'
+import { PenSquare, Search, X } from 'lucide-react'
 import { AnimatePresence } from 'framer-motion'
 import type { BlogPostSummary } from '@/lib/blog.types'
-import PostCard from '@/components/blog/PostCard'
+import StoryCard from '@/components/blog/StoryCard'
+import { ThemeToggle } from '@/components/blog/BlogTheme'
+import { navIcon, NAV_ICON_SIZE } from '@/components/ui/nav-icon'
 import Loader from '@/components/ui/Loader'
 
 // The active tag lives in the URL so tag links are shareable and survive a reload.
@@ -52,140 +54,80 @@ export default function BlogIndex({ posts }: { posts: BlogPostSummary[] }) {
     .filter(p => !search || p.title.toLowerCase().includes(search.toLowerCase()) || (p.excerpt ?? '').toLowerCase().includes(search.toLowerCase()))
     .filter(p => !tag    || p.tags.map(t => t.trim().toLowerCase()).includes(tag))
 
+  const [featured, ...rest] = filtered
+  const year = new Date(posts[0]?.created_at ?? Date.now()).getFullYear()
+
   return (
     <>
       <AnimatePresence mode="wait">
         {!loaded && <Loader key="loader" onComplete={() => setLoaded(true)} />}
       </AnimatePresence>
-      <div style={{ minHeight: '100dvh', background: 'var(--bg)', color: 'var(--text-primary)', fontFamily: 'var(--ff-body)' }}>
-      <style>{`
-        .blog-header-inner { padding: 14px 24px; }
-        @media (max-width: 640px) {
-          .blog-header-inner { padding: 12px 16px; }
-          .blog-hero  { padding: 20px 16px 0 !important; }
-          .blog-main  { padding: 14px 16px 60px !important; }
-        }
-      `}</style>
 
-      {/* ── Header ── */}
-      {isAdmin && (
-        <ScrollNav>
-        <div className="blog-header-inner" style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', minHeight: '34px' }}>
+      {/* ── Top bar: the theme switch, plus a new-post link for the admin ── */}
+      <ScrollNav>
+        <div className="fn-navin">
+          {/* On phones the issue line moves up here, to the top right beside the theme switch */}
+          <span className="fn-issue fn-issue--bar">Vol. 01 · {posts.length} {posts.length === 1 ? 'story' : 'stories'} · {year}</span>
           {isAdmin && (
-            <Link href="/blog/admin" style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '8px 14px', borderRadius: '100px',
-              border: '1px solid rgba(130,255,31,0.28)', background: 'rgba(130,255,31,0.08)',
-              color: '#82ff1f', textDecoration: 'none',
-              fontSize: '12px', letterSpacing: '0.1em', fontFamily: 'var(--ff-mono)',
-            }}>
-              <Plus size={13} />
+            <Link href="/blog/admin" style={{ ...navIcon, color: 'var(--fn-lime)' }} title="Write a story" aria-label="Write a story">
+              <PenSquare size={NAV_ICON_SIZE} />
             </Link>
           )}
+          <ThemeToggle />
         </div>
       </ScrollNav>
-      )}
 
-      {/* ── Hero ── */}
-      <div className="blog-hero" style={{ maxWidth: '1280px', margin: '0 auto', padding: '48px 24px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-          <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '10px', letterSpacing: '0.28em', textTransform: 'uppercase', color: '#82ff1f' }}>
-            Field Notes
-          </span>
-          <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, rgba(130,255,31,0.35), transparent)' }} />
-        </div>
-        <h1 style={{
-          margin: 0,
-          fontFamily: 'var(--ff-display)',
-          fontWeight: 400,
-          fontSize: 'clamp(3rem, 10vw, 6rem)',
-          letterSpacing: '0.06em',
-          textTransform: 'uppercase',
-          lineHeight: 0.95,
-          background: 'linear-gradient(135deg, #ffffff 0%, rgba(130,255,31,0.85) 60%, rgba(184,160,255,0.6) 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-        } as React.CSSProperties}>
-          Stories
-        </h1>
-        <p style={{
-          margin: '10px 0 0',
-          fontFamily: 'var(--ff-mono)', fontSize: '10px',
-          letterSpacing: '0.14em', textTransform: 'uppercase',
-          color: 'rgba(255,255,255,0.3)',
-          display: 'flex', alignItems: 'center', gap: '10px',
-        }}>
-          <span style={{ width: '20px', height: '1px', background: 'rgba(255,255,255,0.2)', display: 'inline-block', flexShrink: 0 }} />
-          Written in transit.
-        </p>
-      </div>
-
-      {/* ── Main ── */}
-      <main className="blog-main" style={{ maxWidth: '1280px', margin: '0 auto', padding: '28px 24px 60px' }}>
-
-        {/* Search */}
-        <div style={{ position: 'relative', marginBottom: '16px' }}>
-          <Search size={14} style={{ position: 'absolute', left: '13px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.28)', pointerEvents: 'none' }} />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search posts…"
-            style={{
-              width: '100%', padding: '10px 38px',
-              background: 'rgba(255,255,255,0.04)',
-              border: `1px solid ${search ? 'rgba(130,255,31,0.35)' : 'rgba(255,255,255,0.1)'}`,
-              borderRadius: '12px', color: '#fff',
-              fontSize: '14px', fontFamily: 'var(--ff-body)',
-              outline: 'none', boxSizing: 'border-box',
-              transition: 'border-color 0.2s',
-            }}
-          />
-          {search && (
-            <button onClick={() => setSearch('')} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', padding: '4px', display: 'flex' }}>
-              <X size={13} />
-            </button>
-          )}
-        </div>
-
-        {/* Tag pills */}
-        {allTags.length > 0 && (
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '28px' }}>
-            {allTags.map(t => {
-              const on = tag === t
-              return (
-                <button key={t} type="button"
-                  onClick={() => setTag(on ? '' : t)}
-                  style={{
-                    padding:       '6px 13px', borderRadius: '100px', cursor: 'pointer',
-                    border:        `1px solid ${on ? 'rgba(130,255,31,0.45)' : 'rgba(255,255,255,0.08)'}`,
-                    background:    on ? 'rgba(130,255,31,0.1)' : 'transparent',
-                    color:         on ? '#82ff1f' : 'rgba(255,255,255,0.4)',
-                    fontSize:      '11px', fontFamily: 'var(--ff-mono)',
-                    letterSpacing: '0.1em', textTransform: 'uppercase',
-                    transition:    'all 0.18s',
-                  }}>
-                  {t}
-                </button>
-              )
-            })}
+      <div className="fn-wrap">
+        {/* ── Masthead ── */}
+        <header className="fn-mast">
+          <div className="fn-brand">
+            {/* The same tilted stamp as Art, Watchlog and the Shop */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="fn-stamp" src="/shop-logo.png" alt="Riaz" />
+            <div>
+              <div className="fn-eyebrow">Travel stories</div>
+              <h1 className="fn-title">Field <span>Notes</span></h1>
+            </div>
           </div>
-        )}
+          <div className="fn-issue fn-issue--mast">Vol. 01<br />{posts.length} {posts.length === 1 ? 'story' : 'stories'} · {year}</div>
+        </header>
 
-        {/* Grid */}
-        {filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)', fontSize: '14px' }}>
-            {search || tag ? 'No posts match your filters.' : 'No posts yet.'}
+        {/* ── Search and topics ── */}
+        <div className="fn-controls">
+          <div className="fn-search">
+            <Search size={14} aria-hidden="true" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search stories…" aria-label="Search stories" />
+            {search && (
+              <button type="button" onClick={() => setSearch('')} aria-label="Clear search"><X size={13} /></button>
+            )}
           </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-            {filtered.map(post => (
-              <PostCard key={post.id} post={post} isAdmin={isAdmin} />
+          <div className="fn-pills" role="group" aria-label="Filter by topic">
+            <button type="button" className="fn-pill" aria-pressed={!tag} onClick={() => setTag('')}>All</button>
+            {allTags.map(t => (
+              <button key={t} type="button" className="fn-pill" aria-pressed={tag === t} onClick={() => setTag(tag === t ? '' : t)}>{t}</button>
             ))}
           </div>
+        </div>
+
+        {/* ── Stories ── */}
+        {!featured ? (
+          <div className="fn-empty">{search || tag ? 'No stories match your filters.' : 'No stories yet.'}</div>
+        ) : (
+          <>
+            <StoryCard post={featured} variant="feature" number={1} />
+            {rest.length > 0 && (
+              <>
+                <div className="fn-sec">More stories<i /></div>
+                <div className="fn-grid">
+                  {rest.map((post, i) => (
+                    <StoryCard key={post.id} post={post} variant={i === 0 ? 'wide' : 'card'} number={i + 2} />
+                  ))}
+                </div>
+              </>
+            )}
+          </>
         )}
-      </main>
-    </div>
+      </div>
     </>
   )
 }

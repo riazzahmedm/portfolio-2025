@@ -23,8 +23,11 @@ export interface HtmlBlock {
 
 export type ContentBlock = TextBlock | ImageBlock | VideoBlock | HtmlBlock
 
-/** A post without its body — what listing pages need, plus a precomputed read time. */
-export type BlogPostSummary = Omit<BlogPost, 'content'> & { reading_minutes: number }
+/** A post's colour, read from its cover: an "r,g,b" triple for the dark page and one for the light paper. */
+export interface PostAccent { dark: string; light: string }
+
+/** A post without its body — what listing pages need, plus a precomputed read time and its colour. */
+export type BlogPostSummary = Omit<BlogPost, 'content'> & { reading_minutes: number; accent: PostAccent | null }
 
 export interface BlogPost {
   id:           string
