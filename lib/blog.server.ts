@@ -2,7 +2,6 @@ import { cache } from 'react'
 import { supabase } from './supabase'
 import { isAdmin } from './admin-auth'
 import { readingTime } from './reading-time'
-import { getCoverAccent } from './blog-accent'
 import type { BlogPost, BlogPostSummary } from './blog.types'
 
 /**
@@ -34,12 +33,9 @@ export const getPublishedPostList = cache(async (): Promise<BlogPostSummary[]> =
 
   if (error || !data) return []
 
-  const posts = data as BlogPost[]
-  const accents = await Promise.all(posts.map(p => getCoverAccent(p.cover_image).catch(() => null)))
-  return posts.map(({ content, ...post }, i) => ({
+  return (data as BlogPost[]).map(({ content, ...post }) => ({
     ...post,
     reading_minutes: readingTime({ content, excerpt: post.excerpt }),
-    accent: accents[i],
   }))
 })
 

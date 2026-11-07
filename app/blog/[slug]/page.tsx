@@ -3,8 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { readingTime } from '@/lib/reading-time'
 import { getPost, getRelatedPosts } from '@/lib/blog.server'
-import { getCoverAccent } from '@/lib/blog-accent'
-import { accentStyle } from '@/lib/blog-accent-style'
+import AccentScope from '@/components/blog/AccentScope'
 import { isAdmin } from '@/lib/admin-auth'
 import { SITE_NAME, SITE_URL } from '@/lib/site'
 import BlockRenderer from '@/components/blog/BlockRenderer'
@@ -53,10 +52,7 @@ export default async function BlogPostPage({ params }: Params) {
   const { slug } = await params
   const [post, admin] = await Promise.all([getPost(slug), isAdmin()])
   if (!post) notFound()
-  const [related, accent] = await Promise.all([
-    post.published ? getRelatedPosts(post.slug, post.tags).catch(() => []) : Promise.resolve([]),
-    getCoverAccent(post.cover_image).catch(() => null),
-  ])
+  const related = post.published ? await getRelatedPosts(post.slug, post.tags).catch(() => []) : []
 
   const mins  = readingTime(post)
   const month = new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
@@ -75,7 +71,7 @@ export default async function BlogPostPage({ params }: Params) {
   }
 
   return (
-    <div className="fn-accent" style={accentStyle(accent)}>
+    <AccentScope>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
@@ -95,7 +91,7 @@ export default async function BlogPostPage({ params }: Params) {
       <section className="fn-hero">
         {post.cover_image && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={post.cover_image} alt="" fetchPriority="high" decoding="async" />
+          <img src={post.cover_image} alt="" data-cover crossOrigin="anonymous" fetchPriority="high" decoding="async" />
         )}
         <div className="fn-hero-in">
           {!post.published && admin && <div className="fn-draft">Draft — not published</div>}
@@ -120,6 +116,6 @@ export default async function BlogPostPage({ params }: Params) {
       </div>
 
       <RelatedPosts posts={related} />
-    </div>
+    </AccentScope>
   )
 }

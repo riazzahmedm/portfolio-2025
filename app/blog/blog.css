@@ -15,8 +15,8 @@
   --fn-text: #14120e; --fn-lime: #2b7a0b; --fn-accent-rgb: 43,122,11; --fn-on-accent: #ffffff;
   --fn-red: #c41818; --fn-warn: #8a1c1c;
 }
-/* A post's own colour. Put --pa-dark-rgb / --pa-light-rgb on an element with this class (see lib/blog-accent-style.ts)
-   and everything inside takes that colour; without them the blog's green stays. */
+/* A post's own colour. Put --pa-dark-rgb / --pa-light-rgb on an element with this class (AccentScope does this from the
+   cover photo) and everything inside takes that colour; without them the blog's green stays. */
 .fn-accent { --fn-accent-rgb: var(--pa-dark-rgb, 130,255,31); --fn-lime: rgb(var(--fn-accent-rgb)); }
 .fn[data-theme="light"] .fn-accent { --fn-accent-rgb: var(--pa-light-rgb, 43,122,11); --fn-lime: rgb(var(--fn-accent-rgb)); }
 .fn a { color: inherit; text-decoration: none; }

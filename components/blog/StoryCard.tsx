@@ -3,7 +3,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Share2 } from 'lucide-react'
 import type { BlogPostSummary } from '@/lib/blog.types'
-import { accentStyle } from '@/lib/blog-accent-style'
+import AccentScope from './AccentScope'
 import BlogStoryModal from './BlogStoryModal'
 
 const FALLBACKS = ['fn-c1', 'fn-c2', 'fn-c3', 'fn-c4', 'fn-c5']
@@ -19,7 +19,7 @@ export default function StoryCard({ post, variant, number }: { post: BlogPostSum
     <div className={`fn-cv${post.cover_image ? '' : ` ${FALLBACKS[(number - 1) % FALLBACKS.length]}`}`}>
       {post.cover_image && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={post.cover_image} alt="" loading={number <= 2 ? 'eager' : 'lazy'} decoding="async" />
+        <img src={post.cover_image} alt="" data-cover crossOrigin="anonymous" loading={number <= 2 ? 'eager' : 'lazy'} decoding="async" />
       )}
       {variant !== 'feature' && <span className="fn-num" aria-hidden="true">{String(number).padStart(2, '0')}</span>}
     </div>
@@ -28,7 +28,7 @@ export default function StoryCard({ post, variant, number }: { post: BlogPostSum
   return (
     <>
       {showStory && <BlogStoryModal slug={post.slug} title={post.title} onClose={() => setShowStory(false)} />}
-      <div className={`fn-cardwrap fn-cardwrap--${variant} fn-accent`} style={accentStyle(post.accent)}>
+      <AccentScope className={`fn-cardwrap fn-cardwrap--${variant}`}>
         <button type="button" className="fn-share" onClick={() => setShowStory(true)} aria-label={`Share "${post.title}" as a story card`} title="Share as a story card">
           <Share2 size={14} />
         </button>
@@ -53,7 +53,7 @@ export default function StoryCard({ post, variant, number }: { post: BlogPostSum
             </div>
           )}
         </Link>
-      </div>
+      </AccentScope>
     </>
   )
 }

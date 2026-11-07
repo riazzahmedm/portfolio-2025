@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { BlogPostSummary } from '@/lib/blog.types'
-import { accentStyle } from '@/lib/blog-accent-style'
+import AccentScope from './AccentScope'
 
 const FALLBACKS = ['fn-c3', 'fn-c2', 'fn-c4']
 
@@ -12,11 +12,11 @@ export default function RelatedPosts({ posts }: { posts: BlogPostSummary[] }) {
       <div className="fn-sec">Keep reading<i /></div>
       <div className="fn-grid">
         {posts.map((p, i) => (
-          <div key={p.id} className="fn-cardwrap fn-accent" style={accentStyle(p.accent)}>
+          <AccentScope key={p.id} className="fn-cardwrap">
             <Link href={`/blog/${p.slug}`} className="fn-card">
               <div className={`fn-cv${p.cover_image ? '' : ` ${FALLBACKS[i % FALLBACKS.length]}`}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                {p.cover_image && <img src={p.cover_image} alt="" loading="lazy" decoding="async" />}
+                {p.cover_image && <img src={p.cover_image} alt="" data-cover crossOrigin="anonymous" loading="lazy" decoding="async" />}
               </div>
               <div className="fn-cbody">
                 {p.tags[0] && <span className="fn-tag">{p.tags[0]}</span>}
@@ -24,7 +24,7 @@ export default function RelatedPosts({ posts }: { posts: BlogPostSummary[] }) {
                 <span className="fn-meta">{p.reading_minutes} min read</span>
               </div>
             </Link>
-          </div>
+          </AccentScope>
         ))}
       </div>
     </section>
