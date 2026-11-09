@@ -140,7 +140,7 @@ export async function POST(req: Request) {
     ? await supabase.from('logs').update({ ...body, status: body.status ?? 'watched' }).eq('id', inProgressId).select().single()
     : await supabase.from('logs').insert(body).select().single()
   // A theatre vibe can't be saved until the new column exists: say so instead of a generic failure
-  if (error && 'theatre_vibe' in body && visitsNotReady(error)) return Response.json({ error: 'Run the Been there SQL block in supabase/migrations.sql first' }, { status: 503 })
+  if (error && ('theatre_vibe' in body || 'theatre_timing' in body) && visitsNotReady(error)) return Response.json({ error: 'Run the Been there SQL block in supabase/migrations.sql first' }, { status: 503 })
   if (error) return dbError(error)
 
   // Remove from Watch Later if it was queued there

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { MapPin, Plus, X } from 'lucide-react'
 import { CITIES, SCREEN_FORMATS } from '@/lib/places'
-import { PLACE_VIBES } from '@/lib/places-core'
+import { PLACE_VIBES, TIMINGS, timingForHour } from '@/lib/places-core'
 import type { Place, PlaceLite } from '@/lib/places'
 
 /** What the log form keeps while you fill in a theatre visit. A theatre is either an already-saved place or a new one to create on save. */
@@ -13,15 +13,16 @@ export interface TheatreState {
   area:   string            // for a new theatre only
   format: string            // a SCREEN_FORMATS key, or '' for an ordinary screen
   vibe: string              // a PLACE_VIBES key for the theatre itself, or ''
+  timing: string            // a TIMINGS key (time of day of the show), or ''
 }
 
 const CITY_KEY = 'movies-theatre-city'
 const rememberedCity = () => { try { return localStorage.getItem(CITY_KEY) ?? '' } catch { return '' } }
 
-export const blankTheatre = (): TheatreState => ({ city: '', query: '', place: null, area: '', format: '', vibe: '' })
+export const blankTheatre = (): TheatreState => ({ city: '', query: '', place: null, area: '', format: '', vibe: '', timing: timingForHour(new Date().getHours()) })
 
-export function theatreFromLog(log: { place?: PlaceLite | null; screen_format?: string | null; theatre_vibe?: string | null }): TheatreState {
-  return { city: log.place?.city ?? '', query: '', place: log.place ?? null, area: '', format: log.screen_format ?? '', vibe: log.theatre_vibe ?? '' }
+export function theatreFromLog(log: { place?: PlaceLite | null; screen_format?: string | null; theatre_vibe?: string | null; theatre_timing?: string | null }): TheatreState {
+  return { city: log.place?.city ?? '', query: '', place: log.place ?? null, area: '', format: log.screen_format ?? '', vibe: log.theatre_vibe ?? '', timing: log.theatre_timing ?? '' }
 }
 
 const chip = (on: boolean): React.CSSProperties => ({
@@ -141,6 +142,16 @@ export default function TheatreFields({ value, onChange }: { value: TheatreState
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {SCREEN_FORMATS.map(f => (
             <button key={f.key} type="button" style={chip(value.format === f.key)} onClick={() => set({ format: value.format === f.key ? '' : f.key })}>{f.label}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Time of day */}
+      <div>
+        <div style={label}>Time of day <span style={{ opacity: 0.6, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></div>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {TIMINGS.map(t => (
+            <button key={t.key} type="button" style={chip(value.timing === t.key)} onClick={() => set({ timing: value.timing === t.key ? '' : t.key })}>{t.label}</button>
           ))}
         </div>
       </div>

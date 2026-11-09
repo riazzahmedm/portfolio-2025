@@ -423,7 +423,8 @@ export default function AdminForm({
     const tmdbType = type === 'movie' ? 'movie' : 'tv'
     if (!tmdbId) return
     setLoadingPeople(true)
-    setFavPerson(null)
+    // The saved favourite belongs to the original title: only drop it when a different title is picked, never on open
+    if (editTmdbOverride) setFavPerson(null)
     fetch(`/api/tmdb/credits?id=${tmdbId}&type=${tmdbType}`)
       .then(r => r.json())
       .then(d => { setPeople(d); setLoadingPeople(false) })
@@ -503,8 +504,10 @@ export default function AdminForm({
       .then(d => setEpisodes(d.episodes ?? []))
   }, [selected, selectedSeason, type])
 
-  // Fetch cast & crew whenever a title is selected
+  // Fetch cast & crew whenever a title is selected (new entries only: editing has its own effect above, and must not
+  // clear the saved favourite just because no title is "selected" in the search sense)
   useEffect(() => {
+    if (isEdit) return
     if (!selected) { setPeople([]); setFavPerson(null); return }
     setLoadingPeople(true)
     fetch(`/api/tmdb/credits?id=${selected.id}&type=${tmdbType}`)
@@ -607,11 +610,11 @@ export default function AdminForm({
         }
         placeId = (await res.json()).id
       }
-      if (placeId || theatre.format || theatre.vibe || initialLog?.place_id || initialLog?.screen_format || initialLog?.theatre_vibe) {
-        theatreFields = { place_id: placeId, screen_format: theatre.format || null, ...(theatre.vibe || initialLog?.theatre_vibe ? { theatre_vibe: theatre.vibe || null } : null) }
+      if (placeId || theatre.format || theatre.vibe || theatre.timing || initialLog?.place_id || initialLog?.screen_format || initialLog?.theatre_vibe || initialLog?.theatre_timing) {
+        theatreFields = { place_id: placeId, screen_format: theatre.format || null, ...(theatre.vibe || initialLog?.theatre_vibe ? { theatre_vibe: theatre.vibe || null } : null), ...(theatre.timing || initialLog?.theatre_timing ? { theatre_timing: theatre.timing || null } : null) }
       }
-    } else if (isEdit && (initialLog?.place_id || initialLog?.screen_format || initialLog?.theatre_vibe)) {
-      theatreFields = { place_id: null, screen_format: null, ...(initialLog?.theatre_vibe ? { theatre_vibe: null } : null) }
+    } else if (isEdit && (initialLog?.place_id || initialLog?.screen_format || initialLog?.theatre_vibe || initialLog?.theatre_timing)) {
+      theatreFields = { place_id: null, screen_format: null, ...(initialLog?.theatre_vibe ? { theatre_vibe: null } : null), ...(initialLog?.theatre_timing ? { theatre_timing: null } : null) }
     }
 
     if (isEdit) {
@@ -1084,7 +1087,7 @@ export default function AdminForm({
       {/* ── Favorite person ── */}
       <div className="af-section" style={SECTION}>
         <SectionLabel>
-          {loadingPeople ? 'Loading cast & crew…' : selected ? 'Who was your favourite?' : 'Select a title to pick your favourite'}
+          {loadingPeople ? 'Loading cast & crew…' : selected || isEdit ? 'Who was your favourite?' : 'Select a title to pick your favourite'}
         </SectionLabel>
         {loadingPeople && (
           <div style={{ display: 'flex', gap: '12px', opacity: 0.4 }}>
@@ -1099,7 +1102,7 @@ export default function AdminForm({
         {!loadingPeople && people.length > 0 && (
           <PersonGrid people={people} selected={favPerson} onSelect={setFavPerson} />
         )}
-        {!loadingPeople && !selected && (
+        {!loadingPeople && !selected && !isEdit && (
           <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--ff-mono)' }}>
             Cast &amp; crew will appear after selecting a title above.
           </div>

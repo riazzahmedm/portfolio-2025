@@ -28,7 +28,7 @@ function theatreEntry(r: Row): TimelineEntry {
   return {
     id: r.id, source: 'theatre', date: r.watched_on, createdAt: r.created_at ?? r.watched_on, place: r.place,
     vibe: VIBE_KEYS.has(r.theatre_vibe) ? (r.theatre_vibe as PlaceVibeKey) : null,
-    timing: null, spend: null, note: null, photos: [], mustOrder: [],
+    timing: TIMING_KEYS.has(r.theatre_timing) ? (r.theatre_timing as TimingKey) : null, spend: null, note: null, photos: [], mustOrder: [],
     movie: { id: r.id, title: r.title, posterUrl: r.poster_url ?? null, format: r.screen_format ?? null },
   }
 }

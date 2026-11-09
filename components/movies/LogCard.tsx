@@ -11,7 +11,7 @@ import TMDBPreviewModal from './TMDBPreviewModal'
 import { tiltProps, gyroRef } from '@/lib/tilt'
 import PlatformIcon from './PlatformIcon'
 import { placeLine, screenFormatLabel } from '@/lib/places'
-import { PLACE_VIBES } from '@/lib/places-core'
+import { PLACE_VIBES, TIMINGS } from '@/lib/places-core'
 import { useTapReveal } from './useTapReveal'
 
 const TYPE_COLOR: Record<string, string> = {
@@ -58,7 +58,8 @@ function PlatformBadge({ platform, log }: { platform: string; log: MovieLog }) {
   const format = platform === 'theatre' ? screenFormatLabel(log.screen_format) : null
   const label  = log.place?.name ?? ''   // the format and city are in the tooltip, so the name has room on a narrow card
   const tvibe  = PLACE_VIBES.find(v => v.key === log.theatre_vibe)
-  const full   = platform === 'theatre' ? [placeLine(log.place), format, tvibe ? `${tvibe.emoji} ${tvibe.label}` : null].filter(Boolean).join(' · ') || p.label : p.label
+  const ttime  = TIMINGS.find(t => t.key === log.theatre_timing)
+  const full   = platform === 'theatre' ? [placeLine(log.place), format, ttime ? `${ttime.label} show` : null, tvibe ? `${tvibe.emoji} ${tvibe.label}` : null].filter(Boolean).join(' · ') || p.label : p.label
   return (
     <div title={full} aria-label={full} style={{
       display: 'inline-flex', alignItems: 'center', gap: '5px', minWidth: 0,

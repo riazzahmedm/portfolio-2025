@@ -113,7 +113,7 @@ export default function PlacesBrowser() {
 
             {loading && <p style={{ textAlign: 'center', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)', fontSize: '12px', padding: '28px 0' }}>Loading…</p>}
             {failed && <p style={{ textAlign: 'center', color: '#ff8585', fontFamily: 'var(--ff-mono)', fontSize: '12px', padding: '28px 0' }}>Could not load. <button type="button" onClick={() => { setLoading(true); load(next) }} style={{ ...smallChip(false), marginLeft: '8px' }}>Retry</button></p>}
-            {empty && <p style={{ textAlign: 'center', color: 'var(--text-dim)', fontFamily: 'var(--ff-body)', fontSize: '14px', padding: '36px 0' }}>{kind === THEATRE_KIND && timing ? 'Theatre visits don’t have a time of day, so a timing filter hides them.' : filtered ? 'Nothing matches those filters.' : 'Nothing logged yet.'}</p>}
+            {empty && <p style={{ textAlign: 'center', color: 'var(--text-dim)', fontFamily: 'var(--ff-body)', fontSize: '14px', padding: '36px 0' }}>{kind === THEATRE_KIND && timing ? 'Only theatre visits with a time of day match a timing filter.' : filtered ? 'Nothing matches those filters.' : 'Nothing logged yet.'}</p>}
             {next && !loading && <div style={{ textAlign: 'center', paddingTop: '18px' }}><button type="button" style={chip(false)} onClick={() => { setLoading(true); load(next) }}>Load more</button></div>}
           </>
         ) : (

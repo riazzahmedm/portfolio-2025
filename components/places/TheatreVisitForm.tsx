@@ -13,7 +13,7 @@ import { chip } from './form-styles'
  */
 export default function TheatreVisitForm({ entry, onSaved }: { entry: TimelineEntry; onSaved: () => void }) {
   const movie = entry.movie!
-  const [theatre, setTheatre] = useState<TheatreState>(() => theatreFromLog({ place: entry.place as PlaceLite, screen_format: movie.format, theatre_vibe: entry.vibe }))
+  const [theatre, setTheatre] = useState<TheatreState>(() => theatreFromLog({ place: entry.place as PlaceLite, screen_format: movie.format, theatre_vibe: entry.vibe, theatre_timing: entry.timing }))
   const [busy,    setBusy]    = useState(false)
   const [error,   setError]   = useState('')
 
@@ -31,7 +31,7 @@ export default function TheatreVisitForm({ entry, onSaved }: { entry: TimelineEn
         placeId = d.id
       }
       if (!placeId) throw new Error('Choose a theatre')
-      const res = await fetch(`/api/movies/${entry.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ place_id: placeId, screen_format: theatre.format || null, theatre_vibe: theatre.vibe || null }) })
+      const res = await fetch(`/api/movies/${entry.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ place_id: placeId, screen_format: theatre.format || null, theatre_vibe: theatre.vibe || null, theatre_timing: theatre.timing || null }) })
       const d = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(d.error ?? 'Could not save')
       toast.success('Theatre details updated', { description: movie.title })

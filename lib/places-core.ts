@@ -172,5 +172,5 @@ export const canWishlist = (place: { kind: string }, visitCount: number) => KIND
 export function visitsNotReady(error: { message?: string; code?: string } | null | undefined): boolean {
   if (!error) return false
   // Every missing-table/column message names what is missing, so match the names, not the bare error codes
-  return /place_visits|wishlisted_at|theatre_vibe/i.test(error.message ?? '')
+  return /place_visits|wishlisted_at|theatre_vibe|theatre_timing/i.test(error.message ?? '')
 }

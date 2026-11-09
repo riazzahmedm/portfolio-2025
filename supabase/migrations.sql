@@ -119,6 +119,8 @@ alter table places add column if not exists wishlisted_at timestamptz;
 
 -- How the theatre itself was on a movie visit (separate from the movie's own vibe)
 alter table logs add column if not exists theatre_vibe text;   -- same keys as place_visits.vibe
+-- Time of day of a theatre visit (movie logs only)
+alter table logs add column if not exists theatre_timing text; -- 'morning' | 'afternoon' | 'evening' | 'night'
 
 -- Public bucket for visit photos
 insert into storage.buckets (id, name, public) values ('place-photos', 'place-photos', true) on conflict (id) do nothing;
