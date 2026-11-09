@@ -13,14 +13,15 @@ export default function PlaceRow({ entry, isAdmin, onEdit, onDelete }: {
 }) {
   const { setBox, showing, bind } = useTapReveal()
   const isTheatre = entry.source === 'theatre'
-  const href  = isTheatre ? `/movies/${entry.movie!.id}` : `/places/${entry.place.id}`
-  const title = isTheatre ? entry.movie!.title : entry.place.name
-  const where = [kindLabel(entry.place.kind), isTheatre ? entry.place.name : null, entry.place.area, isTheatre ? screenFormatLabel(entry.movie!.format) : null].filter(Boolean).join(' · ')
+  // Every row opens its place; a theatre row is titled by the theatre, with the movie seen there underneath
+  const href  = `/places/${entry.place.id}`
+  const title = entry.place.name
+  const where = (isTheatre ? [entry.movie!.title, screenFormatLabel(entry.movie!.format)] : [kindLabel(entry.place.kind), entry.place.area]).filter(Boolean).join(' · ')
   const vibe  = PLACE_VIBES.find(v => v.key === entry.vibe)
   const timing = TIMINGS.find(t => t.key === entry.timing)
   const TimingIcon = entry.timing ? TIMING_ICON[entry.timing] : null
   const d = new Date(`${entry.date}T12:00:00`)
-  const canEdit = isAdmin && !isTheatre
+  const canEdit = isAdmin   // a theatre row edits the theatre details of its movie log; only visits can be deleted here
 
   return (
     <li ref={setBox} {...(bind as object)} style={{ position: 'relative', listStyle: 'none', padding: '10px 0', display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -31,7 +32,7 @@ export default function PlaceRow({ entry, isAdmin, onEdit, onDelete }: {
       </time>
 
       <Link href={href} style={{ display: 'flex', gap: '12px', alignItems: 'center', minWidth: 0, flex: 1, textDecoration: 'none', color: 'inherit' }}>
-        <Thumb src={isTheatre ? entry.movie!.posterUrl : entry.photos[0]} name={title} />
+        <Thumb src={isTheatre ? entry.movie!.posterUrl : entry.photos[0]} name={isTheatre ? entry.movie!.title : title} />
         <div style={{ minWidth: 0 }}>
           <div style={{ fontFamily: 'var(--ff-body)', fontWeight: 600, fontSize: '14px', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</div>
           <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '10.5px', color: 'var(--text-dim)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '2px' }}>{where}</div>
@@ -46,7 +47,7 @@ export default function PlaceRow({ entry, isAdmin, onEdit, onDelete }: {
       {canEdit && (
         <div style={{ display: 'flex', gap: '6px', flex: 'none', opacity: showing ? 1 : 0, pointerEvents: showing ? 'auto' : 'none', transition: 'opacity 0.18s' }}>
           <button type="button" className="gc-btn" title="Edit" aria-label="Edit visit" onClick={() => onEdit?.(entry)} style={{ color: '#d6c8ff' }}><Pencil size={13} /></button>
-          <button type="button" className="gc-btn" title="Delete" aria-label="Delete visit" onClick={() => onDelete?.(entry)} style={{ color: '#ff8585' }}><Trash2 size={13} /></button>
+          {!isTheatre && <button type="button" className="gc-btn" title="Delete" aria-label="Delete visit" onClick={() => onDelete?.(entry)} style={{ color: '#ff8585' }}><Trash2 size={13} /></button>}
         </div>
       )}
     </li>
