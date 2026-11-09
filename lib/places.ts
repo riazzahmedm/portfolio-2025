@@ -8,6 +8,7 @@ export interface Place {
   address:    string | null
   maps_url:   string | null
   created_at: string
+  wishlisted_at?: string | null   // set while the place is on the Been there wishlist
 }
 
 /** The compact shape movie logs carry when they are loaded with their place. */
@@ -30,16 +31,7 @@ export const SCREEN_FORMATS: { key: string; label: string }[] = [
   { key: '3d',      label: '3D' },
 ]
 
-/** Seating tier, picked separately because one visit can be both (IMAX in a recliner). */
-export const SEATING: { key: string; label: string }[] = [
-  { key: 'recliner', label: 'Recliner' },
-  { key: 'luxe',     label: 'Luxe' },
-  { key: 'insignia', label: 'Insignia' },
-  { key: 'gold',     label: 'Gold Class' },
-]
-
 export const screenFormatLabel = (key: string | null | undefined) => SCREEN_FORMATS.find(f => f.key === key)?.label ?? null
-export const seatingLabel      = (key: string | null | undefined) => SEATING.find(f => f.key === key)?.label ?? null
 
 /** "Prasads Multiplex, Hyderabad" or just the name. */
 export function placeLine(p: PlaceLite | null | undefined): string | null {

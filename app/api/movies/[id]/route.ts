@@ -3,6 +3,7 @@ import { enrich }   from '@/lib/tmdb'
 import { isAdmin }  from '@/lib/admin-auth'
 import { dbError } from '@/lib/api-error'
 import { LOGS_WITH_PLACE, placesNotReady } from '@/lib/movies-select'
+import { visitsNotReady } from '@/lib/places-core'
 
 export async function GET(
   _req: Request,
@@ -34,6 +35,7 @@ export async function PATCH(
 
   const { data, error } = await supabase
     .from('logs').update(body).eq('id', id).select().single()
+  if (error && 'theatre_vibe' in body && visitsNotReady(error)) return Response.json({ error: 'Run the Been there SQL block in supabase/migrations.sql first' }, { status: 503 })
   if (error) return dbError(error)
   // Hand back the row with its theatre attached, so the card can show it without a reload
   const { data: withPlace } = await supabase.from('logs').select(LOGS_WITH_PLACE).eq('id', id).single()

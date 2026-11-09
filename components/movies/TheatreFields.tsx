@@ -1,7 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { MapPin, Plus, X } from 'lucide-react'
-import { CITIES, SCREEN_FORMATS, SEATING } from '@/lib/places'
+import { CITIES, SCREEN_FORMATS } from '@/lib/places'
+import { PLACE_VIBES } from '@/lib/places-core'
 import type { Place, PlaceLite } from '@/lib/places'
 
 /** What the log form keeps while you fill in a theatre visit. A theatre is either an already-saved place or a new one to create on save. */
@@ -11,16 +12,16 @@ export interface TheatreState {
   place:  PlaceLite | null  // a saved theatre that was picked
   area:   string            // for a new theatre only
   format: string            // a SCREEN_FORMATS key, or '' for an ordinary screen
-  seating: string           // a SEATING key, or ''
+  vibe: string              // a PLACE_VIBES key for the theatre itself, or ''
 }
 
 const CITY_KEY = 'movies-theatre-city'
 const rememberedCity = () => { try { return localStorage.getItem(CITY_KEY) ?? '' } catch { return '' } }
 
-export const blankTheatre = (): TheatreState => ({ city: '', query: '', place: null, area: '', format: '', seating: '' })
+export const blankTheatre = (): TheatreState => ({ city: '', query: '', place: null, area: '', format: '', vibe: '' })
 
-export function theatreFromLog(log: { place?: PlaceLite | null; screen_format?: string | null; seating?: string | null }): TheatreState {
-  return { city: log.place?.city ?? '', query: '', place: log.place ?? null, area: '', format: log.screen_format ?? '', seating: log.seating ?? '' }
+export function theatreFromLog(log: { place?: PlaceLite | null; screen_format?: string | null; theatre_vibe?: string | null }): TheatreState {
+  return { city: log.place?.city ?? '', query: '', place: log.place ?? null, area: '', format: log.screen_format ?? '', vibe: log.theatre_vibe ?? '' }
 }
 
 const chip = (on: boolean): React.CSSProperties => ({
@@ -144,12 +145,12 @@ export default function TheatreFields({ value, onChange }: { value: TheatreState
         </div>
       </div>
 
-      {/* Seating */}
+      {/* Theatre vibe */}
       <div>
-        <div style={label}>Seating <span style={{ opacity: 0.6, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></div>
+        <div style={label}>Theatre vibe <span style={{ opacity: 0.6, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {SEATING.map(f => (
-            <button key={f.key} type="button" style={chip(value.seating === f.key)} onClick={() => set({ seating: value.seating === f.key ? '' : f.key })}>{f.label}</button>
+          {PLACE_VIBES.map(f => (
+            <button key={f.key} type="button" style={chip(value.vibe === f.key)} onClick={() => set({ vibe: value.vibe === f.key ? '' : f.key })}>{f.emoji} {f.label}</button>
           ))}
         </div>
       </div>

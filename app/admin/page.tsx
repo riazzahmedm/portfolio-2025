@@ -3,20 +3,22 @@ import { useState, useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import Loader from '@/components/ui/Loader'
-import { LayoutDashboard, ShoppingBag, Film, FileText, Palette, LogOut } from 'lucide-react'
+import { LayoutDashboard, ShoppingBag, Film, FileText, Palette, MapPin, LogOut } from 'lucide-react'
 import PasswordGate  from '@/components/admin/PasswordGate'
 import OverviewAdmin from '@/components/admin/OverviewAdmin'
 import BlogAdmin     from '@/components/admin/blog/BlogAdmin'
 import MoviesAdmin   from '@/components/admin/movies/MoviesAdmin'
 import ShopAdmin     from '@/components/admin/shop/ShopAdmin'
 import ArtAdmin      from '@/components/admin/art/ArtAdmin'
+import PlacesAdmin   from '@/components/admin/places/PlacesAdmin'
 
-type Tab = 'overview' | 'shop' | 'movies' | 'blog' | 'art'
+type Tab = 'overview' | 'shop' | 'movies' | 'places' | 'blog' | 'art'
 
 const NAV: { key: Tab; label: string; Icon: React.ElementType }[] = [
   { key: 'overview', label: 'Overview', Icon: LayoutDashboard },
   { key: 'shop',     label: 'Shop',     Icon: ShoppingBag },
   { key: 'movies',   label: 'Movies',   Icon: Film },
+  { key: 'places',   label: 'Places',   Icon: MapPin },
   { key: 'blog',     label: 'Blog',     Icon: FileText },
   { key: 'art',      label: 'Art',      Icon: Palette },
 ]
@@ -204,6 +206,7 @@ export default function AdminPage() {
               {tab === 'overview' && <OverviewAdmin onViewAllOrders={goToShopOrders} />}
               {tab === 'shop'     && <ShopAdmin initialSection={shopSection} />}
               {tab === 'movies'   && <MoviesAdmin />}
+              {tab === 'places'   && <PlacesAdmin />}
               {tab === 'blog'     && <BlogAdmin />}
               {tab === 'art'      && <ArtAdmin />}
             </div>

@@ -6,7 +6,8 @@ import { ArrowLeft, Star, Clock, Globe, RefreshCw, ExternalLink } from 'lucide-r
 import type { MovieLog } from '@/lib/movies.types'
 import { VIBES, PLATFORMS, DRAWS } from '@/lib/movies.types'
 import PlatformIcon from '@/components/movies/PlatformIcon'
-import { screenFormatLabel, seatingLabel } from '@/lib/places'
+import { screenFormatLabel } from '@/lib/places'
+import { PLACE_VIBES } from '@/lib/places-core'
 
 function MetaChip({ children }: { children: React.ReactNode }) {
   return (
@@ -86,6 +87,7 @@ export default function MovieDetailPage() {
 
   const vibe     = VIBES.find(v => v.key === log.vibe)
   const platform = PLATFORMS.find(p => p.key === log.platform)
+  const theatreVibe = PLACE_VIBES.find(v => v.key === log.theatre_vibe)
   const isEpisode = log.type === 'episode' || (log.type === 'series' && log.episode != null)
   const seriesPrefix = isEpisode
     ? `S${String(log.season ?? '').padStart(2, '0')}E${String(log.episode ?? '').padStart(2, '0')}`
@@ -267,11 +269,12 @@ export default function MovieDetailPage() {
                   <PlatformIcon platform={platform} size={18} />
                   <span style={{ fontFamily: 'var(--ff-body)', fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>{platform.label}</span>
                 </div>
-                {platform.key === 'theatre' && (log.place || log.screen_format || log.seating) && (
+                {platform.key === 'theatre' && (log.place || log.screen_format || log.theatre_vibe) && (
                   <div style={{ marginTop: '8px', fontFamily: 'var(--ff-body)', fontSize: '12px', lineHeight: 1.5, color: 'rgba(255,255,255,0.5)' }}>
                     {log.place && <div style={{ color: 'rgba(255,255,255,0.8)' }}>{log.place.name}</div>}
                     {log.place && [log.place.area, log.place.city].filter(Boolean).length > 0 && <div>{[log.place.area, log.place.city].filter(Boolean).join(', ')}</div>}
-                    {(log.screen_format || log.seating) && <div>{[screenFormatLabel(log.screen_format), seatingLabel(log.seating)].filter(Boolean).join(' · ')}</div>}
+                    {log.screen_format && <div>{screenFormatLabel(log.screen_format)}</div>}
+                    {theatreVibe && <div>Theatre vibe: {theatreVibe.emoji} {theatreVibe.label}</div>}
                   </div>
                 )}
               </div>

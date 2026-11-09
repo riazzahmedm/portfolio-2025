@@ -76,7 +76,7 @@ export interface MovieLog {
   platform:        string | null
   place_id:        string | null    // the theatre, when platform is 'theatre'
   screen_format:   string | null    // 'imax', '4dx', ... (see SCREEN_FORMATS), or null for an ordinary screen
-  seating:         string | null    // 'recliner', 'luxe', ... (see SEATING)
+  theatre_vibe:    string | null    // how the theatre was on this visit, a PLACE_VIBES key (separate from the movie's own vibe)
   place?:          PlaceLite | null // loaded alongside the log by the movies API
   favorite_person: FavoritePerson | null
   draws:           string[]

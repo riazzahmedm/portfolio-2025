@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { PLACE_KINDS, THEATRE_KIND } from './places-core'
 
 /** Writes to places go through the service role; reads are open (see the policy in supabase/migrations.sql). */
 export const placesDb = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
@@ -13,6 +14,7 @@ export function sanitizePlace(body: unknown, full: boolean): { value: Record<str
   if ('kind' in b || full) {
     const kind = clip(b.kind, 24).toLowerCase().replace(/[^a-z0-9_-]/g, '')
     if (!kind) return { error: 'A kind is required' }
+    if (kind !== THEATRE_KIND && !PLACE_KINDS.some(k => k.key === kind)) return { error: 'Unknown kind' }
     out.kind = kind
   }
   if ('name' in b || full) {
@@ -23,6 +25,7 @@ export function sanitizePlace(body: unknown, full: boolean): { value: Record<str
   for (const [key, max] of [['city', 60], ['area', 60], ['address', 200]] as const) {
     if (key in b) out[key] = clip(b[key], max) || null
   }
+  if ('wishlisted' in b) out.wishlisted_at = b.wishlisted === true ? new Date().toISOString() : null
   if ('maps_url' in b) {
     const url = clip(b.maps_url, 500)
     if (url && !/^https?:\/\//i.test(url)) return { error: 'The map link must start with http' }

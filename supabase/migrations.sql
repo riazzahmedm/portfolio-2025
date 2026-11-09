@@ -94,3 +94,31 @@ alter table logs add column if not exists place_id      uuid references places(i
 alter table logs add column if not exists screen_format text;
 alter table logs add column if not exists seating       text;   -- 'recliner' | 'luxe' | 'insignia' | 'gold'
 create index if not exists logs_place_idx on logs (place_id);
+
+-- ── Been there (/places): visits, wishlist, theatre vibe, photo bucket ───────────────────────────────────────
+-- One row per visit to a place. Anyone may read; only the server (service role) writes.
+create table if not exists place_visits (
+  id             uuid primary key default gen_random_uuid(),
+  place_id       uuid not null references places(id) on delete cascade,
+  visited_on     date not null,
+  timing         text,                          -- 'morning' | 'afternoon' | 'evening' | 'night'
+  vibe           text,                          -- 'loved' | 'good' | 'okay' | 'meh' | 'never'
+  note           text,
+  photos         text[] not null default '{}',
+  spend_per_head integer,                       -- whole rupees
+  must_order     text[] not null default '{}',
+  created_at     timestamptz not null default now()
+);
+create index if not exists place_visits_place_idx on place_visits (place_id, visited_on desc);
+alter table place_visits enable row level security;
+drop policy if exists "place visits are readable" on place_visits;
+create policy "place visits are readable" on place_visits for select using (true);
+
+-- A place stays on the wishlist until its first visit is logged
+alter table places add column if not exists wishlisted_at timestamptz;
+
+-- How the theatre itself was on a movie visit (separate from the movie's own vibe)
+alter table logs add column if not exists theatre_vibe text;   -- same keys as place_visits.vibe
+
+-- Public bucket for visit photos
+insert into storage.buckets (id, name, public) values ('place-photos', 'place-photos', true) on conflict (id) do nothing;

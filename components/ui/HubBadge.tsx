@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 
-const SECTIONS = ['art', 'shop', 'movies', 'blog']
+const SECTIONS = ['art', 'shop', 'movies', 'blog', 'places']
 
 /**
  * The way back, mounted once for the whole app. On a section's front page (Art, Shop, Movies, Blog) it is a "← Hub" pill;

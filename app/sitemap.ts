@@ -14,6 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/blog`,   lastModified: now, changeFrequency: 'weekly',  priority: 0.9 },
     { url: `${SITE_URL}/art`,    lastModified: now, changeFrequency: 'weekly',  priority: 0.7 },
     { url: `${SITE_URL}/movies`, lastModified: now, changeFrequency: 'weekly',  priority: 0.7 },
+    { url: `${SITE_URL}/places`, lastModified: now, changeFrequency: 'weekly',  priority: 0.7 },
   ]
 
   let posts: Awaited<ReturnType<typeof getPublishedPosts>> = []

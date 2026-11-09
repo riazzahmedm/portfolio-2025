@@ -3,6 +3,7 @@ import { enrich }   from '@/lib/tmdb'
 import { isAdmin }  from '@/lib/admin-auth'
 import { dbError } from '@/lib/api-error'
 import { LOGS_WITH_PLACE, placesNotReady } from '@/lib/movies-select'
+import { visitsNotReady } from '@/lib/places-core'
 
 // Entries still being watched live in the "Now watching" strip, not in the log, until they are marked watched.
 // (A plain neq would also drop rows whose status is null.)
@@ -138,6 +139,8 @@ export async function POST(req: Request) {
   const { data, error } = inProgressId
     ? await supabase.from('logs').update({ ...body, status: body.status ?? 'watched' }).eq('id', inProgressId).select().single()
     : await supabase.from('logs').insert(body).select().single()
+  // A theatre vibe can't be saved until the new column exists: say so instead of a generic failure
+  if (error && 'theatre_vibe' in body && visitsNotReady(error)) return Response.json({ error: 'Run the Been there SQL block in supabase/migrations.sql first' }, { status: 503 })
   if (error) return dbError(error)
 
   // Remove from Watch Later if it was queued there

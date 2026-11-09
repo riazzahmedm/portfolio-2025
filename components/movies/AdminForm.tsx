@@ -607,11 +607,11 @@ export default function AdminForm({
         }
         placeId = (await res.json()).id
       }
-      if (placeId || theatre.format || theatre.seating || initialLog?.place_id || initialLog?.screen_format || initialLog?.seating) {
-        theatreFields = { place_id: placeId, screen_format: theatre.format || null, ...(theatre.seating || initialLog?.seating ? { seating: theatre.seating || null } : null) }
+      if (placeId || theatre.format || theatre.vibe || initialLog?.place_id || initialLog?.screen_format || initialLog?.theatre_vibe) {
+        theatreFields = { place_id: placeId, screen_format: theatre.format || null, ...(theatre.vibe || initialLog?.theatre_vibe ? { theatre_vibe: theatre.vibe || null } : null) }
       }
-    } else if (isEdit && (initialLog?.place_id || initialLog?.screen_format || initialLog?.seating)) {
-      theatreFields = { place_id: null, screen_format: null, ...(initialLog?.seating ? { seating: null } : null) }
+    } else if (isEdit && (initialLog?.place_id || initialLog?.screen_format || initialLog?.theatre_vibe)) {
+      theatreFields = { place_id: null, screen_format: null, ...(initialLog?.theatre_vibe ? { theatre_vibe: null } : null) }
     }
 
     if (isEdit) {

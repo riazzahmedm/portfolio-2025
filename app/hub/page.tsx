@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Riaz Ahmed',
-  description: 'Portfolio, Shop, Movies, Blog and Art by Riaz Ahmed.',
+  description: 'Portfolio, Shop, Movies, Blog, Art and Been there by Riaz Ahmed.',
   alternates: { canonical: '/hub' },
 }
 
@@ -61,6 +61,16 @@ const CARDS: {
     accentGlow: 'rgba(245,158,11,0.2)',
     tag: '05',
     kicker: 'Gallery',
+  },
+  {
+    href: '/places',
+    label: 'Been there',
+    sub: 'Cafes, food & outings',
+    accent: '#fb7185',
+    accentDim: 'rgba(251,113,133,0.12)',
+    accentGlow: 'rgba(251,113,133,0.2)',
+    tag: '06',
+    kicker: 'Timeline',
   },
 ]
 
