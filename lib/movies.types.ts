@@ -1,3 +1,5 @@
+import type { PlaceLite } from './places'
+
 export type LogType   = 'movie' | 'series' | 'episode'
 export type LogStatus = 'watched' | 'watching' | 'dropped'
 export type LogSource = 'manual' | 'letterboxd'
@@ -21,7 +23,7 @@ export const VIBES: {
 
 // ── Platforms ────────────────────────────────────────────────────────────────
 export const PLATFORMS = [
-  { key: 'theatre',    label: 'Theatre',     emoji: '🎭', logo: null },
+  { key: 'theatre',    label: 'Theatre',     emoji: '🍿', logo: null },
   { key: 'netflix',    label: 'Netflix',     emoji: '🔴', logo: 'https://www.google.com/s2/favicons?domain=netflix.com&sz=64' },
   { key: 'prime',      label: 'Prime Video', emoji: '📦', logo: 'https://www.google.com/s2/favicons?domain=primevideo.com&sz=64' },
   { key: 'apple',      label: 'Apple TV+',   emoji: '🍎', logo: 'https://www.google.com/s2/favicons?domain=tv.apple.com&sz=64' },
@@ -72,6 +74,10 @@ export interface MovieLog {
   review:          string | null
   watched_on:      string          // ISO date
   platform:        string | null
+  place_id:        string | null    // the theatre, when platform is 'theatre'
+  screen_format:   string | null    // 'imax', '4dx', ... (see SCREEN_FORMATS), or null for an ordinary screen
+  seating:         string | null    // 'recliner', 'luxe', ... (see SEATING)
+  place?:          PlaceLite | null // loaded alongside the log by the movies API
   favorite_person: FavoritePerson | null
   draws:           string[]
   season:          number | null

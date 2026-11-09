@@ -2,15 +2,18 @@ import { supabase } from '@/lib/supabase'
 import { enrich }   from '@/lib/tmdb'
 import { isAdmin }  from '@/lib/admin-auth'
 import { dbError } from '@/lib/api-error'
+import { LOGS_WITH_PLACE, placesNotReady } from '@/lib/movies-select'
 
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const { data, error } = await supabase.from('logs').select('*').eq('id', id).single()
-  if (error) return dbError(error, 404)
-  return Response.json(data)
+  const one = (cols: string) => supabase.from('logs').select(cols).eq('id', id).single()
+  let r = await one(LOGS_WITH_PLACE)
+  if (placesNotReady(r.error)) r = await one('*')
+  if (r.error) return dbError(r.error, 404)
+  return Response.json(r.data)
 }
 
 export async function PATCH(
@@ -32,7 +35,9 @@ export async function PATCH(
   const { data, error } = await supabase
     .from('logs').update(body).eq('id', id).select().single()
   if (error) return dbError(error)
-  return Response.json(data)
+  // Hand back the row with its theatre attached, so the card can show it without a reload
+  const { data: withPlace } = await supabase.from('logs').select(LOGS_WITH_PLACE).eq('id', id).single()
+  return Response.json(withPlace ?? data)
 }
 
 export async function DELETE(

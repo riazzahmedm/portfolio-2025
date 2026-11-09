@@ -9,6 +9,9 @@ import StoryCardModal from './StoryCardModal'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import TMDBPreviewModal from './TMDBPreviewModal'
 import { tiltProps, gyroRef } from '@/lib/tilt'
+import PlatformIcon from './PlatformIcon'
+import { placeLine, screenFormatLabel } from '@/lib/places'
+import { useTapReveal } from './useTapReveal'
 
 const TYPE_COLOR: Record<string, string> = {
   movie:   '#82ff1f',
@@ -43,22 +46,26 @@ function VibeBadge({ vibe }: { vibe: string }) {
   )
 }
 
-function PlatformBadge({ platform }: { platform: string }) {
+/** Whether the badge needs words: only a theatre with a saved name does. Streaming logos speak for themselves. */
+const hasPlatformLabel = (log: MovieLog) => log.platform === 'theatre' && !!log.place
+
+function PlatformBadge({ platform, log }: { platform: string; log: MovieLog }) {
   const p = PLATFORMS.find(x => x.key === platform)
-  if (!p) return null
+  if (!p || p.key === 'unofficial') return null   // never shown on the card
+  const withLabel = hasPlatformLabel(log)
+  // A theatre visit shows which theatre (and the format, when there is one)
+  const format = platform === 'theatre' ? screenFormatLabel(log.screen_format) : null
+  const label  = log.place?.name ?? ''   // the format and city are in the tooltip, so the name has room on a narrow card
+  const full   = platform === 'theatre' ? [placeLine(log.place), format].filter(Boolean).join(' · ') || p.label : p.label
   return (
-    <div style={{
-      display: 'inline-flex', alignItems: 'center', gap: '4px',
-      fontSize: '9px', color: 'rgba(255,255,255,0.7)',
-      fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em',
+    <div title={full} aria-label={full} style={{
+      display: 'inline-flex', alignItems: 'center', gap: '5px', minWidth: 0,
+      fontSize: withLabel ? '10.5px' : '9px', color: 'rgba(255,255,255,0.9)',
+      fontFamily: withLabel ? 'var(--ff-body)' : 'var(--ff-mono)', letterSpacing: withLabel ? '0.01em' : '0.08em',
       whiteSpace: 'nowrap',
     }}>
-      {p.logo
-        // eslint-disable-next-line @next/next/no-img-element
-        ? <img src={p.logo} alt={p.label} style={{ width: '12px', height: '12px', borderRadius: '3px', objectFit: 'contain' }} />
-        : <span style={{ fontSize: '10px' }}>{p.emoji}</span>
-      }
-      <span>{p.label}</span>
+      <PlatformIcon platform={p} size={withLabel ? 13 : 16} />
+      {withLabel && <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{label}</span>}
     </div>
   )
 }
@@ -79,7 +86,7 @@ export default function LogCard({
   const [showStory,   setShowStory]   = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [deleting,    setDeleting]    = useState(false)
-  const [hovered,     setHovered]     = useState(false)
+  const { box, showing: hovered, bind } = useTapReveal()
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   // Shape MovieLog into TMDBResult for the preview modal
@@ -124,10 +131,9 @@ export default function LogCard({
     <>
       <div
         className="tilt gc"
-        ref={gyroRef}
+        ref={el => { gyroRef(el); box.current = el }}
         {...tiltProps}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        {...bind}
         style={{ border: `1px solid ${hovered ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)'}` }}
       >
         {log.poster_url ? (
@@ -138,14 +144,38 @@ export default function LogCard({
         )}
         <div className="tilt-glare" />
 
-        {/* Type badge */}
-        {showType && <div className="gc-pill" style={{ color: TYPE_COLOR[log.type] }}>{TYPE_LABEL[log.type]}</div>}
+        {/* Top-left pill: where it was watched, plus Series/Episode when the list mixes types */}
+        {(() => {
+          const typeTag = showType && log.type !== 'movie'
+          const via     = log.platform && log.platform !== 'unofficial'
+          if (!typeTag && !via) return null
+          // A streaming logo is already a rounded tile, so it sits on the poster bare, lifted by a shadow and a faint ring
+          const logoOnly = !typeTag && via && !hasPlatformLabel(log) && PLATFORMS.find(x => x.key === log.platform)?.logo
+          if (logoOnly) {
+            const lp = PLATFORMS.find(x => x.key === log.platform)!
+            return (
+              <div title={lp.label} aria-label={lp.label} style={{
+                position: 'absolute', top: '10px', left: '10px', zIndex: 2, display: 'flex',
+                width: '26px', height: '26px', borderRadius: '7px',
+                boxShadow: '0 0 0 1px rgba(255,255,255,0.28), 0 4px 12px rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.5)',
+              }}>
+                <PlatformIcon platform={lp} size={26} />
+              </div>
+            )
+          }
+          return (
+            <div className="gc-pill" style={{ display: 'flex', alignItems: 'center', gap: '7px', maxWidth: 'calc(100% - 20px)', textTransform: 'none', letterSpacing: '0.06em', ...(hasPlatformLabel(log) ? { padding: '4px 9px' } : null), ...(!typeTag && !hasPlatformLabel(log) ? { padding: '5px' } : null) }}>
+              {typeTag && <span style={{ color: TYPE_COLOR[log.type], textTransform: 'uppercase', letterSpacing: '0.18em' }}>{TYPE_LABEL[log.type]}</span>}
+              {via && <PlatformBadge platform={log.platform!} log={log} />}
+            </div>
+          )
+        })()}
 
         {/* Action buttons */}
         <div style={{
           position: 'absolute', top: '10px', right: '10px', zIndex: 4,
           display: 'flex', flexDirection: 'column', gap: '6px',
-          opacity: hovered ? 1 : 0, transition: 'opacity 0.18s',
+          opacity: hovered ? 1 : 0, pointerEvents: hovered ? 'auto' : 'none', transition: 'opacity 0.18s',
         }}>
           {tmdbResult && (
             <button className="gc-btn" onClick={() => setShowPreview(true)} title="Quick preview" style={{ color: '#d6c8ff' }}>
@@ -204,7 +234,6 @@ export default function LogCard({
           )}
 
           <div className="gc-row">
-            {log.platform ? <PlatformBadge platform={log.platform} /> : <span />}
             <span style={{ whiteSpace: 'nowrap' }}>{shortDate(log.watched_on)}</span>
           </div>
         </div>

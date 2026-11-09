@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { ArrowLeft, Star, Clock, Globe, RefreshCw, ExternalLink } from 'lucide-react'
 import type { MovieLog } from '@/lib/movies.types'
 import { VIBES, PLATFORMS, DRAWS } from '@/lib/movies.types'
+import PlatformIcon from '@/components/movies/PlatformIcon'
+import { screenFormatLabel, seatingLabel } from '@/lib/places'
 
 function MetaChip({ children }: { children: React.ReactNode }) {
   return (
@@ -262,13 +264,16 @@ export default function MovieDetailPage() {
               <div style={{ padding: '14px 16px', background: 'var(--surface)', border: '1px solid var(--border-card)', borderRadius: '12px' }}>
                 <div style={{ fontSize: '9px', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--ff-mono)', marginBottom: '8px' }}>Platform</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                  {platform.logo
-                    // eslint-disable-next-line @next/next/no-img-element
-                    ? <img src={platform.logo} alt="" style={{ width: '18px', height: '18px', borderRadius: '4px', objectFit: 'contain' }} />
-                    : <span style={{ fontSize: '16px' }}>{platform.emoji}</span>
-                  }
+                  <PlatformIcon platform={platform} size={18} />
                   <span style={{ fontFamily: 'var(--ff-body)', fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>{platform.label}</span>
                 </div>
+                {platform.key === 'theatre' && (log.place || log.screen_format || log.seating) && (
+                  <div style={{ marginTop: '8px', fontFamily: 'var(--ff-body)', fontSize: '12px', lineHeight: 1.5, color: 'rgba(255,255,255,0.5)' }}>
+                    {log.place && <div style={{ color: 'rgba(255,255,255,0.8)' }}>{log.place.name}</div>}
+                    {log.place && [log.place.area, log.place.city].filter(Boolean).length > 0 && <div>{[log.place.area, log.place.city].filter(Boolean).join(', ')}</div>}
+                    {(log.screen_format || log.seating) && <div>{[screenFormatLabel(log.screen_format), seatingLabel(log.seating)].filter(Boolean).join(' · ')}</div>}
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase'
 import { enrich }   from '@/lib/tmdb'
 import { isAdmin }  from '@/lib/admin-auth'
 import { dbError } from '@/lib/api-error'
+import { LOGS_WITH_PLACE, placesNotReady } from '@/lib/movies-select'
 
 // Entries still being watched live in the "Now watching" strip, not in the log, until they are marked watched.
 // (A plain neq would also drop rows whose status is null.)
@@ -56,14 +57,16 @@ export async function GET(req: Request) {
 
   // ?all=true — returns every record (used by /wrapped stats page)
   if (searchParams.get('all') === 'true') {
-    const { data, error } = await supabase
+    const all = (cols: string) => supabase
       .from('logs')
-      .select('*')
+      .select(cols)
       .or(NOT_IN_PROGRESS)
       .order('watched_on', { ascending: false })
       .order('created_at', { ascending: false })
-    if (error) return dbError(error)
-    return Response.json(data ?? [])
+    let r = await all(LOGS_WITH_PLACE)
+    if (placesNotReady(r.error)) r = await all('*')
+    if (r.error) return dbError(r.error)
+    return Response.json(r.data ?? [])
   }
 
   const page  = Math.max(1, parseInt(searchParams.get('page')  ?? '1'))
@@ -72,17 +75,20 @@ export async function GET(req: Request) {
   const to    = from + limit - 1
 
   const type  = searchParams.get('type')
-  const baseQ = supabase.from('logs').select('*', { count: 'exact' })
-    .or(NOT_IN_PROGRESS)
-    .order('watched_on', { ascending: false })
-    .order('created_at', { ascending: false })
-  const mainQ = (type === 'movie' || type === 'series') ? baseQ.eq('type', type) : baseQ
-  const [main, movies, series] = await Promise.all([
-    mainQ.range(from, to),
+  const pageQuery = (cols: string) => {
+    const baseQ = supabase.from('logs').select(cols, { count: 'exact' })
+      .or(NOT_IN_PROGRESS)
+      .order('watched_on', { ascending: false })
+      .order('created_at', { ascending: false })
+    return ((type === 'movie' || type === 'series') ? baseQ.eq('type', type) : baseQ).range(from, to)
+  }
+  const [withPlace, movies, series] = await Promise.all([
+    pageQuery(LOGS_WITH_PLACE),
     supabase.from('logs').select('*', { count: 'exact', head: true }).or(NOT_IN_PROGRESS).eq('type', 'movie'),
     supabase.from('logs').select('*', { count: 'exact', head: true }).or(NOT_IN_PROGRESS).eq('type', 'series'),
   ])
 
+  const main = placesNotReady(withPlace.error) ? await pageQuery('*') : withPlace
   if (main.error) return dbError(main.error)
   return Response.json({
     data:         main.data,

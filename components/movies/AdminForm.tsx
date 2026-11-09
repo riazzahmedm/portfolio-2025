@@ -6,6 +6,8 @@ import type { LogType, LogStatus, TMDBResult, TMDBEpisode, FavoritePerson, Movie
 import DatePicker from './DatePicker'
 import TMDBPreviewModal from './TMDBPreviewModal'
 import { VIBES, PLATFORMS, DRAWS } from '@/lib/movies.types'
+import PlatformIcon from './PlatformIcon'
+import TheatreFields, { blankTheatre, theatreFromLog, type TheatreState } from './TheatreFields'
 
 // ── Shared style helpers ────────────────────────────────────────────────────
 const TMDB_IMG = (path: string | null, size = 'w92') =>
@@ -140,7 +142,7 @@ function PlatformSelector({ value, onChange }: { value: string; onChange: (v: st
               // eslint-disable-next-line @next/next/no-img-element
               <img src={p.logo} alt={p.label} className="af-platform-img" style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'contain' }} />
             ) : (
-              <span style={{ fontSize: '22px', lineHeight: 1 }}>{p.emoji}</span>
+              <PlatformIcon platform={p} size={22} />
             )}
           </button>
         )
@@ -374,6 +376,7 @@ export default function AdminForm({
     draws:     initialLog.draws ?? [],
     rewatch:   initialLog.rewatch ?? false,
   } : blank)
+  const [theatre,         setTheatre]         = useState<TheatreState>(() => (initialLog ? theatreFromLog(initialLog) : blankTheatre()))
   const [editTmdbOverride, setEditTmdbOverride] = useState<TMDBResult | null>(null)
   const [editQuery,        setEditQuery]        = useState('')
   const [editResults,      setEditResults]      = useState<TMDBResult[]>([])
@@ -515,7 +518,7 @@ export default function AdminForm({
     if (isEdit || !selected) { if (!isEdit) setProviders(null); return }
     fetch(`/api/tmdb/providers?id=${selected.id}&type=${tmdbType}`)
       .then(r => r.json())
-      .then(setProviders)
+      .then(d => setProviders(Array.isArray(d?.flatrate) && Array.isArray(d?.rent) ? d : null))
       .catch(() => setProviders(null))
   }, [isEdit, selected, tmdbType])
 
@@ -527,7 +530,7 @@ export default function AdminForm({
     const t = type === 'movie' ? 'movie' : 'tv'
     fetch(`/api/tmdb/providers?id=${tmdbId}&type=${t}`)
       .then(r => r.json())
-      .then(setProviders)
+      .then(d => setProviders(Array.isArray(d?.flatrate) && Array.isArray(d?.rent) ? d : null))
       .catch(() => setProviders(null))
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEdit, editTmdbOverride, type])
@@ -586,6 +589,31 @@ export default function AdminForm({
     if (!isEdit && !selected) { setError('Select a title first'); return }
     setSubmitting(true); setError('')
 
+    // Theatre visits carry where it was seen. A new theatre is saved first so the log can point at it; nothing is
+    // sent for other platforms, except clearing an old theatre when an entry is switched away from the theatre.
+    let theatreFields: Record<string, unknown> = {}
+    if (form.platform === 'theatre') {
+      let placeId = theatre.place?.id ?? null
+      const name = theatre.query.trim()
+      if (!placeId && name) {
+        const res = await fetch('/api/places', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ kind: 'theatre', name, city: theatre.city, area: theatre.area }),
+        })
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}))
+          const msg = d.error ?? 'Could not save the theatre'
+          setError(msg); toast.error('Theatre not saved', { description: msg }); setSubmitting(false); return
+        }
+        placeId = (await res.json()).id
+      }
+      if (placeId || theatre.format || theatre.seating || initialLog?.place_id || initialLog?.screen_format || initialLog?.seating) {
+        theatreFields = { place_id: placeId, screen_format: theatre.format || null, ...(theatre.seating || initialLog?.seating ? { seating: theatre.seating || null } : null) }
+      }
+    } else if (isEdit && (initialLog?.place_id || initialLog?.screen_format || initialLog?.seating)) {
+      theatreFields = { place_id: null, screen_format: null, ...(initialLog?.seating ? { seating: null } : null) }
+    }
+
     if (isEdit) {
       // PATCH — only update personal fields
       const patch = {
@@ -610,6 +638,7 @@ export default function AdminForm({
         status:          form.status,
         tags:            [],
         rewatch:         form.rewatch,
+        ...theatreFields,
       }
       const res = await fetch(`/api/movies/${initialLog!.id}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' },
@@ -658,6 +687,7 @@ export default function AdminForm({
       tags:            [],
       rewatch:         form.rewatch,
       source:          'manual',
+      ...theatreFields,
     }
 
     const res = await fetch('/api/movies', {
@@ -672,7 +702,7 @@ export default function AdminForm({
         setSelectedEpisode(null)
         setForm(f => ({ ...blank, watchedOn: f.watchedOn, platform: f.platform }))
       } else {
-        clear(); setForm(blank)
+        clear(); setForm(blank); setTheatre(blankTheatre())
       }
       onSuccess()
     } else {
@@ -1048,6 +1078,7 @@ export default function AdminForm({
       <div className="af-section" style={SECTION}>
         <SectionLabel>Watched on</SectionLabel>
         <PlatformSelector value={form.platform} onChange={v => setField('platform', v)} />
+        {form.platform === 'theatre' && <TheatreFields value={theatre} onChange={setTheatre} />}
       </div>
 
       {/* ── Favorite person ── */}

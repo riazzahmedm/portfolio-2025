@@ -3,14 +3,6 @@ import { X, Download, Share2 } from 'lucide-react'
 import { useState } from 'react'
 import type { MovieLog } from '@/lib/movies.types'
 
-const VARIANTS: { id: number; label: string; accent: string }[] = [
-  { id: 1, label: 'Neon',   accent: '#ff0080' },
-  { id: 2, label: 'Matrix', accent: '#00ff41' },
-  { id: 3, label: 'Pop',    accent: '#ffe600' },
-  { id: 4, label: 'Aurora', accent: '#00ffc8' },
-  { id: 5, label: 'OG',     accent: '#b8a0ff' },
-]
-
 export default function StoryCardModal({
   log,
   onClose,
@@ -18,25 +10,16 @@ export default function StoryCardModal({
   log:     MovieLog
   onClose: () => void
 }) {
-  const [variant, setVariant] = useState(1)
-  const [imgKey,  setImgKey]  = useState(0)
   const [loading, setLoading] = useState(true)
 
-  const imageUrl = `/api/story-card/${log.id}?variant=${variant}`
-  const active   = VARIANTS.find(v => v.id === variant)!
-
-  function pickVariant(v: number) {
-    setVariant(v)
-    setLoading(true)
-    setImgKey(k => k + 1)
-  }
+  const imageUrl = `/api/story-card/${log.id}`
 
   async function download() {
     const res  = await fetch(imageUrl)
     const blob = await res.blob()
     const a    = document.createElement('a')
     a.href     = URL.createObjectURL(blob)
-    a.download = `${log.title.replace(/\s+/g, '-')}-story-v${variant}.png`
+    a.download = `${log.title.replace(/\s+/g, '-')}-story.png`
     a.click()
   }
 
@@ -91,10 +74,6 @@ export default function StoryCardModal({
           width: 100%; height: 100%; object-fit: cover;
           transition: opacity 0.2s;
         }
-        .scm-variants {
-          display: flex; gap: 6px; width: 100%;
-          overflow-x: auto; padding-bottom: 2px;
-        }
         .scm-hint {
           font-family: var(--ff-mono);
           font-size: 11px; letter-spacing: 0.1em;
@@ -134,13 +113,12 @@ export default function StoryCardModal({
           <div
             className="scm-preview"
             style={{
-              border: `1px solid ${active.accent}30`,
-              boxShadow: `0 0 40px ${active.accent}18`,
+              border: '1px solid rgba(184,160,255,0.19)',
+              boxShadow: '0 0 40px rgba(184,160,255,0.09)',
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              key={imgKey}
               src={imageUrl}
               alt="Story card preview"
               onLoad={() => setLoading(false)}
@@ -156,37 +134,6 @@ export default function StoryCardModal({
                 Rendering…
               </div>
             )}
-          </div>
-
-          {/* Variant picker */}
-          <div className="scm-variants">
-            {VARIANTS.map(v => (
-              <button
-                key={v.id}
-                onClick={() => pickVariant(v.id)}
-                style={{
-                  flex: '1 0 52px',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
-                  padding: '8px 4px',
-                  background: variant === v.id ? `${v.accent}14` : 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${variant === v.id ? v.accent + '55' : 'rgba(255,255,255,0.08)'}`,
-                  borderRadius: '10px', cursor: 'pointer', transition: 'all 0.15s',
-                }}
-              >
-                <div style={{
-                  width: '8px', height: '8px', borderRadius: '50%',
-                  background: variant === v.id ? v.accent : 'rgba(255,255,255,0.15)',
-                  transition: 'background 0.15s',
-                }} />
-                <span style={{
-                  fontFamily: 'var(--ff-mono)', fontSize: '9px', letterSpacing: '0.06em',
-                  color: variant === v.id ? v.accent : 'rgba(255,255,255,0.3)',
-                  transition: 'color 0.15s',
-                }}>
-                  {v.label}
-                </span>
-              </button>
-            ))}
           </div>
 
           <p className="scm-hint">Download and post to your Instagram Stories</p>

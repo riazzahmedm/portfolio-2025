@@ -6,6 +6,7 @@ import type { WatchlistItem, TMDBResult, WatchProvidersLite } from '@/lib/movies
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import TMDBPreviewModal from '@/components/movies/TMDBPreviewModal'
 import { tiltProps, gyroRef } from '@/lib/tilt'
+import { useTapReveal } from './useTapReveal'
 
 /** Up to three streaming logos (names in the tooltip), or a small "Rent · Buy" when it is only available to hire. */
 function WhereToWatch({ info }: { info?: WatchProvidersLite | null }) {
@@ -42,7 +43,7 @@ export default function WatchlistCard({
   onLog:     (item: WatchlistItem) => void
   providers?: WatchProvidersLite | null   // undefined while loading or unknown
 }) {
-  const [hovered,     setHovered]     = useState(false)
+  const { box, showing: hovered, bind } = useTapReveal()
   const [deleting,    setDeleting]    = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [preview,     setPreview]     = useState(false)
@@ -78,10 +79,9 @@ export default function WatchlistCard({
     <>
     <div
       className="tilt gc"
-      ref={gyroRef}
+      ref={el => { gyroRef(el); box.current = el }}
       {...tiltProps}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      {...bind}
       style={{ border: `1px solid ${hovered ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)'}` }}
     >
       {item.poster_url
@@ -94,11 +94,11 @@ export default function WatchlistCard({
       {/* Type badge */}
       <div className="gc-pill" style={{ color: item.type === 'movie' ? '#82ff1f' : '#b8a0ff' }}>{item.type}</div>
 
-      {/* Hover actions */}
+      {/* Actions: hover with a mouse, tap the card on a touch screen */}
       <div style={{
         position: 'absolute', top: '10px', right: '10px', zIndex: 4,
         display: 'flex', flexDirection: 'column', gap: '6px',
-        opacity: hovered ? 1 : 0, transition: 'opacity 0.18s',
+        opacity: hovered ? 1 : 0, pointerEvents: hovered ? 'auto' : 'none', transition: 'opacity 0.18s',
       }}>
         {/* View detail — always visible to everyone */}
         {item.tmdb_id && (

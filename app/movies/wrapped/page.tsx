@@ -1,4 +1,5 @@
 'use client'
+import PlatformIcon from '@/components/movies/PlatformIcon'
 import { useEffect, useState, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Film, Tv, Clock, RefreshCw, Share2, Flame, CalendarDays, BarChart2, Download } from 'lucide-react'
@@ -1539,11 +1540,7 @@ export default function WrappedPage() {
                     return (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', paddingBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                         <div style={{ width: '52px', height: '52px', borderRadius: '12px', background: '#111', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          {platform.logo
-                            // eslint-disable-next-line @next/next/no-img-element
-                            ? <img src={platform.logo} alt={platform.label} style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'contain' }} />
-                            : <span style={{ fontSize: '24px' }}>{platform.emoji}</span>
-                          }
+                          <PlatformIcon platform={platform} size={28} />
                         </div>
                         <div>
                           <div style={{ fontFamily: 'var(--ff-display)', fontSize: '22px', fontWeight: 400, letterSpacing: '0.02em' }}>
@@ -1575,11 +1572,7 @@ export default function WrappedPage() {
                             background: '#111', border: '1px solid rgba(255,255,255,0.08)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
                           }}>
-                            {platform?.logo
-                              // eslint-disable-next-line @next/next/no-img-element
-                              ? <img src={platform.logo} alt={platform.label} style={{ width: '16px', height: '16px', objectFit: 'contain', borderRadius: '3px' }} />
-                              : <span style={{ fontSize: '13px', lineHeight: 1 }}>{platform?.emoji ?? '▶️'}</span>
-                            }
+                            {platform ? <PlatformIcon platform={platform} size={16} /> : <span style={{ fontSize: '13px', lineHeight: 1 }}>▶️</span>}
                           </div>
                           {/* Label + bar */}
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
