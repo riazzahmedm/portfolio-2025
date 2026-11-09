@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 const CAN_HOVER = '(hover: hover) and (pointer: fine) and (min-width: 641px)'
 
@@ -9,7 +9,8 @@ const CAN_HOVER = '(hover: hover) and (pointer: fine) and (min-width: 641px)'
  * as normal, so tapping the title still opens the film. Keyboard focus reveals them too.
  */
 export function useTapReveal() {
-  const box = useRef<HTMLDivElement | null>(null)
+  const box = useRef<HTMLElement | null>(null)
+  const setBox = useCallback((el: HTMLElement | null) => { box.current = el }, [])
   const [hovered, setHovered] = useState(false)
   const [open,    setOpen]    = useState(false)
   const [focused, setFocused] = useState(false)
@@ -32,5 +33,5 @@ export function useTapReveal() {
     onBlur:  (e: React.FocusEvent) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setFocused(false) },
   }
 
-  return { box, showing: hovered || open || focused, bind }
+  return { setBox, showing: hovered || open || focused, bind }
 }

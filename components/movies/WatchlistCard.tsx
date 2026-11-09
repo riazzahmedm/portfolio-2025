@@ -43,7 +43,7 @@ export default function WatchlistCard({
   onLog:     (item: WatchlistItem) => void
   providers?: WatchProvidersLite | null   // undefined while loading or unknown
 }) {
-  const { box, showing: hovered, bind } = useTapReveal()
+  const { setBox, showing: hovered, bind } = useTapReveal()
   const [deleting,    setDeleting]    = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [preview,     setPreview]     = useState(false)
@@ -79,7 +79,7 @@ export default function WatchlistCard({
     <>
     <div
       className="tilt gc"
-      ref={el => { gyroRef(el); box.current = el }}
+      ref={el => { gyroRef(el); setBox(el) }}
       {...tiltProps}
       {...bind}
       style={{ border: `1px solid ${hovered ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)'}` }}

@@ -31,6 +31,8 @@ export async function POST(req: Request) {
     .from('place-photos')
     .upload(filename, buffer, { contentType: file.type, upsert: false })
 
+  // Before the SQL block runs there is no bucket yet: say so instead of a generic failure
+  if (error && /bucket not found/i.test(error.message)) return Response.json({ error: 'Run the Been there SQL block in supabase/migrations.sql first' }, { status: 503 })
   if (error) return dbError(error)
 
   const { data: { publicUrl } } = supabase.storage

@@ -88,7 +88,7 @@ export default function LogCard({
   const [showStory,   setShowStory]   = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [deleting,    setDeleting]    = useState(false)
-  const { box, showing: hovered, bind } = useTapReveal()
+  const { setBox, showing: hovered, bind } = useTapReveal()
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   // Shape MovieLog into TMDBResult for the preview modal
@@ -133,7 +133,7 @@ export default function LogCard({
     <>
       <div
         className="tilt gc"
-        ref={el => { gyroRef(el); box.current = el }}
+        ref={el => { gyroRef(el); setBox(el) }}
         {...tiltProps}
         {...bind}
         style={{ border: `1px solid ${hovered ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)'}` }}

@@ -1,6 +1,7 @@
 import { compressImage } from '@/lib/compress-image'
 
 /** Shrinks a photo in the browser (max 1600px) and uploads it; resolves to its public URL, throws a readable Error otherwise. */
+// Note: if a later photo of the same visit fails, the ones already uploaded stay in the bucket (and are uploaded again on retry).
 export async function uploadPlacePhoto(file: File): Promise<string> {
   let small: File
   try { small = await compressImage(file, 1600, 0.82) } catch { throw new Error('That photo could not be read. Try a JPEG, PNG or WebP image.') }

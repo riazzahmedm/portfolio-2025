@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { supabase } from '@/lib/supabase'
 import { LOGS_WITH_PLACE, placesNotReady } from '@/lib/movies-select'
 import type { Place } from '@/lib/places'
@@ -32,18 +33,35 @@ function theatreEntry(r: Row): TimelineEntry {
   }
 }
 
+const PAGE = 1000   // PostgREST returns at most this many rows per request, so longer lists are read in pages
+
+/** Reads every row of a query in pages (a stable order, with the id as tie-break, keeps pages from overlapping). */
+async function fetchAll(range: (from: number, to: number) => PromiseLike<{ data: Row[] | null; error: { message?: string; code?: string } | null }>) {
+  const all: Row[] = []
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await range(from, from + PAGE - 1)
+    if (error) return { data: null, error }
+    all.push(...(data ?? []))
+    if ((data ?? []).length < PAGE) return { data: all, error: null }
+  }
+}
+
 async function loadVisits(placeId?: string): Promise<TimelineEntry[]> {
-  let q = supabase.from('place_visits').select(`*, place:places(${PLACE_LITE})`).order('visited_on', { ascending: false })
-  if (placeId) q = q.eq('place_id', placeId)
-  const { data, error } = await q
+  const { data, error } = await fetchAll((from, to) => {
+    let q = supabase.from('place_visits').select(`*, place:places(${PLACE_LITE})`).order('visited_on', { ascending: false }).order('id').range(from, to)
+    if (placeId) q = q.eq('place_id', placeId)
+    return q
+  })
   if (error) { if (visitsNotReady(error) || placesNotReady(error)) return []; throw error }
   return (data ?? []).filter((r: Row) => r.place).map(visitEntry)
 }
 
 async function loadTheatreLogs(placeId?: string): Promise<{ entries: TimelineEntry[]; rows: Row[] }> {
-  let q = supabase.from('logs').select(LOGS_WITH_PLACE).eq('platform', 'theatre').not('place_id', 'is', null).order('watched_on', { ascending: false })
-  if (placeId) q = q.eq('place_id', placeId)
-  const { data, error } = await q
+  const { data, error } = await fetchAll((from, to) => {
+    let q = supabase.from('logs').select(LOGS_WITH_PLACE).eq('platform', 'theatre').not('place_id', 'is', null).order('watched_on', { ascending: false }).order('id').range(from, to)
+    if (placeId) q = q.eq('place_id', placeId)
+    return q
+  })
   if (error) { if (placesNotReady(error)) return { entries: [], rows: [] }; throw error }
   const rows = (data ?? []) as Row[]
   return { entries: rows.map(theatreEntry), rows }
@@ -64,7 +82,7 @@ export async function getWishlist(): Promise<Place[]> {
   return (data ?? []) as Place[]
 }
 
-export async function getPlaceDetail(id: string) {
+export const getPlaceDetail = cache(async (id: string) => {
   const { data: place, error } = await supabase.from('places').select('*').eq('id', id).maybeSingle()
   if (error) { if (/invalid input syntax/i.test(error.message)) return null; throw error }
   if (!place) return null
@@ -77,4 +95,4 @@ export async function getPlaceDetail(id: string) {
   const entries = mergeTimeline(await loadVisits(id), [])
   const mustOrder = [...new Set(entries.flatMap(e => e.mustOrder))]
   return { place: place as Place, entries, stats: placeStats(entries), mustOrder, wishlisted: !!place.wishlisted_at }
-}
+})

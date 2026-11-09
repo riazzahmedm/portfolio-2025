@@ -11,7 +11,8 @@ import { chip, field, label } from './form-styles'
 
 const CITY_KEY = 'places-city'
 const KEEP_KEY = 'places-kind'
-const remembered = (k: string) => { try { return localStorage.getItem(k) ?? '' } catch { return '' } }
+const remembered = (k: string) => { try { return typeof window === 'undefined' ? '' : localStorage.getItem(k) ?? '' } catch { return '' } }
+const isListed = (c: string) => (CITIES as readonly string[]).includes(c)
 const remember   = (k: string, v: string) => { try { localStorage.setItem(k, v) } catch { /* not remembered */ } }
 const today = () => { const d = new Date(); return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-') }
 
@@ -25,9 +26,15 @@ export default function PlaceForm({ initial, onSaved }: { initial?: { entry?: Ti
   const editing = initial?.entry?.source === 'visit' ? initial.entry : undefined
 
   const [mode,     setMode]     = useState<'visited' | 'wishlist'>('visited')
-  const [kind,     setKind]     = useState<LoggableKind>((editing?.place.kind as LoggableKind) ?? 'cafe')
-  const [city,     setCity]     = useState(editing?.place.city ?? '')
-  const [other,    setOther]    = useState(Boolean(editing?.place.city) && !(CITIES as readonly string[]).includes(editing?.place.city ?? ''))
+  // A new entry starts on the kind and city used last time (this form only ever renders in the browser)
+  const fresh = !editing && !initial?.placeId
+  const [kind,     setKind]     = useState<LoggableKind>(() => {
+    if (editing) return editing.place.kind as LoggableKind
+    const k = fresh ? remembered(KEEP_KEY) : ''
+    return PLACE_KINDS.some(x => x.key === k) ? (k as LoggableKind) : 'cafe'
+  })
+  const [city,     setCity]     = useState(() => editing?.place.city ?? (fresh ? remembered(CITY_KEY) : ''))
+  const [other,    setOther]    = useState(() => { const c = editing?.place.city ?? (fresh ? remembered(CITY_KEY) : ''); return Boolean(c) && !isListed(c) })
   const [query,    setQuery]    = useState('')
   const [place,    setPlace]    = useState<Place | null>(editing ? (editing.place as unknown as Place) : null)
   const [hasVisits, setHasVisits] = useState(Boolean(editing))
@@ -46,22 +53,13 @@ export default function PlaceForm({ initial, onSaved }: { initial?: { entry?: Ti
   const [error,    setError]    = useState('')
   const [busy,     setBusy]     = useState(false)
 
-  // Start from the city and kind used last time (new entries only)
-  useEffect(() => {
-    if (editing || initial?.placeId) return
-    const c = remembered(CITY_KEY), k = remembered(KEEP_KEY)
-    if (c) { setCity(c); setOther(!(CITIES as readonly string[]).includes(c)) }
-    if (PLACE_KINDS.some(x => x.key === k)) setKind(k as LoggableKind)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   // "Log another visit": load the saved place
   useEffect(() => {
     if (!initial?.placeId) return
     fetch(`/api/places/${initial.placeId}/detail`).then(r => (r.ok ? r.json() : null)).then(d => {
       if (!d?.place || d.place.kind === THEATRE_KIND) return
       setPlace(d.place); setKind(d.place.kind); setCity(d.place.city ?? ''); setHasVisits(d.entries.length > 0)
-      setOther(!!d.place.city && !(CITIES as readonly string[]).includes(d.place.city))
+      setOther(!!d.place.city && !isListed(d.place.city))
     }).catch(() => {})
   }, [initial?.placeId])
 
@@ -79,7 +77,7 @@ export default function PlaceForm({ initial, onSaved }: { initial?: { entry?: Ti
   }, [kind, city, query, place, editing])
 
   function pickPlace(p: Place) {
-    setPlace(p); setQuery(''); setCity(p.city ?? city)
+    setPlace(p); setQuery(''); setCity(p.city ?? city); setOther(!!p.city && !isListed(p.city))
     fetch(`/api/places/${p.id}/detail`).then(r => (r.ok ? r.json() : null)).then(d => {
       const visited = (d?.entries?.length ?? 0) > 0
       setHasVisits(visited)
@@ -183,7 +181,7 @@ export default function PlaceForm({ initial, onSaved }: { initial?: { entry?: Ti
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 13px', borderRadius: '10px', border: '1px solid rgba(184,160,255,0.4)', background: 'rgba(184,160,255,0.1)' }}>
             <MapPin size={15} color="#cdbcff" />
             <div style={{ flex: 1, minWidth: 0, fontSize: '14px', color: '#fff' }}>{place.name}{place.area ? ` · ${place.area}` : ''}</div>
-            {!editing && !initial?.placeId && (
+            {!editing && (
               <button type="button" aria-label="Choose a different place" onClick={() => { setPlace(null); setHasVisits(false) }} style={{ background: 'none', border: 0, color: 'rgba(255,255,255,0.55)', cursor: 'pointer', display: 'flex', padding: '4px' }}><X size={16} /></button>
             )}
           </div>

@@ -11,7 +11,7 @@ const TIMING_ICON = { morning: Sunrise, afternoon: Sun, evening: Sunset, night: 
 export default function PlaceRow({ entry, isAdmin, onEdit, onDelete }: {
   entry: TimelineEntry; isAdmin: boolean; onEdit?: (e: TimelineEntry) => void; onDelete?: (e: TimelineEntry) => void
 }) {
-  const { box, showing, bind } = useTapReveal()
+  const { setBox, showing, bind } = useTapReveal()
   const isTheatre = entry.source === 'theatre'
   const href  = isTheatre ? `/movies/${entry.movie!.id}` : `/places/${entry.place.id}`
   const title = isTheatre ? entry.movie!.title : entry.place.name
@@ -23,7 +23,7 @@ export default function PlaceRow({ entry, isAdmin, onEdit, onDelete }: {
   const canEdit = isAdmin && !isTheatre
 
   return (
-    <li ref={el => { (box as React.MutableRefObject<HTMLElement | null>).current = el }} {...(bind as object)} style={{ position: 'relative', listStyle: 'none', padding: '10px 0', display: 'flex', gap: '12px', alignItems: 'center' }}>
+    <li ref={setBox} {...(bind as object)} style={{ position: 'relative', listStyle: 'none', padding: '10px 0', display: 'flex', gap: '12px', alignItems: 'center' }}>
       <span aria-hidden style={{ position: 'absolute', left: '-25px', top: '50%', marginTop: '-5px', width: '9px', height: '9px', borderRadius: '50%', background: 'var(--bg)', border: '2px solid #b8a0ff' }} />
       <time dateTime={entry.date} style={{ position: 'absolute', left: '-62px', top: '50%', transform: 'translateY(-50%)', width: '34px', textAlign: 'right', lineHeight: 1.15, fontFamily: 'var(--ff-mono)', fontSize: '9px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>
         <b style={{ display: 'block', fontFamily: 'var(--ff-body)', fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>{d.getDate()}</b>

@@ -109,5 +109,8 @@ test('visitsNotReady spots a missing table or column only', () => {
   assert.equal(visitsNotReady({ code: '42P01', message: 'relation "place_visits" does not exist' }), true)
   assert.equal(visitsNotReady({ code: '42703', message: 'column places.wishlisted_at does not exist' }), true)
   assert.equal(visitsNotReady({ code: '23505', message: 'duplicate key' }), false)
+  assert.equal(visitsNotReady({ code: '42703', message: 'column logs.some_typo does not exist' }), false)
+  assert.equal(visitsNotReady({ code: '42P01', message: 'relation "orders" does not exist' }), false)
+  assert.equal(visitsNotReady({ message: "Could not find the 'theatre_vibe' column of 'logs' in the schema cache" }), true)
   assert.equal(visitsNotReady(undefined), false)
 })

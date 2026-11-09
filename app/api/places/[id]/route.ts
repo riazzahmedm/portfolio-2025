@@ -7,6 +7,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const { id } = await params
   const input = sanitizePlace(await req.json(), false)
   if ('error' in input) return Response.json({ error: input.error }, { status: 400 })
+  // The wishlist has its own rules (see POST /api/places), so it can't be switched on from a plain edit
+  delete input.value.wishlisted_at
   const { data, error } = await placesDb.from('places').update(input.value).eq('id', id).select().single()
   if (error) return dbError(error)
   return Response.json(data)

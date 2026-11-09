@@ -171,5 +171,6 @@ export const canWishlist = (place: { kind: string }, visitCount: number) => KIND
 /** True when a query failed only because the Been there SQL has not been run (missing table or column). */
 export function visitsNotReady(error: { message?: string; code?: string } | null | undefined): boolean {
   if (!error) return false
-  return /place_visits|wishlisted_at|theatre_vibe|42P01|42703|PGRST200|PGRST204/i.test(`${error.code ?? ''} ${error.message ?? ''}`)
+  // Every missing-table/column message names what is missing, so match the names, not the bare error codes
+  return /place_visits|wishlisted_at|theatre_vibe/i.test(error.message ?? '')
 }
