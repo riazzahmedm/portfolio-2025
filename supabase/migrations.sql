@@ -124,3 +124,12 @@ alter table logs add column if not exists theatre_timing text; -- 'morning' | 'a
 
 -- Public bucket for visit photos
 insert into storage.buckets (id, name, public) values ('place-photos', 'place-photos', true) on conflict (id) do nothing;
+
+-- ── Rate limits: shared counters for login, OTP and public event endpoints ─────────────────────────────────
+-- Only the server (service role) touches this table: RLS is on and there are no policies.
+create table if not exists rate_limits (
+  key          text primary key,
+  hits         integer not null default 0,
+  window_start timestamptz not null default now()
+);
+alter table rate_limits enable row level security;
