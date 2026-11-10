@@ -39,6 +39,18 @@ export async function POST(req: Request) {
     return Response.json({ error: 'No items' }, { status: 400 })
   }
 
+  // Keep only the address fields we use, as trimmed text of a sensible length, and require the ones a parcel needs
+  const addr = (body.shipping_address ?? {}) as unknown as Record<string, unknown>
+  const text = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '')
+  const shippingAddress: ShippingAddress = {
+    name: text(addr.name, 100), email: text(addr.email, 254), phone: text(addr.phone, 20),
+    line1: text(addr.line1, 200), line2: text(addr.line2, 200) || undefined,
+    city: text(addr.city, 80), state: text(addr.state, 80), pincode: text(addr.pincode, 12),
+  }
+  if (!shippingAddress.name || !shippingAddress.phone || !shippingAddress.line1 || !shippingAddress.city || !shippingAddress.state || !shippingAddress.pincode) {
+    return Response.json({ error: 'Please fill in your name, phone and full address' }, { status: 400 })
+  }
+
   // 1. Validate and merge lines: positive whole quantities, one line per variant
   const requested = new Map<string, number>()
   for (const item of body.items) {
@@ -151,7 +163,7 @@ export async function POST(req: Request) {
     .from('shop_orders')
     .insert({
       customer_id:      customer.id,
-      shipping_address: body.shipping_address,
+      shipping_address: shippingAddress,
       subtotal:         serverSubtotal,
       discount_amount:  serverDiscountAmount,
       total:            serverTotal,

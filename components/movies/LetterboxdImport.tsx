@@ -84,7 +84,7 @@ export default function LetterboxdImport({ onSuccess }: { onSuccess: () => void 
     setProgress(0)
 
     // Send in batches of 50 to avoid huge payloads / timeouts
-    const BATCH = 50
+    const BATCH = 25
     let inserted = 0, skipped = 0
     const errors: string[] = []
 
