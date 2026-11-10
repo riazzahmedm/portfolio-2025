@@ -22,7 +22,8 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     setReady(true)
-    fetch('/api/admin/shop/discounts/bundles').then(r => r.json()).then(setDeals)
+    // the public deals list: the admin one answers customers with an error object, which crashed the pricing
+    fetch('/api/shop/bundles').then(r => r.json()).then(d => setDeals(Array.isArray(d) ? d : [])).catch(() => {})
   }, [])
 
   useEffect(() => {
