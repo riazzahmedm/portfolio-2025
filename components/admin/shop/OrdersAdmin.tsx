@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 import { toast } from 'sonner'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import type { ShopOrder, OrderStatus } from '@/lib/shop.types'
@@ -27,6 +28,7 @@ export default function OrdersAdmin() {
   const [expanded, setExpanded] = useState<string | null>(null)
   const [filter,   setFilter]   = useState<string>('all')
   const [loading,  setLoading]  = useState(true)
+  const [sweepAsk, setSweepAsk] = useState(false)
 
   function refresh() {
     const params = filter !== 'all' ? `?payment_status=${filter}` : ''
@@ -34,6 +36,15 @@ export default function OrdersAdmin() {
   }
 
   useEffect(() => { refresh() }, [filter])
+
+  // Abandoned checkouts keep their stock reserved until they are cancelled
+  async function sweepStale() {
+    setSweepAsk(false)
+    const res = await fetch('/api/admin/shop/orders/sweep', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ hours: 48 }) })
+    const d = await res.json().catch(() => ({}))
+    if (res.ok) { toast.success(d.cancelled ? `Cancelled ${d.cancelled} unpaid order${d.cancelled === 1 ? '' : 's'} and released their stock` : 'No stale unpaid orders'); refresh() }
+    else toast.error(d.error ?? 'Could not clean up')
+  }
 
   async function updateOrder(id: string, patch: Record<string, string>) {
     const res = await fetch(`/api/admin/shop/orders/${id}`, {
@@ -64,8 +75,13 @@ export default function OrdersAdmin() {
               {f}
             </button>
           ))}
+          <button onClick={() => setSweepAsk(true)} title="Cancel orders that were never paid after 48 hours and release their stock"
+            style={{ padding: '6px 14px', borderRadius: '999px', fontSize: '12px', border: '1px solid var(--border-card)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--ff-mono)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            Clean up unpaid
+          </button>
         </div>
       </div>
+      {sweepAsk && <ConfirmModal title="Cancel stale unpaid orders?" description="Orders that were never paid and are older than 48 hours will be cancelled, and their stock and coupon uses released." confirmLabel="Cancel them" onConfirm={sweepStale} onCancel={() => setSweepAsk(false)} />}
 
       {loading && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
