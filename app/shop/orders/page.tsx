@@ -97,7 +97,7 @@ export default function OrdersPage() {
         <div>
           <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#e8ff00', marginBottom: '10px' }}>order history</div>
           <h1 style={{ fontFamily: 'var(--ff-display)', fontSize: '26px', letterSpacing: '0.04em', textTransform: 'uppercase', margin: '0 0 12px', color: 'var(--text-primary)' }}>My orders</h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: '0 0 4px', lineHeight: 1.6 }}>Enter your email and we'll send a code to pull up your orders.</p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: '0 0 4px', lineHeight: 1.6 }}>Enter your email and we&apos;ll send a code to pull up your orders.</p>
         </div>
         <input type="email" placeholder="peter@dailybugle.com" value={email} onChange={e => setEmail(e.target.value)}
           style={{ padding: '12px 14px', background: 'var(--surface)', border: '1px solid var(--border-input)', borderRadius: '10px', color: 'var(--text-primary)', fontSize: '14px', fontFamily: 'var(--ff-body)', outline: 'none', textAlign: 'left' }} />

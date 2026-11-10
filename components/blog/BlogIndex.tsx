@@ -55,7 +55,8 @@ export default function BlogIndex({ posts }: { posts: BlogPostSummary[] }) {
     .filter(p => !tag    || p.tags.map(t => t.trim().toLowerCase()).includes(tag))
 
   const [featured, ...rest] = filtered
-  const year = new Date(posts[0]?.created_at ?? Date.now()).getFullYear()
+  // The volume year is the newest post's year; the page is built from the posts, so no clock is read while rendering
+  const year = posts[0]?.created_at ? new Date(posts[0].created_at).getFullYear() : null
 
   return (
     <>

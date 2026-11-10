@@ -118,7 +118,7 @@ export default function ShopSections() {
               borderLeft: '2px solid var(--lavender)', paddingLeft: '16px',
               maxWidth: '480px',
             }}>
-              "Art that has something to say. Loudly."
+              &ldquo;Art that has something to say. Loudly.&rdquo;
             </p>
             <div className="artist-tags" style={{
               display: 'flex', gap: '8px', flexWrap: 'wrap',

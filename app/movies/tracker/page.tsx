@@ -285,7 +285,7 @@ export default function TrackerPage() {
             <ArrowLeft size={13} /> Watchlog
           </Link>
           <div style={{ flex: 1 }} />
-          <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em' }}>SERIES TRACKER</div>
+          <h1 style={{ margin: 0, fontWeight: 400, fontFamily: 'var(--ff-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em' }}>SERIES TRACKER</h1>
           {isAdmin && (
             <button type="button" onClick={() => setShowAdd(true)} title="Add series" aria-label="Add series" style={{ ...navIcon, color: '#82ff1f' }}>
               <Tv size={NAV_ICON_SIZE} />
@@ -371,24 +371,24 @@ export default function TrackerPage() {
                               <div style={{ display: 'flex', gap: '10px', flexShrink: 0, alignItems: 'center' }}>
                                 {/* Season stepper */}
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                                  <button onClick={() => updateProgress(item.id, 'current_season', item.current_season + 1)}
+                                  <button onClick={() => updateProgress(item.id, 'current_season', item.current_season + 1)} aria-label={`Next season for ${item.title}`}
                                     style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '4px', padding: '2px 6px', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center' }}>
                                     <ChevronUp size={11} />
                                   </button>
                                   <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '9px', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em' }}>S</span>
-                                  <button onClick={() => updateProgress(item.id, 'current_season', Math.max(1, item.current_season - 1))}
+                                  <button onClick={() => updateProgress(item.id, 'current_season', Math.max(1, item.current_season - 1))} aria-label={`Previous season for ${item.title}`}
                                     style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '4px', padding: '2px 6px', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center' }}>
                                     <ChevronDown size={11} />
                                   </button>
                                 </div>
                                 {/* Episode stepper */}
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                                  <button onClick={() => updateProgress(item.id, 'current_episode', item.current_episode + 1)}
+                                  <button onClick={() => updateProgress(item.id, 'current_episode', item.current_episode + 1)} aria-label={`Next episode for ${item.title}`}
                                     style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '4px', padding: '2px 6px', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center' }}>
                                     <ChevronUp size={11} />
                                   </button>
                                   <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '9px', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em' }}>E</span>
-                                  <button onClick={() => updateProgress(item.id, 'current_episode', Math.max(0, item.current_episode - 1))}
+                                  <button onClick={() => updateProgress(item.id, 'current_episode', Math.max(0, item.current_episode - 1))} aria-label={`Previous episode for ${item.title}`}
                                     style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '4px', padding: '2px 6px', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center' }}>
                                     <ChevronDown size={11} />
                                   </button>
@@ -407,7 +407,7 @@ export default function TrackerPage() {
                                   ))}
                                 </select>
                                 {/* Delete */}
-                                <button onClick={() => deleteItem(item.id, item.title)} style={{
+                                <button onClick={() => deleteItem(item.id, item.title)} aria-label={`Remove ${item.title} from tracker`} title="Remove" style={{
                                   background: 'none', border: '1px solid rgba(255,255,255,0.08)',
                                   borderRadius: '6px', padding: '5px 7px', cursor: 'pointer',
                                   color: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center',

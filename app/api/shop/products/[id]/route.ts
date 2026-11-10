@@ -20,7 +20,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   if (!data.is_active && !admin) return Response.json({ error: 'Not found' }, { status: 404 })
   return Response.json({
     ...data,
-    tags: (data.tags ?? []).map((t: any) => t.tag).filter(Boolean),
+    tags: (data.tags ?? []).map((t: { tag: unknown }) => t.tag).filter(Boolean),
   })
 }
 

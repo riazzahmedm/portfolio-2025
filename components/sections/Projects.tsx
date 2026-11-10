@@ -359,6 +359,7 @@ function ProjectsDesktop() {
                               href={project.link}
                               target="_blank"
                               rel="noopener noreferrer"
+                              aria-label={`Open ${project.name} (opens in a new tab)`}
                               className="text-[18px] opacity-30 group-hover/link:opacity-100 transition-opacity mt-1 block"
                               style={{ color: project.mockupAccent }}
                               onClick={e => e.stopPropagation()}

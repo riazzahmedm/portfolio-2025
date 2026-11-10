@@ -8,7 +8,7 @@ export async function GET() {
     .eq('is_active', true)
     .order('min_qty', { ascending: true })
   if (error) return dbError(error)
-  const deals = (data ?? []).map((d: any) => ({
+  const deals = (data ?? []).map((d: Record<string, unknown> & { category?: { name?: string } | null }) => ({
     ...d,
     category_name: d.category?.name ?? null,
     category: undefined,

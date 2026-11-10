@@ -121,7 +121,7 @@ export default function CheckoutPage() {
             </div>
           )}
           <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '6px', fontFamily: 'var(--ff-mono)' }}>
-            We'll send an OTP to verify your email before payment
+            We&apos;ll send an OTP to verify your email before payment
           </div>
         </div>
 

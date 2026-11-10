@@ -162,7 +162,7 @@ function CalendarHeatmap({ logs }: { logs: MovieLog[] }) {
   startDate.setDate(startDate.getDate() - startDate.getDay())
 
   const weeks: { date: Date; iso: string }[][] = []
-  let current = new Date(startDate)
+  const current = new Date(startDate)
   while (current <= endDate) {
     const week: { date: Date; iso: string }[] = []
     for (let d = 0; d < 7; d++) {

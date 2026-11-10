@@ -153,8 +153,8 @@ export default function About() {
                 className="text-[13px] md:text-[15px] leading-[1.75] md:leading-[1.95] mb-2 md:mb-3"
                 style={{ color: 'var(--text-secondary)', fontFamily: 'var(--ff-body)' }}
               >
-                Bruce Wayne didn't become Batman overnight — neither did I. Bad apps annoyed me,
-                I thought "I could fix this," and 7+ years later I'm still showing up like the
+                Bruce Wayne didn&apos;t become Batman overnight — neither did I. Bad apps annoyed me,
+                I thought &ldquo;I could fix this,&rdquo; and 7+ years later I&apos;m still showing up like the
                 city needs saving. 20+ shipped products. Zero lorem ipsum.
               </p>
               <p

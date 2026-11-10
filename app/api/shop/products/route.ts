@@ -25,14 +25,14 @@ export async function GET(req: Request) {
   if (error) return dbError(error)
 
   // Flatten tags: [{ tag: {...} }] → [{...}]
-  const products = (data ?? []).map((p: any) => ({
+  const products = (data ?? []).map((p: Record<string, unknown> & { tags?: { tag: { slug?: string } | null }[] }) => ({
     ...p,
-    tags: (p.tags ?? []).map((t: any) => t.tag).filter(Boolean),
+    tags: (p.tags ?? []).map(t => t.tag).filter((t): t is { slug?: string } => Boolean(t)),
   }))
 
   // Filter by tag slug if provided
   const filtered = tag
-    ? products.filter((p: any) => p.tags.some((t: any) => t.slug === tag))
+    ? products.filter(p => p.tags.some(t => t.slug === tag))
     : products
 
   return Response.json(filtered)

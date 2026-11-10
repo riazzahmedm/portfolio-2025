@@ -226,7 +226,7 @@ export default function MovieDetailPage() {
             margin: '0 0 24px', fontSize: '14px', fontStyle: 'italic',
             color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--ff-body)', lineHeight: 1.6,
           }}>
-            "{log.tagline}"
+            &ldquo;{log.tagline}&rdquo;
           </p>
         )}
 
@@ -292,7 +292,7 @@ export default function MovieDetailPage() {
             }}>
               <div style={{ fontSize: '9px', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#b8a0ff', fontFamily: 'var(--ff-mono)', marginBottom: '10px' }}>Your Review</div>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.75, color: 'rgba(255,255,255,0.75)', fontFamily: 'var(--ff-body)', fontStyle: 'italic' }}>
-                "{log.review}"
+                &ldquo;{log.review}&rdquo;
               </p>
             </div>
           )}

@@ -93,8 +93,8 @@ export async function GET(
     const { id } = await params
 
     // The theatre comes from the places join; until that table exists, fall back to the plain row
-    let { data: log, error } = await supabase.from('logs').select(LOGS_WITH_PLACE).eq('id', id).single()
-    if (error && placesNotReady(error)) ({ data: log } = await supabase.from('logs').select('*').eq('id', id).single())
+    const first = await supabase.from('logs').select(LOGS_WITH_PLACE).eq('id', id).single()
+    const log = first.error && placesNotReady(first.error) ? (await supabase.from('logs').select('*').eq('id', id).single()).data : first.data
     if (!log) return new Response('Not found', { status: 404 })
 
     const poster   = log.poster_url ?? null
