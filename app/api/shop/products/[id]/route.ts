@@ -4,6 +4,7 @@ import { dbError } from '@/lib/api-error'
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  const admin = await isAdmin()
   const { data, error } = await supabase
     .from('shop_products')
     .select(`
@@ -15,9 +16,11 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     .eq('id', id)
     .single()
   if (error) return dbError(error, 404)
+  // Inactive products are hidden from the shop list, so they are not reachable by id either (the admin still can)
+  if (!data.is_active && !admin) return Response.json({ error: 'Not found' }, { status: 404 })
   return Response.json({
     ...data,
-    tags: (data.tags ?? []).map((t: any) => t.tag).filter(Boolean),
+    tags: (data.tags ?? []).map((t: { tag: unknown }) => t.tag).filter(Boolean),
   })
 }
 

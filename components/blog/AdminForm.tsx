@@ -129,7 +129,7 @@ function HtmlEditor({ value, onChange }: { value: string; onChange: (v: string) 
       gap: '12px',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: '10px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#f59e0b' }}>// html — fullscreen</span>
+        <span style={{ fontSize: '10px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#f59e0b' }}>{'// html — fullscreen'}</span>
         <button type="button" onClick={() => setFull(false)} style={{ ...iconBtn, gap: '6px', paddingRight: '10px', color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontFamily: 'var(--ff-mono)' }}>
           <Minimize2 size={13} /> Exit fullscreen
         </button>

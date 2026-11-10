@@ -23,14 +23,19 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (!customer) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id } = await params
-  const { utr_reference } = await req.json()
+  const body = await req.json().catch(() => null)
+  // The reference is optional, but if it is sent it must be plain text of a sensible length
+  const raw = body?.utr_reference
+  if (raw != null && typeof raw !== 'string') return Response.json({ error: 'Invalid transaction reference' }, { status: 400 })
+  const utr_reference = typeof raw === 'string' ? raw.trim().slice(0, 200) || null : null
+  if (utr_reference && utr_reference.length > 64) return Response.json({ error: 'The transaction reference is too long' }, { status: 400 })
 
   const { data, error } = await supabase
     .from('shop_orders')
     .update({
       payment_status: 'submitted',
       status:         'payment_submitted',
-      utr_reference:  utr_reference ?? null,
+      utr_reference,
     })
     .eq('id', id)
     .eq('customer_id', customer.id)

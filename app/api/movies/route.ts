@@ -4,6 +4,7 @@ import { isAdmin }  from '@/lib/admin-auth'
 import { dbError } from '@/lib/api-error'
 import { LOGS_WITH_PLACE, placesNotReady } from '@/lib/movies-select'
 import { visitsNotReady } from '@/lib/places-core'
+import { fetchAll } from '@/lib/fetch-all'
 
 // Entries still being watched live in the "Now watching" strip, not in the log, until they are marked watched.
 // (A plain neq would also drop rows whose status is null.)
@@ -58,20 +59,23 @@ export async function GET(req: Request) {
 
   // ?all=true — returns every record (used by /wrapped stats page)
   if (searchParams.get('all') === 'true') {
-    const all = (cols: string) => supabase
+    // Read in pages: a single request stops at 1000 rows and the log is already close to that
+    const all = (cols: string) => fetchAll((from, to) => supabase
       .from('logs')
       .select(cols)
       .or(NOT_IN_PROGRESS)
       .order('watched_on', { ascending: false })
       .order('created_at', { ascending: false })
+      .order('id')
+      .range(from, to) as unknown as PromiseLike<{ data: Record<string, unknown>[] | null; error: { message?: string; code?: string } | null }>)
     let r = await all(LOGS_WITH_PLACE)
     if (placesNotReady(r.error)) r = await all('*')
-    if (r.error) return dbError(r.error)
+    if (r.error) return dbError(r.error as { message: string; code?: string })
     return Response.json(r.data ?? [])
   }
 
-  const page  = Math.max(1, parseInt(searchParams.get('page')  ?? '1'))
-  const limit = Math.min(100, parseInt(searchParams.get('limit') ?? '20'))
+  const page  = Math.max(1, parseInt(searchParams.get('page')  ?? '1') || 1)
+  const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') ?? '20') || 20))
   const from  = (page - 1) * limit
   const to    = from + limit - 1
 

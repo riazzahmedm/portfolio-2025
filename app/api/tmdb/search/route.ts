@@ -1,4 +1,5 @@
 import { searchMovies, searchTV, getMovieById, getTVById, tmdbErrorResponse } from '@/lib/tmdb'
+import { tmdbGuard, cachedJson } from '@/lib/tmdb-guard'
 
 /** Extract a numeric TMDB id from a URL like https://www.themoviedb.org/movie/79660-3 or a plain number */
 function parseTmdbId(q: string): number | null {
@@ -11,6 +12,9 @@ function parseTmdbId(q: string): number | null {
 }
 
 export async function GET(req: Request) {
+  const limited = await tmdbGuard(req)
+  if (limited) return limited
+
   const { searchParams } = new URL(req.url)
   const query = searchParams.get('q')   ?? ''
   const type  = searchParams.get('type') as 'movie' | 'tv' | null ?? 'movie'
@@ -22,11 +26,11 @@ export async function GET(req: Request) {
     const tmdbId = parseTmdbId(query)
     if (tmdbId) {
       const result = type === 'tv' ? await getTVById(tmdbId) : await getMovieById(tmdbId)
-      return Response.json(result ? [result] : [])
+      return cachedJson(result ? [result] : [], 600)
     }
 
     const results = type === 'tv' ? await searchTV(query) : await searchMovies(query)
-    return Response.json(results)
+    return cachedJson(results, 600)
   } catch (err) {
     return tmdbErrorResponse(err)
   }

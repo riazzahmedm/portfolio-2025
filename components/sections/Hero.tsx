@@ -50,6 +50,7 @@ export default function Hero() {
 
   return (
     <SectionShell id="hero" noDecorations>
+      <h1 className="sr-only">Riaz Ahmed, senior software engineer</h1>
 
       {/* AHMED — behind image, right-aligned, vertically centered */}
       <div className="absolute inset-0 z-[10] flex items-center justify-end pr-8 md:pr-30 lg:pr-80 overflow-hidden">

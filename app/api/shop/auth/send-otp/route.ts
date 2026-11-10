@@ -1,35 +1,21 @@
-import { supabase } from '@/lib/supabase'
+import { createAuthClient } from '@/lib/supabase'
 import { dbError } from '@/lib/api-error'
-
-const cooldowns = new Map<string, number>()
-const COOLDOWN_MS = 60_000 // 1 minute per email
+import { clientIp, rateLimit, tooMany } from '@/lib/rate-limit'
 
 export async function POST(req: Request) {
-  const { email } = await req.json()
-  if (!email || typeof email !== 'string') {
-    return Response.json({ error: 'Email required' }, { status: 400 })
-  }
+  const body = await req.json().catch(() => null)
+  const email = typeof body?.email === 'string' ? body.email.toLowerCase().trim() : ''
+  if (!email || email.length > 254) return Response.json({ error: 'Email required' }, { status: 400 })
 
-  const key = email.toLowerCase().trim()
-  const now = Date.now()
-  const last = cooldowns.get(key)
+  // One code a minute per email, and a cap per address so one visitor can't mail-bomb many inboxes
+  const [byEmail, byIp] = await Promise.all([
+    rateLimit(`otp-send:${email}`, 1, 60_000),
+    rateLimit(`otp-send-ip:${clientIp(req)}`, 10, 60 * 60_000),
+  ])
+  if (!byEmail.ok) return tooMany(byEmail.retryAfter, `Please wait ${Math.max(1, byEmail.retryAfter)}s before requesting another code`)
+  if (!byIp.ok) return tooMany(byIp.retryAfter, 'Too many codes requested. Try again later.')
 
-  if (last && now - last < COOLDOWN_MS) {
-    const wait = Math.ceil((COOLDOWN_MS - (now - last)) / 1000)
-    return Response.json({ error: `Please wait ${wait}s before requesting another code` }, { status: 429 })
-  }
-
-  cooldowns.set(key, now)
-  // prune stale entries
-  for (const [e, t] of cooldowns) {
-    if (now - t > COOLDOWN_MS * 2) cooldowns.delete(e)
-  }
-
-  const { error } = await supabase.auth.signInWithOtp({
-    email: key,
-    options: { shouldCreateUser: true },
-  })
-
+  const { error } = await createAuthClient().auth.signInWithOtp({ email, options: { shouldCreateUser: true } })
   if (error) return dbError(error)
   return Response.json({ ok: true })
 }

@@ -1,4 +1,5 @@
 import { cache } from 'react'
+import { fetchAll } from '@/lib/fetch-all'
 import { supabase } from '@/lib/supabase'
 import { LOGS_WITH_PLACE, placesNotReady } from '@/lib/movies-select'
 import type { Place } from '@/lib/places'
@@ -30,19 +31,6 @@ function theatreEntry(r: Row): TimelineEntry {
     vibe: VIBE_KEYS.has(r.theatre_vibe) ? (r.theatre_vibe as PlaceVibeKey) : null,
     timing: TIMING_KEYS.has(r.theatre_timing) ? (r.theatre_timing as TimingKey) : null, spend: null, note: null, photos: [], mustOrder: [],
     movie: { id: r.id, title: r.title, posterUrl: r.poster_url ?? null, format: r.screen_format ?? null },
-  }
-}
-
-const PAGE = 1000   // PostgREST returns at most this many rows per request, so longer lists are read in pages
-
-/** Reads every row of a query in pages (a stable order, with the id as tie-break, keeps pages from overlapping). */
-async function fetchAll(range: (from: number, to: number) => PromiseLike<{ data: Row[] | null; error: { message?: string; code?: string } | null }>) {
-  const all: Row[] = []
-  for (let from = 0; ; from += PAGE) {
-    const { data, error } = await range(from, from + PAGE - 1)
-    if (error) return { data: null, error }
-    all.push(...(data ?? []))
-    if ((data ?? []).length < PAGE) return { data: all, error: null }
   }
 }
 

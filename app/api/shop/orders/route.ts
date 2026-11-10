@@ -3,61 +3,10 @@ import { getCustomer } from '@/lib/customer-auth'
 import { applyBundleDeal, couponDiscount, couponIneligibilityReason } from '@/lib/shop-pricing'
 import type { CartItem, ShippingAddress } from '@/lib/shop.types'
 import { dbError } from '@/lib/api-error'
+import { adjustStock, claimCouponUse, releaseCouponUse } from '@/lib/shop-stock'
 
 const MAX_QTY_PER_LINE = 20
 
-/**
- * Claims one use of a coupon. With a usage cap the increment is compare-and-swap on
- * uses_count, so two simultaneous checkouts can't both take the last use.
- * Returns false when the cap is reached.
- */
-async function claimCouponUse(code: string, maxUses: number | null): Promise<boolean> {
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const { data: row } = await supabase
-      .from('shop_coupons').select('uses_count').eq('code', code).single()
-    if (!row) return false
-    if (maxUses !== null && row.uses_count >= maxUses) return false
-    const { data: updated } = await supabase
-      .from('shop_coupons')
-      .update({ uses_count: row.uses_count + 1 })
-      .eq('code', code)
-      .eq('uses_count', row.uses_count)
-      .select('code')
-    if (updated && updated.length > 0) return true
-  }
-  return false
-}
-
-async function releaseCouponUse(code: string) {
-  const { data: row } = await supabase
-    .from('shop_coupons').select('uses_count').eq('code', code).single()
-  if (row && row.uses_count > 0) {
-    await supabase.from('shop_coupons')
-      .update({ uses_count: row.uses_count - 1 }).eq('code', code).eq('uses_count', row.uses_count)
-  }
-}
-
-/**
- * Compare-and-swap stock change: only writes if stock_qty is still the value we read,
- * retrying on contention. A negative delta fails (returns false) rather than going below 0.
- */
-async function adjustStock(variantId: string, delta: number): Promise<boolean> {
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const { data: row } = await supabase
-      .from('shop_variants').select('stock_qty').eq('id', variantId).single()
-    if (!row) return false
-    const next = row.stock_qty + delta
-    if (next < 0) return false
-    const { data: updated } = await supabase
-      .from('shop_variants')
-      .update({ stock_qty: next })
-      .eq('id', variantId)
-      .eq('stock_qty', row.stock_qty)
-      .select('id')
-    if (updated && updated.length > 0) return true
-  }
-  return false
-}
 
 export async function GET() {
   const customer = await getCustomer()
@@ -88,6 +37,18 @@ export async function POST(req: Request) {
 
   if (!Array.isArray(body.items) || body.items.length === 0) {
     return Response.json({ error: 'No items' }, { status: 400 })
+  }
+
+  // Keep only the address fields we use, as trimmed text of a sensible length, and require the ones a parcel needs
+  const addr = (body.shipping_address ?? {}) as unknown as Record<string, unknown>
+  const text = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '')
+  const shippingAddress: ShippingAddress = {
+    name: text(addr.name, 100), email: text(addr.email, 254), phone: text(addr.phone, 20),
+    line1: text(addr.line1, 200), line2: text(addr.line2, 200) || undefined,
+    city: text(addr.city, 80), state: text(addr.state, 80), pincode: text(addr.pincode, 12),
+  }
+  if (!shippingAddress.name || !shippingAddress.phone || !shippingAddress.line1 || !shippingAddress.city || !shippingAddress.state || !shippingAddress.pincode) {
+    return Response.json({ error: 'Please fill in your name, phone and full address' }, { status: 400 })
   }
 
   // 1. Validate and merge lines: positive whole quantities, one line per variant
@@ -202,7 +163,7 @@ export async function POST(req: Request) {
     .from('shop_orders')
     .insert({
       customer_id:      customer.id,
-      shipping_address: body.shipping_address,
+      shipping_address: shippingAddress,
       subtotal:         serverSubtotal,
       discount_amount:  serverDiscountAmount,
       total:            serverTotal,

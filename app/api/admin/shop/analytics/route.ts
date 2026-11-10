@@ -1,22 +1,28 @@
 import { supabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/admin-auth'
+import { fetchAll } from '@/lib/fetch-all'
 
 export async function GET(req: Request) {
   if (!(await isAdmin())) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { searchParams } = new URL(req.url)
-  const days = parseInt(searchParams.get('days') ?? '30')
+  const days = Math.min(365, Math.max(1, parseInt(searchParams.get('days') ?? '30') || 30))
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
 
+  // Events are written by every visitor, so they pass 1000 rows quickly: read them in pages or the funnel is silently wrong
   const [eventsRes, ordersRes] = await Promise.all([
-    supabase
+    fetchAll<{ type: string; session_id: string; user_id: string | null; metadata: unknown; created_at: string }>((from, to) => supabase
       .from('shop_events')
       .select('type, session_id, user_id, metadata, created_at')
-      .gte('created_at', since),
-    supabase
+      .gte('created_at', since)
+      .order('created_at').order('id')
+      .range(from, to)),
+    fetchAll<{ id: string; total: number; status: string; payment_status: string; created_at: string }>((from, to) => supabase
       .from('shop_orders')
       .select('id, total, status, payment_status, created_at')
-      .gte('created_at', since),
+      .gte('created_at', since)
+      .order('created_at').order('id')
+      .range(from, to)),
   ])
 
   const events = eventsRes.data ?? []

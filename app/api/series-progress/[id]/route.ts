@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/admin-auth'
 import { dbError } from '@/lib/api-error'
+import { omitFields } from '@/lib/pick'
 
 export async function PATCH(
   req: Request,
@@ -8,7 +9,7 @@ export async function PATCH(
 ) {
   if (!(await isAdmin())) return Response.json({ error: 'Unauthorized' }, { status: 401 })
   const { id } = await params
-  const body = await req.json()
+  const body = omitFields(await req.json().catch(() => null), ['id', 'created_at'])  // identity columns are never editable
   const { data, error } = await supabase
     .from('series_progress')
     .update({ ...body, last_updated: new Date().toISOString() })

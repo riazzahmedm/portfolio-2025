@@ -203,7 +203,7 @@ export default function TMDBPreviewModal({
             {/* Tagline */}
             {details?.tagline && (
               <p style={{ margin: '6px 0 0', fontSize: '12px', fontStyle: 'italic', color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--ff-body)' }}>
-                "{details.tagline}"
+                &ldquo;{details.tagline}&rdquo;
               </p>
             )}
 

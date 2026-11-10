@@ -1029,15 +1029,16 @@ export default function WrappedPage() {
 
         {/* ── Hero ── */}
         <section style={{ padding: '72px 0 64px', textAlign: 'center' }}>
-          <div style={{
+          <h1 style={{
+            margin: '0 0 40px', fontWeight: 400,
             fontFamily: 'var(--ff-mono)', fontSize: '10px', letterSpacing: '0.32em',
-            textTransform: 'uppercase', color: '#b8a0ff', marginBottom: '40px',
+            textTransform: 'uppercase', color: '#b8a0ff',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
           }}>
             <span style={{ width: '28px', height: '1px', background: '#b8a0ff', display: 'inline-block' }} />
             {yearScope === 'all' ? 'Your Archive' : monthScope === 'all' ? `Your ${yearScope} Wrapped` : `${MONTHS[Number(monthScope) - 1]} ${yearScope}`}
             <span style={{ width: '28px', height: '1px', background: '#b8a0ff', display: 'inline-block' }} />
-          </div>
+          </h1>
 
           {stats ? (
             <BigNumber

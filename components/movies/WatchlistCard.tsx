@@ -8,26 +8,40 @@ import TMDBPreviewModal from '@/components/movies/TMDBPreviewModal'
 import { tiltProps, gyroRef } from '@/lib/tilt'
 import { useTapReveal } from './useTapReveal'
 
-/** Up to three streaming logos (names in the tooltip), or a small "Rent · Buy" when it is only available to hire. */
-function WhereToWatch({ info }: { info?: WatchProvidersLite | null }) {
-  if (!info) return null
-  if (info.streaming.length > 0) {
-    const shown = info.streaming.slice(0, 3)
-    const more  = info.streaming.length - shown.length
-    const names = info.streaming.map(s => s.name).join(', ')
-    return (
-      <span title={`Streaming on ${names}`} aria-label={`Streaming on ${names}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', minWidth: 0 }}>
-        {shown.map(s => (
-          s.logo
-            // eslint-disable-next-line @next/next/no-img-element
-            ? <img key={s.name} src={s.logo} alt="" onError={e => { e.currentTarget.style.display = 'none' }} style={{ width: '18px', height: '18px', borderRadius: '5px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 2px 6px -2px rgba(0,0,0,0.7)' }} />
-            : <span key={s.name} style={{ fontSize: '9px' }}>{s.name}</span>
-        ))}
-        {more > 0 && <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.7)' }}>+{more}</span>}
-      </span>
-    )
-  }
-  return info.rentBuy ? <span style={{ color: 'rgba(255,255,255,0.6)', whiteSpace: 'nowrap' }}>Rent · Buy</span> : null
+const LOGO_SHADOW = '0 0 0 1px rgba(255,255,255,0.28), 0 4px 12px rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.5)'
+
+/**
+ * Where to watch, top-left of the poster: up to three streaming logos (names in the tooltip) on the poster, bare like the
+ * log cards' platform logo, or a small "Rent · Buy" pill when it can only be hired. Series also get a "Series" tag; movies
+ * need none. Renders nothing while the lookup is pending or when there is nothing to say.
+ */
+function Availability({ info, series }: { info?: WatchProvidersLite | null; series: boolean }) {
+  const streaming = info?.streaming ?? []
+  const shown = streaming.slice(0, 3)
+  const more  = streaming.length - shown.length
+  const names = streaming.map(s => s.name).join(', ')
+  const pill: React.CSSProperties = { color: 'rgba(255,255,255,0.85)', textTransform: 'none', letterSpacing: '0.06em', fontSize: '10px' }
+  if (!series && !info) return null
+  if (!series && streaming.length === 0 && !info?.rentBuy) return null
+
+  return (
+    <div style={{ position: 'absolute', top: '10px', left: '10px', right: '10px', zIndex: 2, display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', pointerEvents: 'none' }}>
+      {series && <span className="gc-pill" style={{ position: 'static', color: '#b8a0ff' }}>Series</span>}
+      {shown.length > 0 ? (
+        <span title={`Streaming on ${names}`} aria-label={`Streaming on ${names}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+          {shown.map(s => (
+            s.logo
+              // eslint-disable-next-line @next/next/no-img-element
+              ? <img key={s.name} src={s.logo} alt="" onError={e => { e.currentTarget.style.display = 'none' }} style={{ width: '26px', height: '26px', borderRadius: '7px', objectFit: 'cover', boxShadow: LOGO_SHADOW }} />
+              : <span key={s.name} className="gc-pill" style={{ position: 'static', ...pill }}>{s.name}</span>
+          ))}
+          {more > 0 && <span className="gc-pill" style={{ position: 'static', padding: '4px 8px', ...pill }}>+{more}</span>}
+        </span>
+      ) : info?.rentBuy ? (
+        <span className="gc-pill" style={{ position: 'static', ...pill }} title="Available to rent or buy">Rent · Buy</span>
+      ) : null}
+    </div>
+  )
 }
 
 export default function WatchlistCard({
@@ -91,8 +105,8 @@ export default function WatchlistCard({
       }
       <div className="tilt-glare" />
 
-      {/* Type badge */}
-      <div className="gc-pill" style={{ color: item.type === 'movie' ? '#82ff1f' : '#b8a0ff' }}>{item.type}</div>
+      {/* Where to watch (and a Series tag for series) */}
+      <Availability info={providers} series={item.type === 'series'} />
 
       {/* Actions: hover with a mouse, tap the card on a touch screen */}
       <div style={{
@@ -131,7 +145,6 @@ export default function WatchlistCard({
 
         <div className="gc-row">
           {item.tmdb_rating ? <span style={{ color: '#fbbf24', whiteSpace: 'nowrap', flex: 'none' }}>★ {Number(item.tmdb_rating).toFixed(1)}</span> : <span />}
-          <WhereToWatch info={providers} />
         </div>
       </div>
     </div>

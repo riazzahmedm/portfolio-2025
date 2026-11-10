@@ -1,14 +1,16 @@
 import { supabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/admin-auth'
 import { dbError } from '@/lib/api-error'
+import { fetchAll } from '@/lib/fetch-all'
 
 export async function GET() {
   const admin = await isAdmin()
-  let query = supabase.from('blog_posts').select('*').order('created_at', { ascending: false })
-  if (!admin) query = query.eq('published', true)
-
-  const { data, error } = await query
-  if (error) return dbError(error)
+  const { data, error } = await fetchAll((from, to) => {
+    let query = supabase.from('blog_posts').select('*').order('created_at', { ascending: false }).order('id').range(from, to)
+    if (!admin) query = query.eq('published', true)
+    return query
+  })
+  if (error) return dbError(error as { message: string; code?: string })
   return Response.json(data)
 }
 

@@ -4,6 +4,7 @@ import { isAdmin }  from '@/lib/admin-auth'
 import { dbError } from '@/lib/api-error'
 import { LOGS_WITH_PLACE, placesNotReady } from '@/lib/movies-select'
 import { visitsNotReady } from '@/lib/places-core'
+import { omitFields } from '@/lib/pick'
 
 export async function GET(
   _req: Request,
@@ -23,12 +24,13 @@ export async function PATCH(
 ) {
   if (!(await isAdmin())) return Response.json({ error: 'Unauthorized' }, { status: 401 })
   const { id } = await params
-  const body   = await req.json()
+  const body   = omitFields(await req.json().catch(() => null), ['id', 'created_at'])  // identity columns are never editable
 
   // If a new tmdb_id is being set, re-enrich with full TMDB metadata
+  if (Object.keys(body).length === 0) return Response.json({ error: 'Nothing to update' }, { status: 400 })
   if (body.tmdb_id) {
     try {
-      const meta = await enrich(body.tmdb_id, body.type ?? 'movie')
+      const meta = await enrich(Number(body.tmdb_id), (body.type as 'movie' | 'series' | 'episode' | undefined) ?? 'movie')
       Object.assign(body, meta)
     } catch { /* non-fatal */ }
   }

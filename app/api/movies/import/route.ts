@@ -21,6 +21,9 @@ function ratingToVibe(raw: string): Vibe | null {
   return 'painful'                    // ≤2      → Walk of Shame
 }
 
+// Each row costs a few TMDB calls, so a batch of 50 can run for half a minute
+export const maxDuration = 60
+
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
 
 export async function POST(req: Request) {

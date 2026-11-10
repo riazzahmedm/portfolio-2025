@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase'
 import { getCustomer } from '@/lib/customer-auth'
 import type { ShopEventType } from '@/lib/shop.types'
 import { dbError } from '@/lib/api-error'
+import { clientIp, rateLimit, tooMany } from '@/lib/rate-limit'
 
 const EVENT_TYPES: ReadonlySet<string> = new Set<ShopEventType>([
   'page_view', 'add_to_cart', 'checkout_started', 'payment_submitted', 'order_completed',
@@ -23,6 +24,10 @@ export async function POST(req: Request) {
   if (JSON.stringify(metadata).length > MAX_METADATA_CHARS) {
     return Response.json({ error: 'Metadata too large' }, { status: 413 })
   }
+
+  // Public and unauthenticated: stop one visitor flooding the analytics table
+  const limit = await rateLimit(`events:${clientIp(req)}`, 240, 60_000)
+  if (!limit.ok) return tooMany(limit.retryAfter)
 
   const customer = await getCustomer()
 

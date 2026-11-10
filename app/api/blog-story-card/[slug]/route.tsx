@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og'
+import { isAdmin } from '@/lib/admin-auth'
 import { supabase } from '@/lib/supabase'
 import { loadCardFonts } from '@/lib/og-fonts'
 import type { BlogPost } from '@/lib/blog.types'
@@ -75,7 +76,10 @@ export async function GET(
   try {
     const { slug } = await params
 
-    const { data: post } = await supabase.from('blog_posts').select('*').eq('slug', slug).single()
+    // Drafts stay private: only the admin can render a card for an unpublished post
+    let query = supabase.from('blog_posts').select('*').eq('slug', slug)
+    if (!(await isAdmin())) query = query.eq('published', true)
+    const { data: post } = await query.maybeSingle()
     if (!post) return new Response('Not found', { status: 404 })
 
     const date = new Date(post.published_at ?? post.created_at).toLocaleDateString('en-US', {
