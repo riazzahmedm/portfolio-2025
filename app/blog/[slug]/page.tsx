@@ -109,7 +109,7 @@ export default async function BlogPostPage({ params }: Params) {
 
       {/* ── Meta rail beside the story ── */}
       <div className="fn-shell">
-        <PostRail slug={post.slug} title={post.title} written={month} minutes={mins} />
+        <PostRail slug={post.slug} written={month} minutes={mins} />
         <article className="fn-article">
           <BlockRenderer blocks={post.content} />
         </article>

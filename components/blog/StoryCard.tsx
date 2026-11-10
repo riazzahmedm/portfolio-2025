@@ -1,17 +1,15 @@
 'use client'
-import { useState } from 'react'
 import Link from 'next/link'
 import { Share2 } from 'lucide-react'
 import type { BlogPostSummary } from '@/lib/blog.types'
 import AccentScope from './AccentScope'
-import BlogStoryModal from './BlogStoryModal'
+import { copyLink, storyUrl } from '@/lib/copy-link'
 
 const FALLBACKS = ['fn-c1', 'fn-c2', 'fn-c3', 'fn-c4', 'fn-c5']
 const month = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
 
 /** One story: the large featured card, a wide card, or a regular card. */
 export default function StoryCard({ post, variant, number }: { post: BlogPostSummary; variant: 'feature' | 'wide' | 'card'; number: number }) {
-  const [showStory, setShowStory] = useState(false)
   const meta = `${month(post.created_at)} · ${post.reading_minutes} min read`
   const topics = post.tags.slice(0, 2).join(' · ')
 
@@ -27,9 +25,8 @@ export default function StoryCard({ post, variant, number }: { post: BlogPostSum
 
   return (
     <>
-      {showStory && <BlogStoryModal slug={post.slug} title={post.title} onClose={() => setShowStory(false)} />}
       <AccentScope accent={post.accent} className={`fn-cardwrap fn-cardwrap--${variant}`}>
-        <button type="button" className="fn-share" onClick={() => setShowStory(true)} aria-label={`Share "${post.title}" as a story card`} title="Share as a story card">
+        <button type="button" className="fn-share" onClick={() => copyLink(storyUrl(post.slug))} aria-label={`Copy the link to "${post.title}"`} title="Copy link">
           <Share2 size={14} />
         </button>
 
