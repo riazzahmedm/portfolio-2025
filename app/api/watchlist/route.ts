@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/admin-auth'
 import { dbError } from '@/lib/api-error'
+import { omitFields } from '@/lib/pick'
 
 export async function GET() {
   const { data, error } = await supabase
@@ -15,7 +16,7 @@ export async function POST(req: Request) {
   if (!(await isAdmin())) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  const body = await req.json()
+  const body = omitFields(await req.json().catch(() => null), ['id', 'created_at'])  // identity columns are never editable
   const { data, error } = await supabase
     .from('watchlist')
     .upsert([body], { onConflict: 'tmdb_id', ignoreDuplicates: false })

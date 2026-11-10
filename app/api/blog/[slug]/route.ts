@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/admin-auth'
 import { dbError } from '@/lib/api-error'
+import { omitFields } from '@/lib/pick'
 
 export async function GET(
   _req: Request,
@@ -22,7 +23,7 @@ export async function PATCH(
 ) {
   if (!(await isAdmin())) return Response.json({ error: 'Unauthorized' }, { status: 401 })
   const { slug } = await params
-  const body = await req.json()
+  const body = omitFields(await req.json().catch(() => null), ['id', 'created_at'])  // identity columns are never editable
   const now  = new Date().toISOString()
   if (body.published && !body.published_at) body.published_at = now
   body.updated_at = now
