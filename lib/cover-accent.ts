@@ -10,6 +10,28 @@ function hslToRgb(h: number, s: number, l: number): string {
   return [f(0), f(8), f(4)].map(v => Math.round(v * 255)).join(',')
 }
 
+/** True for a six-digit hex colour like #8a97a8. */
+export const isHexColor = (v: unknown): v is string => typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v)
+
+function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
+  r /= 255; g /= 255; b /= 255
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, d = max - min
+  if (d === 0) return [0, 0, l]
+  const s = d / (1 - Math.abs(2 * l - 1))
+  const h = max === r ? ((g - b) / d + 6) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4
+  return [h * 60, s, l]
+}
+
+/**
+ * A colour picked by hand instead of read from the cover: keeps the hue and saturation of the chosen colour and moves
+ * its lightness into a bright range for the dark page and a deep range for the light paper, so any pick stays readable.
+ */
+export function accentFromHex(hex: unknown): PostAccent | null {
+  if (!isHexColor(hex)) return null
+  const [h, s, l] = rgbToHsl(parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16))
+  return { dark: hslToRgb(h, s, Math.min(0.72, Math.max(0.6, l))), light: hslToRgb(h, s, Math.min(0.32, Math.max(0.2, l))) }
+}
+
 /**
  * Reads a colour from a loaded cover photo: the strongest hue family among the vivid, reasonably bright pixels,
  * counting the top third less (skies sit there and would make every landscape blue). Returns a bright shade for the

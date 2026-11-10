@@ -28,7 +28,7 @@ export default function StoryCard({ post, variant, number }: { post: BlogPostSum
   return (
     <>
       {showStory && <BlogStoryModal slug={post.slug} title={post.title} onClose={() => setShowStory(false)} />}
-      <AccentScope className={`fn-cardwrap fn-cardwrap--${variant}`}>
+      <AccentScope accent={post.accent} className={`fn-cardwrap fn-cardwrap--${variant}`}>
         <button type="button" className="fn-share" onClick={() => setShowStory(true)} aria-label={`Share "${post.title}" as a story card`} title="Share as a story card">
           <Share2 size={14} />
         </button>

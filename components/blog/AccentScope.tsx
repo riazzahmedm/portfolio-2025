@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useLayoutEffect, useRef } from 'react'
-import { accentFromImage, readCachedAccent, storeAccent } from '@/lib/cover-accent'
+import { accentFromHex, accentFromImage, readCachedAccent, storeAccent } from '@/lib/cover-accent'
 
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
@@ -8,12 +8,19 @@ const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : use
  * Gives everything inside it the colour of its cover photo: the first <img data-cover crossOrigin="anonymous"> in the box.
  * The colour is written straight onto the element as CSS variables (no re-render), and remembered on the device,
  * so a repeat visit paints in the right colour immediately. With no readable colour the blog's green stays.
+ * A colour chosen by hand for the post (`accent`, a hex like #8a97a8) wins over the cover and skips the reading.
  */
-export default function AccentScope({ className = '', children }: { className?: string; children: React.ReactNode }) {
+export default function AccentScope({ className = '', accent: chosen, children }: { className?: string; accent?: string | null; children: React.ReactNode }) {
   const box = useRef<HTMLDivElement>(null)
 
   useIsoLayoutEffect(() => {
     const el = box.current
+    const manual = accentFromHex(chosen)
+    if (el && manual) {
+      el.style.setProperty('--pa-dark-rgb', manual.dark)
+      el.style.setProperty('--pa-light-rgb', manual.light)
+      return
+    }
     const img = el?.querySelector<HTMLImageElement>('img[data-cover]')
     if (!el || !img) return
 
@@ -38,7 +45,7 @@ export default function AccentScope({ className = '', children }: { className?: 
       img.addEventListener('load', read, { once: true })
     }
     return () => img.removeEventListener('load', read)
-  }, [])
+  }, [chosen])
 
   return <div ref={box} className={`fn-accent ${className}`.trim()}>{children}</div>
 }

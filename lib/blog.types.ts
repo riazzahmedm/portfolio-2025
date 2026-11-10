@@ -32,6 +32,7 @@ export interface BlogPost {
   slug:         string
   excerpt:      string | null
   cover_image:  string | null
+  accent?:      string | null   // optional hand-picked colour (#rrggbb); empty means use the cover's colour
   content:      ContentBlock[]
   tags:         string[]
   published:    boolean

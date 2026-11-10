@@ -4,6 +4,14 @@ import { toast } from 'sonner'
 import { Plus, Trash2, ChevronUp, ChevronDown, Type, Image, Video, Code, Eye, EyeOff, Loader2, Upload, Maximize2, Minimize2, X } from 'lucide-react'
 import type { BlogPost, ContentBlock } from '@/lib/blog.types'
 import { compressImage } from '@/lib/compress-image'
+import { isHexColor } from '@/lib/cover-accent'
+
+const ACCENT_PRESETS = [
+  { name: 'Slate grey',      hex: '#8a97a8' },
+  { name: 'Glacier blue',    hex: '#7cc4ff' },
+  { name: 'Summit gold',     hex: '#f5b83d' },
+  { name: 'Prayer-flag red', hex: '#e5484d' },
+] as const
 
 // ── Upload button ─────────────────────────────────────────────────────────────
 function UploadButton({ onUploaded }: { onUploaded: (url: string) => void }) {
@@ -278,6 +286,7 @@ export default function AdminForm({ initial, existingTags = [], onSuccess }: Pro
   const [slugManual, setSlugManual] = useState(isEdit)
   const [excerpt,    setExcerpt]    = useState(initial?.excerpt ?? '')
   const [coverImage, setCoverImage] = useState(initial?.cover_image ?? '')
+  const [accent,     setAccent]     = useState(initial?.accent ?? '')   // '' = use the colour read from the cover
   const [tags,       setTags]       = useState<string[]>(initial?.tags ?? [])
   const [tagInput,   setTagInput]   = useState('')
   const [published,  setPublished]  = useState(initial?.published ?? false)
@@ -346,6 +355,8 @@ export default function AdminForm({ initial, existingTags = [], onSuccess }: Pro
         slug:        slug.trim(),
         excerpt:     excerpt.trim() || null,
         cover_image: coverImage.trim() || null,
+        // Only sent when set (or to clear one that was set), so saving still works before the accent SQL line is run
+        ...(accent || initial?.accent ? { accent: accent || null } : {}),
         tags:        tags,
         published,
         content:     blocks,
@@ -403,6 +414,24 @@ export default function AdminForm({ initial, existingTags = [], onSuccess }: Pro
         {coverImage && (
           <img src={coverImage} alt="Cover preview" style={{ marginTop: '10px', width: '100%', maxHeight: '180px', objectFit: 'cover', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)' }} />
         )}
+      </div>
+
+      {/* Accent colour */}
+      <div>
+        <label style={LABEL}>Accent colour <span style={{ opacity: 0.6, textTransform: 'none', letterSpacing: 0 }}>(optional — empty uses the cover&apos;s colour)</span></label>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button type="button" onClick={() => setAccent('')} aria-pressed={accent === ''}
+            style={{ padding: '7px 14px', borderRadius: '100px', cursor: 'pointer', fontSize: '12px', fontFamily: 'var(--ff-mono)', border: `1px solid ${accent === '' ? 'rgba(130,255,31,0.5)' : 'rgba(255,255,255,0.12)'}`, background: accent === '' ? 'rgba(130,255,31,0.1)' : 'transparent', color: accent === '' ? '#82ff1f' : 'rgba(255,255,255,0.5)' }}>
+            Auto
+          </button>
+          {ACCENT_PRESETS.map(c => (
+            <button key={c.hex} type="button" onClick={() => setAccent(c.hex)} title={c.name} aria-label={c.name} aria-pressed={accent.toLowerCase() === c.hex}
+              style={{ width: '30px', height: '30px', borderRadius: '50%', cursor: 'pointer', background: c.hex, border: accent.toLowerCase() === c.hex ? '2px solid #fff' : '2px solid rgba(255,255,255,0.15)', padding: 0 }} />
+          ))}
+          <input type="color" value={isHexColor(accent) ? accent : '#8a97a8'} onChange={e => setAccent(e.target.value)} aria-label="Pick any colour"
+            style={{ width: '36px', height: '30px', padding: 0, border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', background: 'transparent', cursor: 'pointer' }} />
+          {accent && <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>{accent}</span>}
+        </div>
       </div>
 
       {/* Tags */}

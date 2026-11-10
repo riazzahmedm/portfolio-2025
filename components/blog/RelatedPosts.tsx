@@ -12,7 +12,7 @@ export default function RelatedPosts({ posts }: { posts: BlogPostSummary[] }) {
       <div className="fn-sec">Keep reading<i /></div>
       <div className="fn-grid">
         {posts.map((p, i) => (
-          <AccentScope key={p.id} className="fn-cardwrap">
+          <AccentScope key={p.id} accent={p.accent} className="fn-cardwrap">
             <Link href={`/blog/${p.slug}`} className="fn-card">
               <div className={`fn-cv${p.cover_image ? '' : ` ${FALLBACKS[i % FALLBACKS.length]}`}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}

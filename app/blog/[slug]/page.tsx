@@ -71,7 +71,7 @@ export default async function BlogPostPage({ params }: Params) {
   }
 
   return (
-    <AccentScope>
+    <AccentScope accent={post.accent}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}

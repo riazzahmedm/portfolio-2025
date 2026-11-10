@@ -133,3 +133,6 @@ create table if not exists rate_limits (
   window_start timestamptz not null default now()
 );
 alter table rate_limits enable row level security;
+
+-- ── Blog: an optional accent colour per post (empty = the colour read from the cover) ───────────────────────
+alter table blog_posts add column if not exists accent text;   -- '#rrggbb'

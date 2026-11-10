@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/admin-auth'
 import { dbError } from '@/lib/api-error'
+import { isHexColor } from '@/lib/cover-accent'
 import { omitFields } from '@/lib/pick'
 
 export async function GET(
@@ -27,9 +28,13 @@ export async function PATCH(
   const now  = new Date().toISOString()
   if (body.published && !body.published_at) body.published_at = now
   body.updated_at = now
+  if ('accent' in body && body.accent !== null && !isHexColor(body.accent)) {
+    return Response.json({ error: 'The accent colour must be a hex colour like #8a97a8' }, { status: 400 })
+  }
 
   const { data, error } = await supabase
     .from('blog_posts').update(body).eq('slug', slug).select().single()
+  if (error && /accent/i.test(error.message)) return Response.json({ error: 'Run the blog accent SQL line in supabase/migrations.sql first' }, { status: 503 })
   if (error) return dbError(error)
   return Response.json(data)
 }
