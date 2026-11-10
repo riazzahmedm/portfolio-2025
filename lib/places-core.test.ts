@@ -56,6 +56,26 @@ test('mergeTimeline orders newest first and keeps same-day visits', () => {
   assert.deepEqual(merged.map(e => e.id), ['t', 'a', 'b'])
 })
 
+test('mergeTimeline orders a single day night, evening, afternoon, morning, then entries with no time', () => {
+  const day = (id: string, timing: TimelineEntry['timing'], createdAt: string, source: TimelineEntry['source'] = 'visit') =>
+    entry(id, '2026-11-08', { timing, createdAt, source })
+  const merged = mergeTimeline(
+    [day('morning', 'morning', '2026-11-08T09:00:00Z'), day('night', 'night', '2026-11-08T08:00:00Z'), day('none-old', null, '2026-11-08T07:00:00Z'), day('evening', 'evening', '2026-11-08T10:00:00Z'), day('afternoon', 'afternoon', '2026-11-08T11:00:00Z')],
+    [day('none-new', null, '2026-11-08T12:00:00Z', 'theatre')],
+  )
+  assert.deepEqual(merged.map(e => e.id), ['night', 'evening', 'afternoon', 'morning', 'none-new', 'none-old'])
+})
+
+test('mergeTimeline keeps newer days first whatever the time of day', () => {
+  const merged = mergeTimeline([entry('old-night', '2026-11-01', { timing: 'night' }), entry('new-morning', '2026-11-02', { timing: 'morning' })], [])
+  assert.deepEqual(merged.map(e => e.id), ['new-morning', 'old-night'])
+})
+
+test('mergeTimeline puts two visits at the same time of day newest-logged first', () => {
+  const merged = mergeTimeline([entry('a', '2026-11-08', { timing: 'evening', createdAt: '2026-11-08T10:00:00Z' }), entry('b', '2026-11-08', { timing: 'evening', createdAt: '2026-11-08T12:00:00Z' })], [])
+  assert.deepEqual(merged.map(e => e.id), ['b', 'a'])
+})
+
 test('mergeTimeline drops theatre rows with no place', () => {
   const orphan = entry('o', '2026-11-09', { source: 'theatre', place: { ...place, id: '' } })
   assert.deepEqual(mergeTimeline([], [orphan]), [])

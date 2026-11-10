@@ -101,8 +101,12 @@ export interface TimelineEntry {
   movie?:    { id: string; title: string; posterUrl: string | null; format: string | null }
 }
 
+// Later in the day sorts first, so a day reads night, evening, afternoon, morning; entries with no time of day come last
+const TIMING_RANK: Record<string, number> = { morning: 1, afternoon: 2, evening: 3, night: 4 }
+const rank = (e: TimelineEntry) => (e.timing ? TIMING_RANK[e.timing] ?? 0 : 0)
+
 const byNewest = (a: TimelineEntry, b: TimelineEntry) =>
-  b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt) || a.id.localeCompare(b.id)
+  b.date.localeCompare(a.date) || rank(b) - rank(a) || b.createdAt.localeCompare(a.createdAt) || a.id.localeCompare(b.id)
 
 /** Visits and theatre movie visits, newest first. A theatre row that points at no place is dropped. */
 export function mergeTimeline(visits: TimelineEntry[], theatre: TimelineEntry[]): TimelineEntry[] {
