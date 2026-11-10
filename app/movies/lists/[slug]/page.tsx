@@ -2,10 +2,11 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, ListPlus, Plus, Search, X, Loader2, Trash2, Film, Tv } from 'lucide-react'
+import { ListPlus, Plus, Search, X, Loader2, Trash2, Film, Tv } from 'lucide-react'
 import { navIcon, NAV_ICON_SIZE } from '@/components/ui/nav-icon'
 import { toast } from 'sonner'
 import ScrollNav from '@/components/ui/ScrollNav'
+import NavBack from '@/components/ui/NavBack'
 
 interface ListItem {
   id: string; title: string; poster_url: string | null; type: string | null
@@ -313,9 +314,7 @@ export default function ListDetailPage() {
 
       <ScrollNav style={{ padding: '14px 24px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <Link href="/movies/lists" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', textDecoration: 'none', fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em' }}>
-            <ArrowLeft size={13} /> Lists
-          </Link>
+          <NavBack />
           <div style={{ flex: 1 }} />
           {isAdmin && (
             <button type="button" onClick={() => setShowAdd(true)} title="Add item" aria-label="Add item" style={{ ...navIcon, color: '#b8a0ff' }}>

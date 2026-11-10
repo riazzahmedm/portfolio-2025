@@ -17,6 +17,7 @@ import AmbientHeader from '@/components/movies/AmbientHeader'
 import OnThisDay from '@/components/movies/OnThisDay'
 import { AnimatePresence } from 'framer-motion'
 import Loader from '@/components/ui/Loader'
+import NavBack from '@/components/ui/NavBack'
 
 // ── Stat tile ────────────────────────────────────────────────────────────────
 function Stat({ icon, value, label }: { icon: React.ReactNode; value: number; label: string }) {
@@ -654,7 +655,9 @@ export default function MoviesPage() {
         }
       `}</style>
       <ScrollNav>
-        <div className="wl-header-inner" style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
+        <div className="wl-header-inner" style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+
+          <NavBack />
 
           {/* Right — actions: plain icons, the same style as the shop's cart icon (22px, no pill, 20px apart) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexShrink: 0 }}>

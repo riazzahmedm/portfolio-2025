@@ -1,5 +1,7 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
+
+const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
 /**
  * The top bar for every screen: invisible at the top of the page, so the content owns the whole screen,
@@ -7,6 +9,12 @@ import { useEffect, useState } from 'react'
  */
 export default function ScrollNav({ as: Tag = 'header', style, children }: { as?: 'header' | 'nav'; style?: React.CSSProperties; children: React.ReactNode }) {
   const [solid, setSolid] = useState(false)
+
+  // Tell the floating Hub button this page has a nav bar (which carries the back button), before the first paint
+  useIsoLayoutEffect(() => {
+    document.documentElement.dataset.nav = '1'
+    return () => { delete document.documentElement.dataset.nav }
+  }, [])
 
   useEffect(() => {
     const onScroll = () => setSolid(window.scrollY > 16)

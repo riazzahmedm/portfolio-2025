@@ -1,10 +1,11 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, List, ListPlus, Plus, X, Loader2 } from 'lucide-react'
+import { List, ListPlus, Plus, X, Loader2 } from 'lucide-react'
 import { navIcon, NAV_ICON_SIZE } from '@/components/ui/nav-icon'
 import { toast } from 'sonner'
 import ScrollNav from '@/components/ui/ScrollNav'
+import NavBack from '@/components/ui/NavBack'
 
 interface MovieList {
   id:          string
@@ -177,9 +178,7 @@ export default function ListsPage() {
 
       <ScrollNav style={{ padding: '14px 24px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <Link href="/movies" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', textDecoration: 'none', fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em' }}>
-            <ArrowLeft size={13} /> Watchlog
-          </Link>
+          <NavBack />
           <div style={{ flex: 1 }} />
           <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em' }}>LISTS</div>
           {isAdmin && (

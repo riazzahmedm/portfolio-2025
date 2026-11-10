@@ -13,6 +13,7 @@ import ScrollNav from '@/components/ui/ScrollNav'
 import ReadingProgress from '@/components/blog/ReadingProgress'
 import PostRail from '@/components/blog/PostRail'
 import { ThemeToggle } from '@/components/blog/BlogTheme'
+import NavBack from '@/components/ui/NavBack'
 
 type Params = { params: Promise<{ slug: string }> }
 
@@ -81,6 +82,7 @@ export default async function BlogPostPage({ params }: Params) {
       {/* ── Top bar: the story's title once you scroll, the theme switch, and the admin actions ── */}
       <ScrollNav>
         <div className="fn-navin" style={{ justifyContent: 'space-between' }}>
+          <NavBack />
           <div className="fn-navtitle">{post.title}</div>
           <ThemeToggle />
           {admin && <PostAdminActions slug={post.slug} title={post.title} />}

@@ -9,6 +9,7 @@ import StoryCard from '@/components/blog/StoryCard'
 import { ThemeToggle } from '@/components/blog/BlogTheme'
 import { navIcon, NAV_ICON_SIZE } from '@/components/ui/nav-icon'
 import Loader from '@/components/ui/Loader'
+import NavBack from '@/components/ui/NavBack'
 
 // The active tag lives in the URL so tag links are shareable and survive a reload.
 // Reading it through useSyncExternalStore keeps the server render unfiltered
@@ -67,6 +68,7 @@ export default function BlogIndex({ posts }: { posts: BlogPostSummary[] }) {
       {/* ── Top bar: the theme switch, plus a new-post link for the admin ── */}
       <ScrollNav>
         <div className="fn-navin">
+          <span style={{ marginRight: 'auto' }}><NavBack /></span>
           {/* On phones the issue line moves up here, to the top right beside the theme switch */}
           <span className="fn-issue fn-issue--bar">Vol. 01 · {posts.length} {posts.length === 1 ? 'story' : 'stories'} · {year}</span>
           {isAdmin && (

@@ -1,12 +1,12 @@
 'use client'
 import PlatformIcon from '@/components/movies/PlatformIcon'
 import { useEffect, useState, useMemo, useRef } from 'react'
-import Link from 'next/link'
-import { ArrowLeft, Film, Tv, Clock, RefreshCw, Share2, Flame, CalendarDays, BarChart2, Download } from 'lucide-react'
+import { Film, Tv, Clock, RefreshCw, Share2, Flame, CalendarDays, BarChart2, Download } from 'lucide-react'
 import { navIcon, NAV_ICON_SIZE } from '@/components/ui/nav-icon'
 import type { MovieLog, FavoritePerson } from '@/lib/movies.types'
 import { VIBES, PLATFORMS, DRAWS } from '@/lib/movies.types'
 import ScrollNav from '@/components/ui/ScrollNav'
+import NavBack from '@/components/ui/NavBack'
 
 // ── Animation hooks ───────────────────────────────────────────────────────────
 
@@ -961,13 +961,7 @@ export default function WrappedPage() {
       {/* ── Header ── */}
       <ScrollNav style={{ padding: '14px 24px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
-          <Link href="/movies" style={{
-            display: 'flex', alignItems: 'center', gap: '6px',
-            color: 'var(--text-dim)', textDecoration: 'none',
-            fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em',
-          }}>
-            <ArrowLeft size={13} /> Watchlog
-          </Link>
+          <NavBack />
 
           {stats && (
             <button type="button" onClick={() => setShareOpen(true)} title="Share" aria-label="Share" style={{ ...navIcon, color: '#b8a0ff' }}>

@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { isAdmin } from '@/lib/admin-auth'
 import { dbError } from '@/lib/api-error'
-import { pickFields, omitFields, EMPTY_PATCH } from '@/lib/pick'
+import { pickFields, EMPTY_PATCH } from '@/lib/pick'
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!(await isAdmin())) return Response.json({ error: 'Unauthorized' }, { status: 401 })

@@ -13,6 +13,7 @@ import PlaceForm from './PlaceForm'
 import TheatreVisitForm from './TheatreVisitForm'
 import { Thumb, kindLabel } from './shared'
 import { chip } from './form-styles'
+import NavBack from '@/components/ui/NavBack'
 
 type Groups = { month: string; label: string; entries: TimelineEntry[] }[]
 const KIND_CHIPS = [{ key: '', label: 'All' }, ...PLACE_KINDS, { key: THEATRE_KIND, label: 'Theatre' }]
@@ -86,7 +87,8 @@ export default function PlacesBrowser() {
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg)', color: 'var(--text-primary)' }}>
       <ScrollNav>
-        <div style={{ maxWidth: '720px', margin: '0 auto', padding: '14px 20px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '20px' }}>
+        <div style={{ maxWidth: '720px', margin: '0 auto', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px' }}>
+          <NavBack />
           {isAdmin && <Link href="/admin?tab=places" title="Log a place" aria-label="Log a place" style={{ ...navIcon, color: '#b8a0ff' }}><Plus size={22} /></Link>}
         </div>
       </ScrollNav>

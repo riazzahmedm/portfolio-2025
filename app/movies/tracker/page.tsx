@@ -1,10 +1,10 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
-import Link from 'next/link'
-import { ArrowLeft, CheckCircle, PauseCircle, XCircle, Tv, ChevronUp, ChevronDown, Plus, Search, X, Loader2 } from 'lucide-react'
+import { CheckCircle, PauseCircle, XCircle, Tv, ChevronUp, ChevronDown, Plus, Search, X, Loader2 } from 'lucide-react'
 import { navIcon, NAV_ICON_SIZE } from '@/components/ui/nav-icon'
 import { toast } from 'sonner'
 import ScrollNav from '@/components/ui/ScrollNav'
+import NavBack from '@/components/ui/NavBack'
 
 interface SeriesProgress {
   id:               string
@@ -281,9 +281,7 @@ export default function TrackerPage() {
 
       <ScrollNav style={{ padding: '14px 24px' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <Link href="/movies" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', textDecoration: 'none', fontSize: '12px', fontFamily: 'var(--ff-mono)', letterSpacing: '0.1em' }}>
-            <ArrowLeft size={13} /> Watchlog
-          </Link>
+          <NavBack />
           <div style={{ flex: 1 }} />
           <h1 style={{ margin: 0, fontWeight: 400, fontFamily: 'var(--ff-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em' }}>SERIES TRACKER</h1>
           {isAdmin && (
