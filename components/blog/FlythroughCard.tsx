@@ -1,11 +1,25 @@
+'use client'
+import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Mountain, ArrowRight } from 'lucide-react'
 import type { Flythrough } from '@/lib/blog-extras'
 
 /** A card that opens a story's interactive flythrough full-screen. `compact` is the shorter closing version. */
 export default function FlythroughCard({ fly, compact = false }: { fly: Flythrough; compact?: boolean }) {
+  const link = useRef<HTMLAnchorElement>(null)
+  // The flythrough is a separate static page: hand it this post's colour (same origin, so localStorage is shared)
+  const shareAccent = () => {
+    const el = link.current
+    if (!el) return
+    const rgb = getComputedStyle(el).getPropertyValue('--pa-dark-rgb').trim()
+    try {
+      if (rgb) localStorage.setItem('fly-accent', rgb)
+      else localStorage.removeItem('fly-accent')
+    } catch {}
+  }
+  useEffect(shareAccent)
   return (
-    <Link href={fly.href} className={`fn-fly${compact ? ' fn-fly--end' : ''}`} prefetch={false}>
+    <Link ref={link} href={fly.href} onClick={shareAccent} onPointerEnter={shareAccent} onFocus={shareAccent} className={`fn-fly${compact ? ' fn-fly--end' : ''}`} prefetch={false}>
       {fly.image && !compact
         // eslint-disable-next-line @next/next/no-img-element
         ? <img className="fn-fly-pic" src={fly.image} alt="" width={132} height={82} loading="lazy" decoding="async" />
