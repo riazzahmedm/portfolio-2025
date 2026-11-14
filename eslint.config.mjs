@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Static files served as they are, including the vendored (minified) Three.js build
+    "public/**",
   ]),
   {
     rules: {
