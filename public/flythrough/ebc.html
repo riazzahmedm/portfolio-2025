@@ -153,12 +153,13 @@
 <div id="credits" class="ui" aria-label="End credits">
   <div id="credRoll">
     <section>
-      <h2>Mount Everest</h2>
-      <p class="dim sans" style="margin-top:14px">Sagarmatha in Nepali, Chomolungma in Tibetan</p>
-      <p style="margin-top:22px">8,849 m, the highest point on Earth</p>
+      <h2>Everest Base Camp</h2>
+      <p class="dim sans" style="margin-top:14px">Khumbu, Nepal</p>
+      <p style="margin-top:22px">5,364 m, nine days on foot from Lukla and back</p>
     </section>
-    <section class="sans"><h3>First climbed</h3><p>29 May 1953, by Edmund Hillary and Tenzing Norgay, from the south</p></section>
-    <section class="sans"><h3>The way up from Base Camp</h3><p>Khumbu Icefall, Western Cwm, South Col, summit</p></section>
+    <section class="sans"><h3>The place</h3><p>On the Khumbu Glacier, at the foot of the icefall, where expedition teams camp each spring</p></section>
+    <section class="sans"><h3>The rock</h3><p>A painted boulder that says EVEREST BASE CAMP, and the end of the trail for trekkers</p></section>
+    <section class="sans"><h3>The view</h3><p>Everest, 8,849 m, with Lhotse and Nuptse beside it, seen from above</p></section>
     <section class="sans"><h3>The Sherpas</h3><p>They fix the ropes, carry the loads and open the route every season. They were the real strength of this trip.</p></section>
     <section class="sans"><h3>The trail</h3><ul id="credTrail"></ul></section>
     <section class="sans"><h3>Walked by</h3><p>Riaz Ahmed, Oct 2 – 12, 2026. The first in the bloodline to stand at Base Camp.</p>
@@ -235,8 +236,8 @@ const stops = [
   { p:0.925, place:'Pheriche → Lukla', alt:4371, day:'Day 9 · Oct 10', title:'Snow, a horse, a helicopter',
     text:'Overnight snowfall. A horse slips on the ice. A severe headache at Pheriche, then a first helicopter ride down.',
     img:'Screenshot%202026-10-14%20at%204.23.52%20PM.jpg' },
-  { p:0.96, place:'Chomolungma', alt:8849, day:'Sagarmatha', noCard:true },
-  { p:1.00, place:'Chomolungma', alt:8849, day:'Sagarmatha', noCard:true },
+  { p:0.96, place:'Everest Base Camp', alt:5364, day:'Oct 2–12', noCard:true },
+  { p:1.00, place:'Everest Base Camp', alt:5364, day:'Oct 2–12', noCard:true },
 ];
 const altKeys = stops.map(s => [s.p, s.alt]);
 
@@ -862,7 +863,8 @@ function update(p, q, time, dt){
   el.dot.style.top = (q*100)+'%';
   el.intro.style.opacity = 1 - sstep(.012,.05,q);
   const cp = clamp((q-(QE-.02))/(1-(QE-.02)),0,1), outroO = sstep(0,.08,cp);     // credits: scroll-driven, rising from below the frame
-  el.credits.style.opacity = outroO; el.hud.style.opacity = 1 - outroO;     // the altitude readout makes way for the credits el.credits.style.visibility = cp>0 ? 'visible' : 'hidden';
+  el.credits.style.opacity = outroO; el.credits.style.visibility = cp>0 ? 'visible' : 'hidden';
+  el.hud.style.opacity = 1 - outroO;     // the altitude readout makes way for the credits
   el.roll.style.transform = 'translateY('+lerp(innerHeight*.98, innerHeight*.74-credH, cp).toFixed(1)+'px)';
   let near=null, nd=9;
   for (const s of stops){ if (s.noCard) continue; const d=Math.abs(p-s.p); if (d<nd){nd=d;near=s;} }
