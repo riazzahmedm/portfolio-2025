@@ -23,7 +23,7 @@
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{background:#0a0e1a;color:var(--ink);font-family:Georgia,"Times New Roman",serif}
-  #scroller{height:1500vh}
+  #scroller{height:1660vh}
   canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
   .ui{position:fixed;pointer-events:none;z-index:2}
   .sans{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
@@ -263,7 +263,15 @@ function elevAt(x,z){                    // metres above sea level, bilinear
   return lerp(lerp(dem[k],dem[k+1],u), lerp(dem[k+DW],dem[k+DW+1],u), v);
 }
 const yOf = e => (e-ALT0)*SC;
-const terrainH = (x,z) => yOf(elevAt(x,z));
+let TW = 0, TY = 0, townGrid = null;     // how strongly the town terrace applies at a point, and its height there
+function townAt(x,z){
+  TW = 0; const g = townGrid;
+  if (!g || x<g.x0 || x>g.x1 || z<g.z0 || z>g.z1) return;
+  let best = 1e9, bi = 0;
+  for (let i=0;i<g.n;i++){ const dx=g.x[i]-x, dz=g.z[i]-z, d=dx*dx+dz*dz; if (d<best){ best=d; bi=i; } }
+  TW = 1 - sstep(18, 48, Math.sqrt(best)); TY = g.y[bi];     // level close to the street, easing back into the hillside
+}
+const terrainH = (x,z) => { const h = yOf(elevAt(x,z)); townAt(x,z); return TW > 0 ? lerp(h, TY, TW) : h; };
 
 /* the route, GPS-ish waypoints; `stop` ties a waypoint to a card */
 const route = [
@@ -278,6 +286,10 @@ const route = [
 const NS = 1800;
 const curve = new THREE.CatmullRomCurve3(route.map(r=>{ const w=ll2w(...r.ll); return new THREE.Vector3(w.x,0,w.z); }), false, 'centripetal');
 const rt = curve.getSpacedPoints(NS);                                    // evenly spaced along the trail
+const curveLen = curve.getLength();
+const TOWN_LEN = 36;                    // the street through Lukla, in world units (about 900 m)
+const townU = TOWN_LEN / curveLen;      // how far along the trail the town ends
+const PRO = 0.095;                      // the first part of the scroll is spent walking through Lukla
 const ground = rt.map(v => terrainH(v.x,v.z)+.6);
 const camYs = ground.map((_,i)=>{ let s=0,c=0; for(let k=-14;k<=14;k++){ s+=ground[clamp(i+k,0,NS)]; c++; } return s/c; });
 const stopIdx = {};
@@ -297,6 +309,7 @@ for (const m of moods) m.p = remapP(m.p);
 altKeys.forEach((k,i)=>{ k[0]=stops[i].p; });
 const stopP = name => stops.find(s=>s.place===name).p;
 const uKeys = stops.filter(s=>stopIdx[s.place]!==undefined && s.p<=TREK_END+.001).map(s=>[s.p, stopIdx[s.place]/NS]);
+uKeys[0][1] = townU;                    // the trek proper starts where the town ends
 const uOfP = p => p>=TREK_END ? 1 : piecewise(uKeys, p);
 function trailPt(u){                    // exact ground point on the trail; extrapolates past the end
   const f=u*NS;
@@ -306,6 +319,18 @@ function trailPt(u){                    // exact ground point on the trail; extr
 }
 const camY = u => { const f=clamp(u,0,1)*NS, i=Math.min(NS-1,Math.floor(f)); return lerp(camYs[i],camYs[i+1],f-i); };
 const trailDir = u => trailPt(u+.004).sub(trailPt(u)).setY(0).normalize();
+
+/* Lukla's street: positions by distance along the trail, in world units (a little before the start is fine) */
+const streetPt  = s => trailPt(s / curveLen);
+const streetDir = s => streetPt(s+.5).sub(streetPt(s-.5)).setY(0).normalize();
+{ // Lukla sits on a ridge: level the ground across its street (and the airstrip beside it) so nothing hangs off a steep slope
+  const xs=[], zs=[], ys=[];
+  for (let s=-26; s<=TOWN_LEN+26; s+=1){ const p = streetPt(s); xs.push(p.x); zs.push(p.z); ys.push(p.y-.6); }
+  townGrid = { x:xs, z:zs, y:ys, n:xs.length, x0:Math.min(...xs)-50, x1:Math.max(...xs)+50, z0:Math.min(...zs)-50, z1:Math.max(...zs)+50 };
+}
+const townPts = []; for (let s=-16; s<=TOWN_LEN+18; s+=5){ const p = streetPt(s); townPts.push([p.x,p.z]); }
+const nearTown = (x,z) => townPts.some(q => (q[0]-x)**2 + (q[1]-z)**2 < 22*22);   // keeps pine trees out of the town
+function rng(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
 /* ------------------------------------------------------------------ renderer / scene */
 const canvas = document.getElementById('gl');
@@ -331,7 +356,8 @@ scene.add(hemi, sun);
     const x=pos.getX(i), z=pos.getZ(i);
     const gx=(elevAt(x+1.4,z)-elevAt(x-1.4,z))*SC/2.8, gz=(elevAt(x,z+1.4)-elevAt(x,z-1.4))*SC/2.8;
     const s=clamp(Math.hypot(gx,gz)/1.2,0,1);
-    const detail=((fbm(x*.12,z*.12,4)-.5)*2.4 + (fbm(x*.4,z*.4,2)-.5)*.6)*(.12+s);
+    townAt(x,z);
+    const detail=((fbm(x*.12,z*.12,4)-.5)*2.4 + (fbm(x*.4,z*.4,2)-.5)*.6)*(.12+s)*(1-TW*.6);   // calmer ground on the town terrace
     pos.setY(i, terrainH(x,z)+detail);
   }
   g.computeVertexNormals();
@@ -343,7 +369,8 @@ scene.add(hemi, sun);
     let c = mix(grass, scrub, sstep(3150,3900,e));
     c = mix(c, rock, sstep(3900,4700,e));
     c = mix(c, moraine, sstep(4700,5200,e)*sstep(.5,.9,ny));
-    c = mix(c, cliff, sstep(.88,.5,ny)*.9);
+    townAt(x,z);
+    c = mix(c, cliff, sstep(.88,.5,ny)*.9*(1-TW*.75));   // the terrace and its banks stay green rather than dark cliff
     const snowE = 5350 + (fbm(x*.01,z*.01)-.5)*500;
     c = mix(c, snow, sstep(snowE-150,snowE+250,e)*sstep(.4,.72,ny));
     const n = .8 + .4*fbm(x*.22,z*.22,3)*(.6+.4*fbm(x*.03,z*.03,2));
@@ -437,6 +464,7 @@ const snowMat=new THREE.PointsMaterial({ color:0xffffff, size:.9, map:dotTex, tr
     tries++;
     const i=Math.floor(Math.random()*NS*.62), P=rt[i], T=trailDir(i/NS), off=(Math.random()<.5?-1:1)*(7+Math.random()*Math.random()*180);
     const x=P.x-T.z*off, z=P.z+T.x*off, e=elevAt(x,z);
+    if (nearTown(x,z)) continue;
     if (e<2400 || e>3900 || Math.random()>sstep(3900,3100,e)+.15) continue;
     if (Math.abs(elevAt(x+3,z)-e)>70 || Math.abs(elevAt(x,z+3)-e)>70) continue;
     const s=.22+Math.random()*.3;
@@ -446,6 +474,196 @@ const snowMat=new THREE.PointsMaterial({ color:0xffffff, size:.9, map:dotTex, tr
   }
   trees.count=n; scene.add(trees);
 }
+
+/* ------------------------------------------------------------------ Lukla: a small mountain town */
+{
+  const rnd = rng(11), pick = a => a[Math.floor(rnd()*a.length)], rr = (a,b) => a + rnd()*(b-a);
+  const col = a => a.map(c => new THREE.Color(c));
+  const wallCols = col([0xe9e3d3,0xdcd3bd,0xcfc7b4,0xd9c9a3,0xb9c7cf,0xc7d3bf,0xd8b9a3,0xe3dccb]);
+  const roofCols = col([0x2c6db5,0xc2392b,0x2f8f4e,0xd98a2b,0x2aa3a0,0x2c6db5,0xc2392b,0x7a4b9a]);
+  const awnCols  = col([0xd9382b,0xf0b429,0x2c6db5,0x2f8f4e]);
+  const unitBox = new THREE.BoxGeometry(1,1,1); unitBox.translate(0,.5,0);
+  const gable = (() => {                          // a roof: 1 wide (x), 1 long (z), 1 high, ridge along z
+    const v = [-.5,0,-.5, .5,0,-.5, 0,1,-.5,  -.5,0,.5, .5,0,.5, 0,1,.5];
+    const idx = [0,2,1, 3,4,5, 0,3,5, 0,5,2, 1,2,5, 1,5,4];
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(v,3)); g.setIndex(idx); g.computeVertexNormals(); return g;
+  })();
+  // Keep the full capacity while building (the colour buffer is sized from the count when the first colour is set), then trim to what was used
+  const mk = (geo, mat, n) => { const m = new THREE.InstancedMesh(geo, mat, n); m.userData.used = 0; m.frustumCulled = false; scene.add(m); return m; };
+  const walls = mk(unitBox, new THREE.MeshStandardMaterial({ roughness:1, flatShading:true, emissive:0x2a2721 }), 160);
+  const roofs = mk(gable,   new THREE.MeshStandardMaterial({ roughness:.8, flatShading:true, side:THREE.DoubleSide, emissive:0x1a1a1a }), 160);
+  const dark  = mk(unitBox, new THREE.MeshStandardMaterial({ color:0x1b2430, roughness:.55 }), 900);
+  const awns  = mk(unitBox, new THREE.MeshStandardMaterial({ roughness:1 }), 100);
+  const M4 = new THREE.Matrix4(), Q = new THREE.Quaternion(), V = new THREE.Vector3(), S = new THREE.Vector3(), UP = new THREE.Vector3(0,1,0);
+  const put = (mesh, x,y,z, yaw, sx,sy,sz, color) => {
+    const i = mesh.userData.used++; M4.compose(V.set(x,y,z), Q.setFromAxisAngle(UP, yaw), S.set(sx,sy,sz)); mesh.setMatrixAt(i, M4);
+    if (color) mesh.setColorAt(i, color);
+  };
+  const flatMat = (c, r=1) => new THREE.MeshStandardMaterial({ color:c, roughness:r, flatShading:true });
+
+  // a ribbon laid along the street (or beside it), draped on the terrain
+  const ribbon = (off, hw, lift, mat, s0, s1, step) => {
+    const pos = [], idx = []; let k = 0;
+    for (let s=s0; s<=s1+1e-6; s+=step){
+      const C = streetPt(s), T = streetDir(s), nx = -T.z, nz = T.x;
+      for (const sd of [-1,1]){ const x = C.x + nx*(off+sd*hw), z = C.z + nz*(off+sd*hw); pos.push(x, terrainH(x,z)+lift, z); }
+      if (k > 0) { const a=(k-1)*2; idx.push(a,a+2,a+1, a+1,a+2,a+3); }
+      k++;
+    }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos,3)); g.setIndex(idx); g.computeVertexNormals();
+    const m = new THREE.Mesh(g, mat); m.frustumCulled = false; scene.add(m); return m;
+  };
+  const HALF = 1.7;                                                       // half the width of the main lane
+  ribbon(0, HALF, .55, new THREE.MeshStandardMaterial({ color:0x8d857a, roughness:1, side:THREE.DoubleSide }), -14, TOWN_LEN+14, 1);
+
+  // signs painted on a small canvas each
+  const signTex = (text, bg, fg) => {
+    const c = document.createElement('canvas'); c.width = 512; c.height = 128; const g = c.getContext('2d');
+    g.fillStyle = bg; g.fillRect(0,0,512,128); g.strokeStyle = fg; g.lineWidth = 6; g.strokeRect(8,8,496,112);
+    g.fillStyle = fg; g.font = 'bold 54px -apple-system,Segoe UI,Roboto,sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    let size = 54; while (g.measureText(text).width > 450 && size > 22){ size -= 4; g.font = 'bold '+size+'px -apple-system,Segoe UI,Roboto,sans-serif'; }
+    g.fillText(text, 256, 68);
+    const t = new THREE.CanvasTexture(c); t.anisotropy = 4; return t;
+  };
+  const signs = [
+    ['HOTEL NUMBAR','#1f4f8f','#ffffff'], ['EVEREST BAKERY','#f0b429','#3a2410'], ['NAMASTE LODGE','#2f8f4e','#ffffff'], ['SHERPA GEAR','#c2392b','#ffffff'],
+    ['YAK CAFE','#f5efe0','#8a2b1c'], ['TREKKERS INN','#2aa3a0','#ffffff'], ['LUKLA MARKET','#d98a2b','#ffffff'], ['MOUNTAIN STORE','#1f4f8f','#f0b429'],
+    ['HIMALAYAN JAVA','#3a2410','#f5efe0'], ['TARA AIR','#ffffff','#c2392b'],
+  ];
+  let signIdx = 0;
+
+  const placed = [];
+  const taken = (x,z,r) => placed.some(q => (q.x-x)**2 + (q.z-z)**2 < (q.r+r)**2*.62);
+  const corners = (cx,cz,w,d,yaw) => { const c=Math.cos(yaw), s=Math.sin(yaw), out=[]; for (const [lx,lz] of [[-1,-1],[1,-1],[-1,1],[1,1],[0,0]]){ const a=lx*w/2, b=lz*d/2; out.push([cx+a*c+b*s, cz-a*s+b*c]); } return out; };
+  function building(sd, s, w, d, gap, shop, opts={}){
+    const C = streetPt(s), T = streetDir(s), px = -T.z, pz = T.x;
+    const off = HALF + gap + d/2;
+    const cx = C.x + px*sd*off, cz = C.z + pz*sd*off;
+    const nX = -px*sd, nZ = -pz*sd, yaw = Math.atan2(nX, nZ);                  // the front faces the lane
+    if (taken(cx,cz,Math.max(w,d)/2)) return false;
+    const base = Math.max(...corners(cx,cz,w,d,yaw).map(([x,z]) => terrainH(x,z))) + .45;
+    const floors = opts.floors ?? (rnd() < .38 ? 2 : 1);
+    const h = (floors === 2 ? 2.7 : 1.45) + rr(0,.25);
+    const wc = opts.wall ?? pick(wallCols), rc = opts.roof ?? pick(roofCols);
+    put(walls, cx, base-1.8, cz, yaw, w, h+1.8, d, wc);                       // sunk into the slope, so no gaps below
+    const along = rnd() < .72, ov = .35, rh = rr(.65,.95);
+    if (along) put(roofs, cx, base+h, cz, yaw+Math.PI/2, d+ov, rh, w+ov, rc); // ridge runs along the lane
+    else       put(roofs, cx, base+h, cz, yaw, w+ov, rh, d+ov, rc);           // gable end to the lane
+    const c = Math.cos(yaw), sn = Math.sin(yaw);
+    const L = (lx, ly, lz) => [cx + lx*c + lz*sn, base + ly, cz - lx*sn + lz*c];     // a point on the building, in its own frame
+    const face = d/2 + .03;
+    const nWin = Math.max(1, Math.floor((w-.5)/.95));
+    for (let f=(shop?1:0); f<floors; f++) for (let i=0;i<nWin;i++){
+      const lx = -w/2 + (i+.5)*w/nWin; const [x,y,z] = L(lx, .6 + f*1.25, face);
+      put(dark, x,y,z, yaw, .42,.52,.07);
+    }
+    if (shop){
+      const [x,y,z] = L(0, .12, face); put(dark, x,y,z, yaw, w*.62, 1.0, .1);           // the open shop front
+      const [ax,ay,az] = L(0, 1.18, d/2+.45); put(awns, ax,ay,az, yaw, w*.72, .07, .95, pick(awnCols));
+      if (signIdx < signs.length && w > 2.3){
+        const [t,bg,fg] = signs[signIdx++];
+        const [sx,sy,sz] = L(0, 1.55, face+.04);
+        const sign = new THREE.Mesh(new THREE.PlaneGeometry(Math.min(w*.8,2.1), .5), new THREE.MeshBasicMaterial({ map:signTex(t,bg,fg), fog:true }));
+        sign.position.set(sx,sy,sz); sign.rotation.y = yaw; scene.add(sign);
+      }
+    } else {
+      const [x,y,z] = L(w*.18, 0, face); put(dark, x,y,z, yaw, .5,.95,.08);
+    }
+    placed.push({ x:cx, z:cz, r:Math.max(w,d)/2 });
+    return true;
+  }
+
+  // the main lane: shops and houses on both sides, then a second row behind
+  for (const sd of [-1,1]){
+    let s = -9 + rr(0,1.5);
+    while (s < TOWN_LEN + 5){
+      if (sd === 1 && s < 14) { s = 14; continue; }       // leave the airstrip side open near the start
+      const w = rr(2.3,3.6), d = rr(2.0,2.9), shop = rnd() < .5;
+      if (building(sd, s + w/2, w, d, rr(.15,.5), shop)) s += w + rr(.25,.9); else s += 1;
+    }
+    s = -6 + rr(0,2);
+    while (s < TOWN_LEN + 2){
+      if (sd === 1 && s < 16) { s = 16; continue; }
+      const w = rr(2.4,3.4), d = rr(2.2,3.0);
+      if (rnd() < .78) building(sd, s + w/2, w, d, 3.4 + rr(0,1.2), false);
+      s += w + rr(.6,1.8);
+    }
+  }
+
+  // prayer flags strung across the lane
+  const flagCols2 = [0x2f7de1,0xf4f4f4,0xe23b3b,0x2fae5a,0xf2c230];
+  for (const s of [3, 11, 19, 27]){
+    const C = streetPt(s), T = streetDir(s), n = new THREE.Vector3(-T.z,0,T.x);
+    const a = C.clone().addScaledVector(n,-HALF-.3), b = C.clone().addScaledVector(n,HALF+.3);
+    a.y = terrainH(a.x,a.z)+5.4; b.y = terrainH(b.x,b.z)+5.4;     // overhead: the camera walks underneath
+    const poleM = new THREE.MeshBasicMaterial({ color:0x6b5a45 });
+    for (const q of [a,b]){ const pole = new THREE.Mesh(new THREE.CylinderGeometry(.07,.09,5.9,6), poleM); pole.position.set(q.x, q.y-2.8, q.z); scene.add(pole); }
+    const rot0 = Math.atan2(-n.z, n.x);
+    for (let i=0;i<9;i++){
+      const f = (i+.5)/9, sag = Math.sin(f*Math.PI)*.45;
+      const flag = new THREE.Mesh(new THREE.PlaneGeometry(.38,.28), new THREE.MeshBasicMaterial({ color:flagCols2[i%5], side:THREE.DoubleSide, fog:true }));
+      flag.position.set(lerp(a.x,b.x,f), lerp(a.y,b.y,f)-sag-.15, lerp(a.z,b.z,f));
+      flag.userData = { ph:i + s, rot0 }; flag.rotation.y = rot0;
+      scene.add(flag); (scene.userData.flags ||= []).push(flag);
+    }
+  }
+
+  // the Kani gate where the trail leaves town
+  {
+    const sG = TOWN_LEN + 2.5, C = streetPt(sG), T = streetDir(sG), yaw = Math.atan2(T.x, T.z), n = new THREE.Vector3(-T.z,0,T.x);
+    const y0 = Math.max(terrainH(C.x,C.z), terrainH(C.x+n.x*2.2, C.z+n.z*2.2), terrainH(C.x-n.x*2.2, C.z-n.z*2.2)) + .4;   // the beam sits at the highest of the three
+    const white = flatMat(0xf1ece0), red = flatMat(0xc2392b), gold = flatMat(0xe8b53a);
+    const add = (geo, mat, x,y,z, ry=yaw) => { const m = new THREE.Mesh(geo, mat); m.position.set(x,y,z); m.rotation.y = ry; scene.add(m); return m; };
+    for (const sd of [-1,1]){
+      const x = C.x + n.x*sd*2.2, z = C.z + n.z*sd*2.2;
+      const yb = Math.min(y0, terrainH(x,z) + .4) - .8;                 // down into the ground, so no pillar hangs in the air
+      add(new THREE.BoxGeometry(.55,y0-yb+3.6,.55), white, x, (yb + y0+3.6)/2 + .0, z);
+      add(new THREE.BoxGeometry(.6,.32,.6), red, x, y0+3.2, z);
+    }
+    add(new THREE.BoxGeometry(5.2,.55,.7), red, C.x, y0+3.55, C.z);
+    add(new THREE.BoxGeometry(4.2,.22,.8), gold, C.x, y0+3.98, C.z);
+    const roof = new THREE.Mesh(gable, flatMat(0x2c6db5,.8)); roof.position.set(C.x, y0+4.1, C.z); roof.rotation.y = yaw + Math.PI/2; roof.scale.set(1.5, .85, 5.6); scene.add(roof);
+  }
+
+  // the airstrip beside the town, a terminal and a parked plane
+  const RUN = 16;
+  ribbon(RUN, .8, .55, new THREE.MeshStandardMaterial({ color:0x4b4b52, roughness:1, side:THREE.DoubleSide }), -22, 20, 1.5);
+  {
+    const dashes = mk(unitBox, new THREE.MeshBasicMaterial({ color:0xf2f2f2 }), 40);
+    for (let s=-20; s<=18; s+=2.4){
+      const C = streetPt(s), T = streetDir(s), x = C.x - T.z*RUN, z = C.z + T.x*RUN;
+      put(dashes, x, terrainH(x,z)+.57, z, Math.atan2(T.x,T.z), .1,.03,.9);
+    }
+    dashes.count = dashes.userData.used;
+  }
+  {
+    const s = -6, C = streetPt(s), T = streetDir(s), yaw = Math.atan2(T.x,T.z);
+    const sd = 1, px = -T.z, pz = T.x, off = 9.5;
+    const cx = C.x + px*sd*off, cz = C.z + pz*sd*off;
+    const base = Math.max(...corners(cx,cz,5.6,3,yaw).map(([x,z]) => terrainH(x,z))) + .45;
+    put(walls, cx, base-1.8, cz, yaw, 5.6, 1.8+1.7, 3, new THREE.Color(0xe9e3d3));
+    put(roofs, cx, base+1.7, cz, yaw+Math.PI/2, 3.3, .6, 5.9, new THREE.Color(0x2c6db5));
+    for (let i=0;i<4;i++){ const lx=-2+i*1.33, c=Math.cos(yaw), sn=Math.sin(yaw); put(dark, cx+lx*c, base+.7, cz-lx*sn, yaw, .6,.55,.07); }
+    placed.push({ x:cx, z:cz, r:3 });
+  }
+  {
+    const s = -4, C = streetPt(s), T = streetDir(s), x = C.x - T.z*RUN, z = C.z + T.x*RUN, y = terrainH(x,z) + .55;
+    const g = new THREE.Group(), white = flatMat(0xf4f2ec,.6), red = flatMat(0xc2392b,.6), grey = flatMat(0x55575e,.6);
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(.3,.24,2.7,10), white); body.rotation.x = Math.PI/2; body.position.set(0,.62,0); g.add(body);
+    const nose = new THREE.Mesh(new THREE.ConeGeometry(.3,.5,10), grey); nose.rotation.x = Math.PI/2; nose.position.set(0,.62,1.6); g.add(nose);
+    const wing = new THREE.Mesh(new THREE.BoxGeometry(3.5,.09,.62), white); wing.position.set(0,.93,.15); g.add(wing);
+    const fin = new THREE.Mesh(new THREE.BoxGeometry(.08,.8,.55), red); fin.position.set(0,1.0,-1.25); g.add(fin);
+    const tail = new THREE.Mesh(new THREE.BoxGeometry(1.3,.07,.4), white); tail.position.set(0,.7,-1.25); g.add(tail);
+    const stripe = new THREE.Mesh(new THREE.CylinderGeometry(.305,.245,.28,10), red); stripe.rotation.x = Math.PI/2; stripe.position.set(0,.62,.25); g.add(stripe);
+    for (const sx of [-.85,.85]){ const eng = new THREE.Mesh(new THREE.CylinderGeometry(.14,.13,.7,8), grey); eng.rotation.x = Math.PI/2; eng.position.set(sx,.9,.5); g.add(eng); }
+    for (const sx of [-.3,.3]){ const wheel = new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.1,8), grey); wheel.rotation.z = Math.PI/2; wheel.position.set(sx,.12,.5); g.add(wheel); }
+    g.position.set(x, y, z); g.rotation.y = Math.atan2(T.x, T.z) + .2; g.scale.setScalar(1.15); scene.add(g);
+  }
+
+  for (const m of [walls, roofs, dark, awns]) m.count = m.userData.used;
+}
+
+const apron = new THREE.Vector3(); { const C=streetPt(5), T=streetDir(5), x=C.x-T.z*13, z=C.z+T.x*13; apron.set(x, terrainH(x,z)+2.6, z); }   // the airstrip, for the opening glance
 
 // drifting valley mist
 const mist=[];
@@ -464,7 +682,7 @@ const $ = id => document.getElementById(id);
 const el = { alt:$('alt'), where:$('where'), card:$('card'), img:$('cImg'), day:$('cDay'), title:$('cTitle'), text:$('cText'),
   intro:$('intro'), outro:$('outro'), rail:$('rail'), dot:$('railDot'), play:$('play'), load:$('load') };
 for (const s of stops){
-  const t=document.createElement('i'); t.style.top=(s.p*100)+'%'; el.rail.appendChild(t);
+  const t=document.createElement('i'); t.style.top=((PRO + s.p*(1-PRO))*100)+'%'; el.rail.appendChild(t);
 }
 const peaks=[
   { t:'Everest · 8,849 m', ll:[27.9881,86.9250], e:8849, win:[[.2,.4],[.74,1]] },
@@ -500,12 +718,16 @@ function moodAt(p){
   for (const k of ['si','el','stars','snow','fog']) curMood[k]=lerp(a[k],b[k],f);
 }
 
-function update(p, time, dt){
-  const tt = uOfP(p), e = sstep(0,1,clamp((p-TREK_END)/(1-TREK_END),0,1));
-  const P = trailPt(tt), A = trailPt(tt+.02);
+function update(p, q, time, dt){
+  const tt = q < PRO ? (q/PRO)*townU : uOfP(p), e = sstep(0,1,clamp((p-TREK_END)/(1-TREK_END),0,1));
+  const townF = 1 - sstep(townU*.82, townU*1.4, tt);              // 1 in the streets of Lukla, 0 once we have climbed out
+  const P = trailPt(tt), A = trailPt(tt + lerp(.02, .0035, townF));
   const sway = REDUCED ? 0 : 1;
-  camPos.set(P.x + 3*sway*Math.sin(p*70), Math.max(camY(tt)+9, terrainH(P.x,P.z)+8) + .8*sway*Math.sin(p*110), P.z);
-  look.set(A.x, camY(tt+.02)+1, A.z);
+  const cruiseY = Math.max(camY(tt)+9, terrainH(P.x,P.z)+8), walkY = terrainH(P.x,P.z) + 3.3;
+  camPos.set(P.x + 3*sway*(1-townF*.9)*Math.sin(p*70), lerp(cruiseY, walkY, townF) + .8*sway*(1-townF)*Math.sin(p*110), P.z);
+  look.set(A.x, lerp(camY(tt+.02)+1, A.y + 1.7, townF), A.z);
+  const glance = townF * (1 - sstep(0, .03, q));       // at the very start, glance across the airstrip, then settle on the street
+  if (glance > 0) look.lerp(apron, glance * .42);
   const w = Math.exp(-Math.pow((p-stopP('Syangboche'))/.04,2))*.7 + sstep(stopP('Gorak Shep')-.01,TREK_END,p)*.35;
   look.lerp(ev, w);
   if (e>0){
@@ -517,7 +739,7 @@ function update(p, time, dt){
   bank += (clamp((T0.x*T1.z-T0.z*T1.x)*7,-.14,.14)*(1-e) - bank)*(1-Math.exp(-dt*2.5));
   camera.rotateZ(bank);
   let focus=0; for (const s of stops) if (!s.noCard) focus=Math.max(focus, Math.exp(-Math.pow((p-s.p)/.012,2)));
-  camera.fov = 62 - 6*focus + 10*e; camera.updateProjectionMatrix(); camera.updateMatrixWorld();
+  camera.fov = 62 - 6*focus + 10*e + 7*townF; camera.updateProjectionMatrix(); camera.updateMatrixWorld();
 
   moodAt(p);
   skyU.top.value.copy(curMood.top); skyU.bot.value.copy(curMood.bot); skyU.sunCol.value.copy(curMood.sun);
@@ -567,8 +789,8 @@ function update(p, time, dt){
   el.alt.firstChild.nodeValue = alt.toLocaleString('en-US');
   let cur=stops[0]; for (const s of stops) if (p >= s.p-.012) cur=s;
   el.where.textContent = cur.day.split(' · ')[0] + ' · ' + cur.place;
-  el.dot.style.top = (p*100)+'%';
-  el.intro.style.opacity = 1 - sstep(.004,.02,p);
+  el.dot.style.top = (q*100)+'%';
+  el.intro.style.opacity = 1 - sstep(.012,.05,q);
   const outroO = sstep(.965,.995,p); el.outro.style.opacity = outroO;
   let near=null, nd=9;
   for (const s of stops){ if (s.noCard) continue; const d=Math.abs(p-s.p); if (d<nd){nd=d;near=s;} }
@@ -605,13 +827,13 @@ function frame(now){
     if (scrollY >= maxScroll()-1) stopPlay();
   }
   shown += (target-shown)*(1-Math.exp(-dt*3.5));
-  update(shown, now/1000, dt);
+  update(shown < PRO ? 0 : (shown-PRO)/(1-PRO), shown, now/1000, dt);   // the first stretch of scroll is the walk through town
   renderer.render(scene, camera);
   if (first){ first=false; el.load.style.opacity=0; setTimeout(()=>el.load.remove(),900); }
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
-window.__ebc = { setP:p=>{ scrollTo(0, p*maxScroll()); target=shown=p; } };   // debug hook
+window.__ebc = { setQ:q=>{ scrollTo(0, q*maxScroll()); target=shown=q; }, setP:p=>{ const q=PRO+p*(1-PRO); scrollTo(0, q*maxScroll()); target=shown=q; } };   // debug hook
 })().catch(err => { console.error(err); ebcFail(); });
 </script>
 </body>
