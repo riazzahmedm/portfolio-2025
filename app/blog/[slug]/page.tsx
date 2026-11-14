@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { readingTime } from '@/lib/reading-time'
 import { getPost, getRelatedPosts } from '@/lib/blog.server'
 import AccentScope from '@/components/blog/AccentScope'
+import FlythroughCard from '@/components/blog/FlythroughCard'
+import { FLYTHROUGHS } from '@/lib/blog-extras'
 import { isAdmin } from '@/lib/admin-auth'
 import { SITE_NAME, SITE_URL } from '@/lib/site'
 import BlockRenderer from '@/components/blog/BlockRenderer'
@@ -56,6 +58,7 @@ export default async function BlogPostPage({ params }: Params) {
   const related = post.published ? await getRelatedPosts(post.slug, post.tags).catch(() => []) : []
 
   const mins  = readingTime(post)
+  const fly   = FLYTHROUGHS[post.slug]   // some stories carry an interactive flythrough
   const month = new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 
   const jsonLd = {
@@ -109,11 +112,14 @@ export default async function BlogPostPage({ params }: Params) {
         </div>
       </section>
 
+      {fly && <FlythroughCard fly={fly} />}
+
       {/* ── Meta rail beside the story ── */}
       <div className="fn-shell">
         <PostRail slug={post.slug} written={month} minutes={mins} />
         <article className="fn-article">
           <BlockRenderer blocks={post.content} />
+          {fly && <FlythroughCard fly={fly} compact />}
         </article>
       </div>
 

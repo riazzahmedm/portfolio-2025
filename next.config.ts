@@ -20,6 +20,10 @@ const nextConfig: NextConfig = {
       { source: '/watchlist',     destination: '/movies', permanent: false },
     ]
   },
+  async rewrites() {
+    // The Everest Base Camp flythrough is a standalone page in /public
+    return [{ source: '/flythrough/ebc', destination: '/flythrough/ebc.html' }]
+  },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]
   },

@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EBC Flythrough</title>
+<meta name="description" content="A scroll-driven 3D flythrough of my Everest Base Camp trek, Sep 30 – Oct 12, 2026.">
+<link rel="canonical" href="https://riazz.vercel.app/flythrough/ebc">
+<meta property="og:title" content="Fly the route: Everest Base Camp">
+<meta property="og:description" content="Scroll through 13 days of the Khumbu trail in 3D, from Lukla to Base Camp.">
+<meta name="theme-color" content="#0a0e1a">
+<style>
+  :root{
+    --ink:#f4efe6; --ink-dim:rgba(244,239,230,.66); --accent:#ffb86b;
+    --glass:rgba(12,16,28,.52); --line:rgba(255,255,255,.16);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#0a0e1a;color:var(--ink);font-family:Georgia,"Times New Roman",serif}
+  #scroller{height:1500vh}
+  canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+  .ui{position:fixed;pointer-events:none;z-index:2}
+  .sans{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+
+  #hud{left:24px;bottom:24px}
+  #alt{font-size:clamp(44px,7vw,84px);line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;text-shadow:0 2px 24px rgba(0,0,0,.45)}
+  #alt small{font-size:.28em;letter-spacing:.08em;margin-left:.4em;color:var(--ink-dim)}
+  #where{margin-top:6px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-dim);text-shadow:0 1px 12px rgba(0,0,0,.5)}
+
+  #rail{right:22px;top:12vh;bottom:12vh;width:2px;background:var(--line)}
+  #rail i{position:absolute;left:-3px;width:8px;height:2px;background:var(--ink-dim)}
+  #rail b{position:absolute;left:-4px;width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 16px var(--accent);margin-top:-5px}
+
+  #card{right:56px;bottom:24px;width:min(380px,calc(100vw - 48px));background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:16px;overflow:hidden;opacity:0;transform:translateY(14px);transition:opacity .35s,transform .35s}
+  #card.on{opacity:1;transform:none}
+  #card img{display:block;width:100%;height:190px;object-fit:cover}
+  #card img.hide{display:none}
+  #card .b{padding:16px 18px 18px}
+  #card .day{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+  #card h2{font-size:24px;font-weight:400;margin:6px 0 8px;line-height:1.15}
+  #card p{font-size:14.5px;line-height:1.55;color:var(--ink-dim)}
+
+  .center{inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;transition:opacity .3s}
+  #intro h1{font-size:clamp(34px,6vw,76px);font-weight:400;line-height:1.05;max-width:16ch;text-shadow:0 4px 40px rgba(0,0,0,.5)}
+  #intro .k,#outro .k{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);margin-bottom:18px}
+  #intro .s{margin-top:22px;font-size:15px;color:var(--ink-dim)}
+  #intro .scroll{margin-top:46px;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-dim);animation:bob 2s ease-in-out infinite}
+  @keyframes bob{50%{transform:translateY(8px)}}
+  #outro{background:radial-gradient(ellipse at center,rgba(10,14,26,.55),rgba(10,14,26,.15) 70%)}
+  #outro h2{font-size:clamp(28px,4.4vw,54px);font-weight:400;max-width:18ch;line-height:1.1}
+  #outro .t{margin-top:16px;max-width:46ch;color:var(--ink-dim);line-height:1.6}
+  #outro .stats{display:flex;gap:clamp(16px,4vw,44px);margin-top:30px;flex-wrap:wrap;justify-content:center}
+  #outro .stats div{font-size:clamp(26px,3.6vw,42px)}
+  #outro .stats span{display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-dim);margin-top:4px}
+  #outro a{pointer-events:auto;margin-top:34px;color:var(--ink);border:1px solid var(--line);padding:12px 22px;border-radius:999px;text-decoration:none;font-size:13px;letter-spacing:.08em;background:var(--glass)}
+
+  .peak{position:fixed;left:0;top:0;z-index:2;pointer-events:none;opacity:0;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);text-shadow:0 1px 10px rgba(0,0,0,.6);padding-bottom:14px;transition:opacity .4s}
+  .peak b{display:block;font-weight:600}
+  .peak i{display:block;font-style:normal;font-size:9px;letter-spacing:.2em;color:var(--ink-dim);margin-top:2px}
+  .peak::after{content:"";position:absolute;left:50%;bottom:0;width:1px;height:10px;background:var(--ink-dim)}
+  #vig{inset:0;z-index:1;background:radial-gradient(ellipse at center,transparent 55%,rgba(5,8,18,.55) 100%)}
+  #top{left:24px;top:20px;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-dim)}
+  #top a{pointer-events:auto;color:inherit;text-decoration:none;display:inline-block;padding:8px 0}
+  #top a:hover,#top a:focus-visible{color:var(--ink);outline:none}
+  #play{right:56px;top:16px;pointer-events:auto;font:inherit;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);background:var(--glass);border:1px solid var(--line);padding:9px 16px;border-radius:999px;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  #play:hover{border-color:var(--accent)}
+  #load{inset:0;display:flex;align-items:center;justify-content:center;background:#0a0e1a;z-index:5;letter-spacing:.3em;font-size:12px;text-transform:uppercase;color:var(--ink-dim);transition:opacity .8s}
+
+  @media (max-width:640px){
+    #card{right:16px;left:16px;width:auto;bottom:100px}
+    #card img{height:130px}
+    #rail{right:10px}
+    #play{right:30px}
+    #hud{left:16px;bottom:20px}
+  }
+</style>
+</head>
+<body>
+<div id="scroller"></div>
+<canvas id="gl"></canvas>
+
+<div id="vig" class="ui"></div>
+<div id="load" class="ui sans">Building the Khumbu…</div>
+<div id="top" class="ui sans"><a href="/blog/everest-base-camp-2026" aria-label="Back to the story">← Back to the story</a></div>
+<button id="play" class="ui sans" type="button">▶ Auto-fly</button>
+
+<div id="intro" class="ui center">
+  <div class="k sans">Nepal · Sep 30 – Oct 12, 2026</div>
+  <h1>Cold Nights, Thin Air and a Rock at 17,600ft</h1>
+  <div class="s sans">13 days · ~100 km · 5,364 m</div>
+  <div class="scroll sans">Scroll to walk</div>
+</div>
+
+<div id="hud" class="ui">
+  <div id="alt">2,860<small class="sans">m</small></div>
+  <div id="where" class="sans">Day 3 · Lukla</div>
+</div>
+
+<div id="rail" class="ui"><b id="railDot"></b></div>
+
+<div id="card" class="ui">
+  <img id="cImg" alt="">
+  <div class="b">
+    <div class="day sans" id="cDay"></div>
+    <h2 id="cTitle"></h2>
+    <p id="cText" class="sans"></p>
+  </div>
+</div>
+
+<div id="outro" class="ui center" style="opacity:0">
+  <div class="k sans">Day 12 – 13 · Kathmandu</div>
+  <h2>Headache gone. Hot bath. Gratitude.</h2>
+  <p class="t sans">Boudhanath at dawn, the ghats of Pashupatinath at dusk, and a new respect for the ordinary comforts. The mountain doesn't care about ego, and the Sherpas were the real strength of this trip.</p>
+  <div class="stats">
+    <div>13<span class="sans">days</span></div>
+    <div>~100<span class="sans">km walked</span></div>
+    <div>5,364<span class="sans">metres</span></div>
+    <div>0<span class="sans">Diamox</span></div>
+  </div>
+  <a class="sans" href="/blog/everest-base-camp-2026">Read the full story →</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(async () => {
+'use strict';
+
+/* ------------------------------------------------------------------ data */
+const IMG = 'https://lbdclifolhxmvlzctltd.supabase.co/storage/v1/object/public/blog-images/';
+const TREK_END = 0.88;          // scroll progress at which we arrive at EBC
+const SC = 0.055;               // world units per metre of altitude (1 unit = 25 m, 1.4x vertical exaggeration)
+const ALT0 = 2400;
+
+const stops = [
+  { p:0.00, place:'Lukla', alt:2860, day:'Day 3 · Oct 2', noCard:true },
+  { p:0.04, place:'Phakding', alt:2610, day:'Day 3 · Oct 2', title:'The trail begins',
+    text:'A 3 AM drive, a 25-minute flight to Lukla, permits checked, and boots on the trail at 11:30. About 10°C. First yak meat.',
+    img:'Screenshot%202026-10-14%20at%203.45.47%20PM.jpg' },
+  { p:0.16, place:'Namche Bazaar', alt:3440, day:'Day 4 · Oct 3', title:'Hillary Bridge, and a wrong turn',
+    text:'Across the Hillary Bridge, one wrong turn in the forest, and the first light headache. Dal Bhat for dinner. Diamox skipped. 2–3°C outside.',
+    img:null },
+  { p:0.27, place:'Syangboche', alt:3860, day:'Day 5 · Oct 4', title:'First sight of Everest',
+    text:'Broad and massive, not spiky, sitting between other peaks. An hour spent in near-silence.',
+    img:'Screenshot%202026-10-14%20at%204.03.25%20PM.jpg' },
+  { p:0.37, place:'Tengboche', alt:3867, day:'Day 6 · Oct 5', title:'Tengboche monastery',
+    text:'A steep descent, a steep climb, and the monastery at 3,867 m. The headache gets louder.',
+    img:'Screenshot%202026-10-14%20at%204.13.10%20PM.jpg' },
+  { p:0.48, place:'Dingboche', alt:4410, day:'Day 7 · Oct 6', title:'The Milky Way at 4,410 m',
+    text:'Lunch at Hilltop Lodge, coffee at Café 4410, and after dark, the Milky Way.',
+    img:'Screenshot%202026-10-14%20at%204.11.57%20PM.jpg' },
+  { p:0.58, place:'Nangkartshang Peak', alt:5083, day:'Day 8 · Oct 7', title:'A first summit',
+    text:'Three hours up, two hours down. 5,083 m, the first mountain summit ever.',
+    img:null },
+  { p:0.69, place:'Chukpi Lhara', alt:4940, day:'Day 9 · Oct 8', title:'The memorial, then first snow',
+    text:'A field of stone chortens for climbers lost on the mountain, Babu Chiri Sherpa among them. Just past it, the trail turns white.',
+    img:'Screenshot%202026-10-14%20at%204.18.32%20PM.jpg' },
+  { p:0.79, place:'Gorak Shep', alt:5164, day:'Day 10 · Oct 9', title:'5 AM alarm',
+    text:'A lodge at 5,164 m, a very cold and very long night, then the last push toward base camp.',
+    img:null },
+  { p:0.88, place:'Everest Base Camp', alt:5364, day:'Day 10 · Oct 9', title:'5,364 m',
+    text:'A painted boulder: EVEREST BASE CAMP. Climbing on top, overwhelmed. The first in the bloodline to stand here.',
+    img:'IMG_0282.jpg' },
+  { p:0.945, place:'Pheriche → Lukla', alt:4371, day:'Day 11 · Oct 10', title:'Snow, a horse, a helicopter',
+    text:'Overnight snowfall. A horse slips on the ice. A severe headache at Pheriche, then a first helicopter ride down.',
+    img:'Screenshot%202026-10-14%20at%204.23.52%20PM.jpg' },
+  { p:0.975, place:'Lukla', alt:2860, day:'Day 12 · Oct 11', noCard:true },
+  { p:1.00, place:'Kathmandu', alt:1300, day:'Day 12–13 · Oct 11–12', noCard:true },
+];
+const altKeys = stops.map(s => [s.p, s.alt]);
+
+const moods = [
+  { p:0.00, top:'#4a87c9', bot:'#cfe3ee', sun:'#fff1d6', si:1.25, el:.55, stars:0,  snow:0,   fog:.00085 },
+  { p:0.30, top:'#2f6fb8', bot:'#bcd8ee', sun:'#fff4dc', si:1.35, el:.65, stars:0,  snow:0,   fog:.00085 },
+  { p:0.43, top:'#34447a', bot:'#f2a574', sun:'#ffb27a', si:.8,  el:.12, stars:.1, snow:0,   fog:.0010 },
+  { p:0.48, top:'#04061a', bot:'#1b2650', sun:'#8fa8ff', si:.35, el:.5,  stars:1,  snow:0,   fog:.0009 },
+  { p:0.55, top:'#06091f', bot:'#222c58', sun:'#9db2ff', si:.35, el:.5,  stars:.9, snow:0,   fog:.0009 },
+  { p:0.60, top:'#3a5a9a', bot:'#f7b98a', sun:'#ffc58a', si:1.0, el:.14, stars:.15,snow:0,   fog:.0010 },
+  { p:0.66, top:'#2a68b0', bot:'#c4dbee', sun:'#fff1d6', si:1.2, el:.5,  stars:0,  snow:.1,  fog:.0009 },
+  { p:0.72, top:'#7d93ad', bot:'#d8e2ea', sun:'#e8eef5', si:.8,  el:.4,  stars:0,  snow:.35, fog:.0013 },
+  { p:0.82, top:'#8fa3b8', bot:'#dfe6ec', sun:'#eef3f8', si:.8,  el:.4,  stars:0,  snow:.4,  fog:.0013 },
+  { p:0.88, top:'#2c5fa8', bot:'#ffd9a8', sun:'#ffd9a0', si:1.45,el:.3,  stars:0,  snow:.05, fog:.0007 },
+  { p:0.95, top:'#6f88b0', bot:'#e8e2da', sun:'#f5f0e8', si:.9, el:.45,  stars:0,  snow:.45, fog:.0011 },
+  { p:1.00, top:'#3b2a5a', bot:'#ff9a6b', sun:'#ffb070', si:1.0, el:.1,  stars:.35,snow:0,   fog:.0009 },
+].map(m => ({ ...m, top:new THREE.Color(m.top), bot:new THREE.Color(m.bot), sun:new THREE.Color(m.sun) }));
+
+/* ------------------------------------------------------------------ utils */
+const clamp = (x,a,b) => Math.min(b, Math.max(a,x));
+const lerp = (a,b,t) => a + (b-a)*t;
+const sstep = (a,b,x) => { const t = clamp((x-a)/(b-a),0,1); return t*t*(3-2*t); };
+
+function hash(x,y){ const h = Math.sin(x*127.1 + y*311.7)*43758.5453123; return h - Math.floor(h); }
+function vnoise(x,y){
+  const xi=Math.floor(x), yi=Math.floor(y), xf=x-xi, yf=y-yi;
+  const u=xf*xf*(3-2*xf), v=yf*yf*(3-2*yf);
+  return lerp(lerp(hash(xi,yi),hash(xi+1,yi),u), lerp(hash(xi,yi+1),hash(xi+1,yi+1),u), v);
+}
+function fbm(x,y,o=5){
+  let a=.5,s=0,f=1;
+  for(let i=0;i<o;i++){
+    s += a*vnoise(x*f+i*17.3, y*f-i*9.1);
+    const nx=x*.8-y*.6, ny=x*.6+y*.8; x=nx; y=ny; f*=2; a*=.5;
+  }
+  return s;
+}
+function ridge(x,y){ return clamp((1 - Math.abs(2*fbm(x,y,5)-1) - .55)/.45, 0, 1); }
+
+function piecewise(keys, p){
+  if (p <= keys[0][0]) return keys[0][1];
+  for (let i=0;i<keys.length-1;i++){
+    const [p0,v0]=keys[i], [p1,v1]=keys[i+1];
+    if (p <= p1) return lerp(v0,v1,(p-p0)/(p1-p0));
+  }
+  return keys[keys.length-1][1];
+}
+const altAtP = p => piecewise(altKeys, p);
+
+/* ------------------------------------------------------------------ real terrain (SRTM, via AWS Terrain Tiles) */
+const DEM = { gx0:776645, gy0:438881, z:12 };
+const PXU = 1.352;                      // world units per DEM pixel (~33.8 m; 1 unit = 25 m)
+const gpx = lon => (lon+180)/360*256*Math.pow(2,DEM.z);
+const gpy = lat => { const s=Math.sin(lat*Math.PI/180); return (.5 - Math.log((1+s)/(1-s))/(4*Math.PI))*256*Math.pow(2,DEM.z); };
+const demImg = await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src='khumbu-height.png'; });
+const DW=demImg.width, DH=demImg.height, dem=new Float32Array(DW*DH);
+{
+  const c=document.createElement('canvas'); c.width=DW; c.height=DH;
+  const cx=c.getContext('2d',{ willReadFrequently:true }); cx.drawImage(demImg,0,0);
+  const d=cx.getImageData(0,0,DW,DH).data;
+  for (let i=0;i<DW*DH;i++) dem[i]=d[i*4]*256 + d[i*4+1] + d[i*4+2]/256 - 32768;   // Terrarium encoding
+}
+const ORG = { x:gpx(86.7314)-DEM.gx0, y:gpy(27.6869)-DEM.gy0 };     // Lukla is the world origin
+const ll2w = (lat,lon) => ({ x:(gpx(lon)-DEM.gx0-ORG.x)*PXU, z:(gpy(lat)-DEM.gy0-ORG.y)*PXU });
+function elevAt(x,z){                    // metres above sea level, bilinear
+  const fx=clamp(x/PXU+ORG.x,0,DW-1.001), fz=clamp(z/PXU+ORG.y,0,DH-1.001);
+  const i=Math.floor(fx), j=Math.floor(fz), u=fx-i, v=fz-j, k=j*DW+i;
+  return lerp(lerp(dem[k],dem[k+1],u), lerp(dem[k+DW],dem[k+DW+1],u), v);
+}
+const yOf = e => (e-ALT0)*SC;
+const terrainH = (x,z) => yOf(elevAt(x,z));
+
+/* the route, GPS-ish waypoints; `stop` ties a waypoint to a card */
+const route = [
+  { ll:[27.6869,86.7314], stop:'Lukla' }, { ll:[27.7258,86.7194] }, { ll:[27.7442,86.7140], stop:'Phakding' },
+  { ll:[27.7840,86.7130] }, { ll:[27.7959,86.7109] }, { ll:[27.8069,86.7140], stop:'Namche Bazaar' },
+  { ll:[27.8165,86.7135], stop:'Syangboche' }, { ll:[27.8060,86.7133] }, { ll:[27.8230,86.7160] }, { ll:[27.8290,86.7440] },
+  { ll:[27.8361,86.7641], stop:'Tengboche' }, { ll:[27.8567,86.7918] }, { ll:[27.8745,86.8135] },
+  { ll:[27.8914,86.8311], stop:'Dingboche' }, { ll:[27.8900,86.8010], stop:'Nangkartshang Peak' }, { ll:[27.8914,86.8311] },
+  { ll:[27.9013,86.8208] }, { ll:[27.9230,86.8130], stop:'Chukpi Lhara' }, { ll:[27.9475,86.8108] },
+  { ll:[27.9808,86.8286], stop:'Gorak Shep' }, { ll:[28.0026,86.8528], stop:'Everest Base Camp' },
+];
+const NS = 1800;
+const curve = new THREE.CatmullRomCurve3(route.map(r=>{ const w=ll2w(...r.ll); return new THREE.Vector3(w.x,0,w.z); }), false, 'centripetal');
+const rt = curve.getSpacedPoints(NS);                                    // evenly spaced along the trail
+const ground = rt.map(v => terrainH(v.x,v.z)+.6);
+const camYs = ground.map((_,i)=>{ let s=0,c=0; for(let k=-14;k<=14;k++){ s+=ground[clamp(i+k,0,NS)]; c++; } return s/c; });
+const stopIdx = {};
+{ let from=0;
+  for (const r of route){
+    const w=ll2w(...r.ll); let best=1e9,bi=from;
+    for (let i=from;i<=NS;i++){ const d=(rt[i].x-w.x)**2+(rt[i].z-w.z)**2; if (d<best){best=d;bi=i;} }
+    if (r.stop) stopIdx[r.stop]=bi; from=bi;
+  }
+}
+// even out the scroll speed: each stop's slot is half its authored position, half its share of the trail length
+const evenP = stops.filter(s=>stopIdx[s.place]!==undefined && s.p<=TREK_END+.001);
+const evenKeys = evenP.map(s=>[s.p, TREK_END*(.5*stopIdx[s.place]/NS + .5*s.p/TREK_END)]);
+const remapP = p => p>=TREK_END ? p : piecewise(evenKeys, p);
+for (const s of stops) s.p = remapP(s.p);
+for (const m of moods) m.p = remapP(m.p);
+altKeys.forEach((k,i)=>{ k[0]=stops[i].p; });
+const stopP = name => stops.find(s=>s.place===name).p;
+const uKeys = stops.filter(s=>stopIdx[s.place]!==undefined && s.p<=TREK_END+.001).map(s=>[s.p, stopIdx[s.place]/NS]);
+const uOfP = p => p>=TREK_END ? 1 : piecewise(uKeys, p);
+function trailPt(u){                    // exact ground point on the trail; extrapolates past the end
+  const f=u*NS;
+  if (f>=NS){ const t=rt[NS].clone().sub(rt[NS-4]).setY(0).normalize(); return new THREE.Vector3(rt[NS].x+t.x*(f-NS), ground[NS], rt[NS].z+t.z*(f-NS)); }
+  const i=Math.max(0,Math.floor(f)), k=f-i;
+  return new THREE.Vector3(lerp(rt[i].x,rt[i+1].x,k), lerp(ground[i],ground[i+1],k), lerp(rt[i].z,rt[i+1].z,k));
+}
+const camY = u => { const f=clamp(u,0,1)*NS, i=Math.min(NS-1,Math.floor(f)); return lerp(camYs[i],camYs[i+1],f-i); };
+const trailDir = u => trailPt(u+.004).sub(trailPt(u)).setY(0).normalize();
+
+/* ------------------------------------------------------------------ renderer / scene */
+const canvas = document.getElementById('gl');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0xcfe3ee, .00085);
+const camera = new THREE.PerspectiveCamera(62, 1, .5, 4500);
+
+const hemi = new THREE.HemisphereLight(0xbcd4ff, 0x4a4036, .65);
+const sun = new THREE.DirectionalLight(0xffffff, 1.3);
+scene.add(hemi, sun);
+
+// terrain, straight from the elevation grid
+{
+  const SX=523, SZ=823, Wd=DW*PXU, Hd=DH*PXU;
+  const g = new THREE.PlaneGeometry(Wd, Hd, SX, SZ);
+  g.rotateX(-Math.PI/2); g.translate((DW/2-ORG.x)*PXU, 0, (DH/2-ORG.y)*PXU);
+  const pos = g.attributes.position;
+  for (let i=0;i<pos.count;i++){
+    const x=pos.getX(i), z=pos.getZ(i);
+    const gx=(elevAt(x+1.4,z)-elevAt(x-1.4,z))*SC/2.8, gz=(elevAt(x,z+1.4)-elevAt(x,z-1.4))*SC/2.8;
+    const s=clamp(Math.hypot(gx,gz)/1.2,0,1);
+    const detail=((fbm(x*.12,z*.12,4)-.5)*2.4 + (fbm(x*.4,z*.4,2)-.5)*.6)*(.12+s);
+    pos.setY(i, terrainH(x,z)+detail);
+  }
+  g.computeVertexNormals();
+  const nrm = g.attributes.normal, col = new Float32Array(pos.count*3);
+  const grass=[.27,.40,.21], scrub=[.47,.42,.27], rock=[.45,.40,.36], moraine=[.52,.50,.48], cliff=[.26,.24,.24], snow=[.95,.97,1.0];
+  const mix=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
+  for (let i=0;i<pos.count;i++){
+    const x=pos.getX(i), y=pos.getY(i), z=pos.getZ(i), ny=nrm.getY(i), e=y/SC+ALT0;
+    let c = mix(grass, scrub, sstep(3150,3900,e));
+    c = mix(c, rock, sstep(3900,4700,e));
+    c = mix(c, moraine, sstep(4700,5200,e)*sstep(.5,.9,ny));
+    c = mix(c, cliff, sstep(.88,.5,ny)*.9);
+    const snowE = 5350 + (fbm(x*.01,z*.01)-.5)*500;
+    c = mix(c, snow, sstep(snowE-150,snowE+250,e)*sstep(.4,.72,ny));
+    const n = .8 + .4*fbm(x*.22,z*.22,3)*(.6+.4*fbm(x*.03,z*.03,2));
+    col[i*3]=c[0]*n; col[i*3+1]=c[1]*n; col[i*3+2]=c[2]*n;
+  }
+  g.setAttribute('color', new THREE.BufferAttribute(col,3));
+  scene.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors:true, flatShading:false, roughness:1, metalness:0 })));
+}
+
+// trail ribbon
+{
+  const pts=[]; for (let i=0;i<=NS;i+=3) pts.push(new THREE.Vector3(rt[i].x, ground[i]+.2, rt[i].z));
+  scene.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), pts.length*2, .5, 5, false), new THREE.MeshBasicMaterial({ color:0xd9c7a0 })));
+}
+
+// prayer flags + beacons at each stop on the trek
+const flagCols = [0x2f7de1,0xf4f4f4,0xe23b3b,0x2fae5a,0xf2c230];
+for (const s of stops){
+  if (s.p > TREK_END+.001 || s.noCard || stopIdx[s.place]===undefined) continue;
+  const u = stopIdx[s.place]/NS, T = trailDir(u), P = trailPt(u).addScaledVector(T,14), n = new THREE.Vector3(-T.z,0,T.x);
+  const a = P.clone().addScaledVector(n,-10), b = P.clone().addScaledVector(n,10);
+  a.y = terrainH(a.x,a.z); b.y = terrainH(b.x,b.z);
+  const poleM = new THREE.MeshBasicMaterial({ color:0x6b5a45 });
+  for (const q of [a,b]){
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(.18,.22,19,6), poleM);
+    pole.position.set(q.x, q.y+9.5, q.z); scene.add(pole);
+  }
+  const rot0 = Math.atan2(-n.z, n.x);
+  for (let i=0;i<9;i++){
+    const f = (i+.5)/9, sag = Math.sin(f*Math.PI)*1.6;
+    const flag = new THREE.Mesh(new THREE.PlaneGeometry(1.5,1.0),
+      new THREE.MeshBasicMaterial({ color:flagCols[i%5], side:THREE.DoubleSide, fog:true }));
+    flag.position.set(lerp(a.x,b.x,f), lerp(a.y,b.y,f)+18.4-sag-.6, lerp(a.z,b.z,f));
+    flag.userData = { ph:i, rot0 }; flag.rotation.y = rot0;
+    scene.add(flag); (scene.userData.flags ||= []).push(flag);
+  }
+  const beam = new THREE.Mesh(new THREE.CylinderGeometry(1.1,1.1,70,10,1,true),
+    new THREE.MeshBasicMaterial({ color:0xffb86b, transparent:true, opacity:.22, blending:THREE.AdditiveBlending, depthWrite:false, fog:false }));
+  const bp = P.clone().addScaledVector(n,22); beam.position.set(bp.x, terrainH(bp.x,bp.z)+35, bp.z); scene.add(beam);
+}
+// the EBC stone
+{
+  const u=1, P=trailPt(u), T=trailDir(.99), n=new THREE.Vector3(-T.z,0,T.x), q=P.clone().addScaledVector(n,6).addScaledVector(T,8);
+  const stone = new THREE.Mesh(new THREE.DodecahedronGeometry(3.2,0), new THREE.MeshStandardMaterial({ color:0x8a8478, flatShading:true, roughness:1 }));
+  stone.scale.set(1.5,1,1); stone.position.set(q.x, terrainH(q.x,q.z)+2, q.z); scene.add(stone);
+}
+
+// sky dome
+const skyU = { top:{value:new THREE.Color()}, bot:{value:new THREE.Color()}, sunDir:{value:new THREE.Vector3(0,1,0)}, sunCol:{value:new THREE.Color()} };
+const sky = new THREE.Mesh(new THREE.SphereGeometry(2200,32,16), new THREE.ShaderMaterial({
+  side:THREE.BackSide, depthWrite:false, fog:false, uniforms:skyU,
+  vertexShader:'varying vec3 vD;void main(){vD=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+  fragmentShader:'uniform vec3 top,bot,sunCol,sunDir;varying vec3 vD;void main(){vec3 d=normalize(vD);float t=pow(clamp(d.y+.04,0.,1.),.55);vec3 c=mix(bot,top,t);float s=max(dot(d,sunDir),0.);c+=sunCol*(pow(s,90.)*.9+pow(s,8.)*.18);gl_FragColor=vec4(c,1.);}'
+}));
+sky.renderOrder=-1; scene.add(sky);
+
+// stars
+function softTex(inner){
+  const c=document.createElement('canvas'); c.width=c.height=64;
+  const g=c.getContext('2d'), r=g.createRadialGradient(32,32,0,32,32,32);
+  r.addColorStop(0,'rgba(255,255,255,1)'); r.addColorStop(inner,'rgba(255,255,255,.9)'); r.addColorStop(1,'rgba(255,255,255,0)');
+  g.fillStyle=r; g.fillRect(0,0,64,64); return new THREE.CanvasTexture(c);
+}
+const dotTex = softTex(.35), cloudTex = softTex(0);
+const starMat = new THREE.PointsMaterial({ color:0xffffff, size:3.2, map:dotTex, sizeAttenuation:false, transparent:true, opacity:0, depthWrite:false, fog:false });
+let stars;
+{
+  const n=2600, a=new Float32Array(n*3);
+  for (let i=0;i<n;i++){
+    const u=Math.random(), v=Math.random()*.9+.02, th=2*Math.PI*u, r=2000;
+    const y=v, s=Math.sqrt(1-y*y);
+    a[i*3]=Math.cos(th)*s*r; a[i*3+1]=y*r; a[i*3+2]=Math.sin(th)*s*r;
+  }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(a,3));
+  stars=new THREE.Points(g, starMat); scene.add(stars);
+}
+
+// snowfall (follows the camera)
+const SN=1800, snowPos=new Float32Array(SN*3);
+for (let i=0;i<SN;i++){ snowPos[i*3]=(Math.random()-.5)*160; snowPos[i*3+1]=Math.random()*90-20; snowPos[i*3+2]=(Math.random()-.5)*160; }
+const snowGeo=new THREE.BufferGeometry(); snowGeo.setAttribute('position', new THREE.BufferAttribute(snowPos,3));
+const snowMat=new THREE.PointsMaterial({ color:0xffffff, size:.9, map:dotTex, transparent:true, opacity:0, depthWrite:false });
+
+// pine forest on the low slopes (Lukla to Namche and the Tengboche side)
+{
+  const cone=new THREE.ConeGeometry(1.7,7,6); cone.translate(0,3.5,0);
+  const M=5000, trees=new THREE.InstancedMesh(cone,new THREE.MeshStandardMaterial({flatShading:true,roughness:1}),M);
+  const m=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();
+  let n=0, tries=0;
+  while(n<M && tries<120000){
+    tries++;
+    const i=Math.floor(Math.random()*NS*.62), P=rt[i], T=trailDir(i/NS), off=(Math.random()<.5?-1:1)*(7+Math.random()*Math.random()*180);
+    const x=P.x-T.z*off, z=P.z+T.x*off, e=elevAt(x,z);
+    if (e<2400 || e>3900 || Math.random()>sstep(3900,3100,e)+.15) continue;
+    if (Math.abs(elevAt(x+3,z)-e)>70 || Math.abs(elevAt(x,z+3)-e)>70) continue;
+    const s=.22+Math.random()*.3;
+    m.compose(new THREE.Vector3(x,yOf(e)-.1,z), q, new THREE.Vector3(s,s*(.9+Math.random()*.5),s));
+    trees.setMatrixAt(n,m);
+    trees.setColorAt(n, c.setHSL(.30+Math.random()*.05,.45,.14+Math.random()*.08)); n++;
+  }
+  trees.count=n; scene.add(trees);
+}
+
+// drifting valley mist
+const mist=[];
+for (let i=0;i<60;i++){
+  const k=Math.floor(Math.random()*NS), P=rt[k], x=P.x+(Math.random()-.5)*300, z=P.z+(Math.random()-.5)*300;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({ map:cloudTex, color:0xffffff, transparent:true, opacity:.16+Math.random()*.14, depthWrite:false }));
+  const s=90+Math.random()*130; sp.scale.set(s*1.8,s*.5,1);
+  sp.position.set(x, terrainH(x,z)+28+Math.random()*60, z);
+  sp.userData={ x0:x, sp:.6+Math.random()*1.6, ph:Math.random()*6.28 };
+  scene.add(sp); mist.push(sp);
+}
+const snowPts=new THREE.Points(snowGeo, snowMat); snowPts.frustumCulled=false; scene.add(snowPts);
+
+/* ------------------------------------------------------------------ DOM */
+const $ = id => document.getElementById(id);
+const el = { alt:$('alt'), where:$('where'), card:$('card'), img:$('cImg'), day:$('cDay'), title:$('cTitle'), text:$('cText'),
+  intro:$('intro'), outro:$('outro'), rail:$('rail'), dot:$('railDot'), play:$('play'), load:$('load') };
+for (const s of stops){
+  const t=document.createElement('i'); t.style.top=(s.p*100)+'%'; el.rail.appendChild(t);
+}
+const peaks=[
+  { t:'Everest · 8,849 m', ll:[27.9881,86.9250], e:8849, win:[[.2,.4],[.74,1]] },
+  { t:'Lhotse · 8,516 m',  ll:[27.9617,86.9330], e:8516, win:[[.74,.97]] },
+  { t:'Nuptse · 7,861 m',  ll:[27.9673,86.8861], e:7861, win:[[.2,.4],[.74,.97]] },
+  { t:'Ama Dablam · 6,812 m', ll:[27.8617,86.8614], e:6812, win:[[.3,.6]] },
+  { t:'Pumori · 7,161 m',  ll:[28.0148,86.8316], e:7161, win:[[.76,.97]] },
+];
+const labels=peaks.map(l=>{ l={ ...l, win:l.win.map(w=>w.map(remapP)) }; const w=ll2w(...l.ll), d=document.createElement('div'); d.className='peak sans'; d.innerHTML='<b>'+l.t+'</b><i></i>'; document.body.appendChild(d);
+  return { ...l, pos:new THREE.Vector3(w.x, yOf(l.e)+14, w.z), el:d, dist:d.lastChild, km:-1, occ:0, v:new THREE.Vector3() }; });
+let cardStop=null;
+function setCard(s){
+  if (s===cardStop) return; cardStop=s;
+  if (!s) return;
+  el.day.textContent = s.day + ' · ' + s.place;
+  el.title.textContent = s.title; el.text.textContent = s.text;
+  if (s.img){ el.img.classList.remove('hide'); el.img.src = IMG + s.img; el.img.alt = s.place; }
+  else el.img.classList.add('hide');
+}
+el.img.onerror = () => el.img.classList.add('hide');
+
+/* ------------------------------------------------------------------ per-frame */
+const tmpA=new THREE.Color(), tmpB=new THREE.Color();
+const sunDir=new THREE.Vector3();
+const camPos=new THREE.Vector3(), look=new THREE.Vector3(), ev=new THREE.Vector3(labels[0].pos.x, labels[0].pos.y-14, labels[0].pos.z);
+let bank=0;
+let curMood={ top:new THREE.Color(), bot:new THREE.Color(), sun:new THREE.Color(), si:1, el:.5, stars:0, snow:0, fog:.001 };
+
+function moodAt(p){
+  let i=0; while (i<moods.length-2 && p>moods[i+1].p) i++;
+  const a=moods[i], b=moods[i+1], f=sstep(0,1,clamp((p-a.p)/(b.p-a.p),0,1));
+  curMood.top.copy(a.top).lerp(b.top,f); curMood.bot.copy(a.bot).lerp(b.bot,f); curMood.sun.copy(a.sun).lerp(b.sun,f);
+  for (const k of ['si','el','stars','snow','fog']) curMood[k]=lerp(a[k],b[k],f);
+}
+
+function update(p, time, dt){
+  const tt = uOfP(p), e = sstep(0,1,clamp((p-TREK_END)/(1-TREK_END),0,1));
+  const P = trailPt(tt), A = trailPt(tt+.02);
+  camPos.set(P.x + 3*Math.sin(p*70), Math.max(camY(tt)+9, terrainH(P.x,P.z)+8) + .8*Math.sin(p*110), P.z);
+  look.set(A.x, camY(tt+.02)+1, A.z);
+  const w = Math.exp(-Math.pow((p-stopP('Syangboche'))/.04,2))*.7 + sstep(stopP('Gorak Shep')-.01,TREK_END,p)*.35;
+  look.lerp(ev, w);
+  if (e>0){
+    camPos.y += e*240; camPos.z += e*170;
+    look.lerp(ev, e*.85); look.y += e*60;
+  }
+  camera.position.copy(camPos); camera.lookAt(look);
+  const T0=trailDir(tt), T1=trailDir(Math.min(1,tt+.03));
+  bank += (clamp((T0.x*T1.z-T0.z*T1.x)*7,-.14,.14)*(1-e) - bank)*(1-Math.exp(-dt*2.5));
+  camera.rotateZ(bank);
+  let focus=0; for (const s of stops) if (!s.noCard) focus=Math.max(focus, Math.exp(-Math.pow((p-s.p)/.012,2)));
+  camera.fov = 62 - 6*focus + 10*e; camera.updateProjectionMatrix(); camera.updateMatrixWorld();
+
+  moodAt(p);
+  skyU.top.value.copy(curMood.top); skyU.bot.value.copy(curMood.bot); skyU.sunCol.value.copy(curMood.sun);
+  sunDir.set(.7, curMood.el, -.5).normalize(); skyU.sunDir.value.copy(sunDir);
+  sun.position.copy(sunDir).multiplyScalar(100); sun.color.copy(curMood.sun); sun.intensity=curMood.si;
+  hemi.color.copy(curMood.top).lerp(tmpA.set(0xffffff),.35); hemi.groundColor.set(0x4a4036); hemi.intensity=.35+.45*curMood.si;
+  scene.fog.color.copy(curMood.bot); scene.fog.density=curMood.fog;
+  sky.position.copy(camera.position); stars.position.copy(camera.position);
+  starMat.opacity=curMood.stars;
+
+  // snow
+  snowMat.opacity=curMood.snow*.85; snowPts.visible=curMood.snow>.01;
+  if (snowPts.visible){
+    snowPts.position.copy(camera.position);
+    for (let i=0;i<SN;i++){
+      let y=snowPos[i*3+1]-dt*7, x=snowPos[i*3]+dt*(2.5+Math.sin(time+i)*1.2);
+      if (y<-25) y+=100; if (x>80) x-=160;
+      snowPos[i*3]=x; snowPos[i*3+1]=y;
+    }
+    snowGeo.attributes.position.needsUpdate=true;
+  }
+  for (const s of mist){ s.position.x = s.userData.x0 + Math.sin(time*.05*s.userData.sp + s.userData.ph)*30; s.material.color.copy(curMood.bot).lerp(tmpB.set(0xffffff),.35); }
+  // peak labels: window, occlusion against the terrain, overlap, distance
+  const placed=[];
+  for (const l of [...labels].sort((a,b)=>b.e-a.e)){
+    let o=0; for (const [a,b] of l.win) o=Math.max(o, sstep(a,a+.04,p)*(1-sstep(b-.04,b,p)));
+    l.v.copy(l.pos).project(camera);
+    const vis = o>.01 && l.v.z<1 && Math.abs(l.v.x)<1.05 && l.v.y>-1 && l.v.y<1;
+    if (vis){
+      let hit=0; for (let i=1;i<48;i++){ const f=i/50, x=lerp(camPos.x,l.pos.x,f), z=lerp(camPos.z,l.pos.z,f), y=lerp(camPos.y,l.pos.y,f); if (terrainH(x,z)>y+4){ hit=1; break; } }
+      l.occ += (hit-l.occ)*.2;
+    }
+    let sx=(l.v.x*.5+.5)*innerWidth, sy=(-l.v.y*.5+.5)*innerHeight;
+    if (vis) for (const q of placed) if (Math.abs(q.x-sx)<120 && Math.abs(q.y-sy)<34) sy=q.y-36;
+    if (vis) placed.push({x:sx,y:sy});
+    const km=Math.round(camPos.distanceTo(l.pos)*25/100)/10;
+    if (vis && km!==l.km){ l.km=km; l.dist.textContent=km+' km'; }
+    l.el.style.opacity = vis ? o*(1-l.occ) : 0;
+    l.el.style.transform = 'translate(-50%,-100%) translate('+sx+'px,'+sy+'px)';
+  }
+  // flags
+  const fl = scene.userData.flags||[];
+  for (const f of fl) f.rotation.y = f.userData.rot0 + .35*Math.sin(time*2.2 + f.userData.ph*.8);
+
+  // HUD
+  const alt = Math.round(altAtP(p)/10)*10;
+  el.alt.firstChild.nodeValue = alt.toLocaleString('en-US');
+  let cur=stops[0]; for (const s of stops) if (p >= s.p-.012) cur=s;
+  el.where.textContent = cur.day.split(' · ')[0] + ' · ' + cur.place;
+  el.dot.style.top = (p*100)+'%';
+  el.intro.style.opacity = 1 - sstep(.004,.02,p);
+  const outroO = sstep(.965,.995,p); el.outro.style.opacity = outroO;
+  let near=null, nd=9;
+  for (const s of stops){ if (s.noCard) continue; const d=Math.abs(p-s.p); if (d<nd){nd=d;near=s;} }
+  const showCard = near && nd<.028 && outroO<.2;
+  if (showCard) setCard(near);
+  el.card.classList.toggle('on', !!showCard);
+}
+
+/* ------------------------------------------------------------------ scroll, autoplay, loop */
+let target=0, shown=0, playing=false;
+const maxScroll = () => Math.max(1, document.documentElement.scrollHeight - innerHeight);
+const onScroll = () => { target = clamp(scrollY/maxScroll(),0,1); };
+addEventListener('scroll', onScroll, { passive:true });
+function stopPlay(){ playing=false; el.play.textContent='▶ Auto-fly'; }
+for (const ev_ of ['wheel','touchstart','keydown']) addEventListener(ev_, stopPlay, { passive:true });
+el.play.addEventListener('click', e => {
+  e.stopPropagation();
+  if (playing){ stopPlay(); return; }
+  if (target>.995) scrollTo(0,0);
+  playing=true; el.play.textContent='❚❚ Pause';
+});
+function resize(){
+  renderer.setSize(innerWidth, innerHeight, false);
+  camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize); resize(); onScroll();
+shown = target;
+
+let last=performance.now(), first=true;
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000); last=now;
+  if (playing){
+    scrollBy(0, maxScroll()/130*dt);
+    if (scrollY >= maxScroll()-1) stopPlay();
+  }
+  shown += (target-shown)*(1-Math.exp(-dt*3.5));
+  update(shown, now/1000, dt);
+  renderer.render(scene, camera);
+  if (first){ first=false; el.load.style.opacity=0; setTimeout(()=>el.load.remove(),900); }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+window.__ebc = { setP:p=>{ scrollTo(0, p*maxScroll()); target=shown=p; } };   // debug hook
+})();
+</script>
+</body>
+</html>

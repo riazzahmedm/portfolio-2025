@@ -172,3 +172,21 @@
   .fn-keep .fn-grid { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { .fn-card { transition: none; } }
+
+/* A story's interactive flythrough: a card that opens it full-screen. Takes the post's colour. */
+.fn-fly { display: flex; align-items: center; gap: 16px; max-width: 880px; margin: 28px auto; padding: 18px 22px; border-radius: 16px;
+  border: 1px solid rgba(var(--fn-accent-rgb), .4); background: rgba(var(--fn-accent-rgb), .08); transition: background .2s, border-color .2s, transform .2s; }
+.fn-fly:hover { background: rgba(var(--fn-accent-rgb), .14); border-color: rgba(var(--fn-accent-rgb), .7); }
+.fn-fly:focus-visible { outline: 2px solid var(--fn-lime); outline-offset: 3px; }
+.fn-fly-ico { flex: none; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; color: var(--fn-on-accent); background: var(--fn-lime); }
+.fn-fly-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.fn-fly-txt small { font: 10px var(--ff-mono); letter-spacing: .24em; text-transform: uppercase; color: var(--fn-lime); }
+.fn-fly-txt b { font: 600 20px/1.2 var(--ff-display); letter-spacing: .02em; text-transform: uppercase; }
+.fn-fly-txt span { font-size: 14px; line-height: 1.5; color: var(--fn-dim); }
+.fn-fly-cta { flex: none; display: inline-flex; align-items: center; gap: 6px; font: 600 13px var(--ff-body); color: var(--fn-lime); white-space: nowrap; }
+.fn-fly--end { margin: 40px auto 8px; }
+@media (max-width: 640px) {
+  .fn-fly { flex-wrap: wrap; margin: 20px 16px; padding: 16px; }
+  .fn-fly-cta { width: 100%; justify-content: flex-end; }
+}
+@media (prefers-reduced-motion: reduce) { .fn-fly { transition: none; } }
