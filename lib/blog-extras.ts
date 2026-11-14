@@ -10,8 +10,8 @@ export interface Flythrough {
 export const FLYTHROUGHS: Record<string, Flythrough> = {
   'everest-base-camp-2026': {
     href:  '/flythrough/ebc',
-    title: 'Fly the route',
-    blurb: 'Scroll through the trek in 3D: 13 days, from Lukla to the painted rock at Base Camp.',
+    title: 'Fly the trail',
+    blurb: 'Scroll the Everest Base Camp trail in 3D: nine days on the trail, from Lukla to the painted rock at Base Camp and back.',
     cta:   'Start the flythrough',
     image: '/flythrough/ebc-preview.jpg',
   },

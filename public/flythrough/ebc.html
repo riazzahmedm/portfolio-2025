@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>EBC Flythrough</title>
-<meta name="description" content="A scroll-driven 3D flythrough of my Everest Base Camp trek, Sep 30 – Oct 12, 2026.">
+<title>Everest Base Camp Trail — a 3D flythrough</title>
+<meta name="description" content="A scroll-driven 3D flythrough of the Everest Base Camp trail: nine days from Lukla to Base Camp and back, Oct 2 – 10, 2026.">
 <link rel="canonical" href="https://riazz.vercel.app/flythrough/ebc">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://riazz.vercel.app/flythrough/ebc">
-<meta property="og:title" content="Fly the route: Everest Base Camp">
-<meta property="og:description" content="Scroll through 13 days of the Khumbu trail in 3D, from Lukla to Base Camp.">
+<meta property="og:title" content="Everest Base Camp Trail: a 3D flythrough">
+<meta property="og:description" content="Scroll through nine days on the Khumbu trail in 3D, from Lukla to Base Camp and back.">
 <meta property="og:image" content="https://riazz.vercel.app/flythrough/ebc-preview.jpg">
 <meta property="og:image:width" content="800">
 <meta property="og:image:height" content="499">
@@ -98,15 +98,15 @@
 <button id="play" class="ui sans" type="button">▶ Auto-fly</button>
 
 <div id="intro" class="ui center">
-  <div class="k sans">Nepal · Sep 30 – Oct 12, 2026</div>
-  <h1>Cold Nights, Thin Air and a Rock at 17,600ft</h1>
-  <div class="s sans">13 days · ~100 km · 5,364 m</div>
+  <div class="k sans">Nepal · Oct 2 – 10, 2026</div>
+  <h1>Everest Base Camp Trail</h1>
+  <div class="s sans">9 days on the trail · ~100 km · 5,364 m</div>
   <div class="scroll sans">Scroll to walk</div>
 </div>
 
 <div id="hud" class="ui">
   <div id="alt">2,860<small class="sans">m</small></div>
-  <div id="where" class="sans">Day 3 · Lukla</div>
+  <div id="where" class="sans">Day 1 · Lukla</div>
 </div>
 
 <div id="rail" class="ui"><b id="railDot"></b></div>
@@ -121,7 +121,7 @@
 </div>
 
 <div id="outro" class="ui center" style="opacity:0">
-  <div class="k sans">Day 12 – 13 · Kathmandu</div>
+  <div class="k sans">Back in Kathmandu · Oct 11 – 12</div>
   <h2>Headache gone. Hot bath. Gratitude.</h2>
   <p class="t sans">Boudhanath at dawn, the ghats of Pashupatinath at dusk, and a new respect for the ordinary comforts. The mountain doesn't care about ego, and the Sherpas were the real strength of this trip.</p>
   <div class="stats">
@@ -160,39 +160,39 @@ const LOW = matchMedia('(max-width:640px)').matches || (navigator.hardwareConcur
 const REDUCED = matchMedia('(prefers-reduced-motion:reduce)').matches;   // no camera sway or fluttering flags
 
 const stops = [
-  { p:0.00, place:'Lukla', alt:2860, day:'Day 3 · Oct 2', noCard:true },
-  { p:0.04, place:'Phakding', alt:2610, day:'Day 3 · Oct 2', title:'The trail begins',
+  { p:0.00, place:'Lukla', alt:2860, day:'Day 1 · Oct 2', noCard:true },
+  { p:0.04, place:'Phakding', alt:2610, day:'Day 1 · Oct 2', title:'The trail begins',
     text:'A 3 AM drive, a 25-minute flight to Lukla, permits checked, and boots on the trail at 11:30. About 10°C. First yak meat.',
     img:'Screenshot%202026-10-14%20at%203.45.47%20PM.jpg' },
-  { p:0.16, place:'Namche Bazaar', alt:3440, day:'Day 4 · Oct 3', title:'Hillary Bridge, and a wrong turn',
+  { p:0.16, place:'Namche Bazaar', alt:3440, day:'Day 2 · Oct 3', title:'Hillary Bridge, and a wrong turn',
     text:'Across the Hillary Bridge, one wrong turn in the forest, and the first light headache. Dal Bhat for dinner. Diamox skipped. 2–3°C outside.',
     img:null },
-  { p:0.27, place:'Syangboche', alt:3860, day:'Day 5 · Oct 4', title:'First sight of Everest',
+  { p:0.27, place:'Syangboche', alt:3860, day:'Day 3 · Oct 4', title:'First sight of Everest',
     text:'Broad and massive, not spiky, sitting between other peaks. An hour spent in near-silence.',
     img:'Screenshot%202026-10-14%20at%204.03.25%20PM.jpg' },
-  { p:0.37, place:'Tengboche', alt:3867, day:'Day 6 · Oct 5', title:'Tengboche monastery',
+  { p:0.37, place:'Tengboche', alt:3867, day:'Day 4 · Oct 5', title:'Tengboche monastery',
     text:'A steep descent, a steep climb, and the monastery at 3,867 m. The headache gets louder.',
     img:'Screenshot%202026-10-14%20at%204.13.10%20PM.jpg' },
-  { p:0.48, place:'Dingboche', alt:4410, day:'Day 7 · Oct 6', title:'The Milky Way at 4,410 m',
+  { p:0.48, place:'Dingboche', alt:4410, day:'Day 5 · Oct 6', title:'The Milky Way at 4,410 m',
     text:'Lunch at Hilltop Lodge, coffee at Café 4410, and after dark, the Milky Way.',
     img:'Screenshot%202026-10-14%20at%204.11.57%20PM.jpg' },
-  { p:0.58, place:'Nangkartshang Peak', alt:5083, day:'Day 8 · Oct 7', title:'A first summit',
+  { p:0.58, place:'Nangkartshang Peak', alt:5083, day:'Day 6 · Oct 7', title:'A first summit',
     text:'Three hours up, two hours down. 5,083 m, the first mountain summit ever.',
     img:null },
-  { p:0.69, place:'Chukpi Lhara', alt:4940, day:'Day 9 · Oct 8', title:'The memorial, then first snow',
+  { p:0.69, place:'Chukpi Lhara', alt:4940, day:'Day 7 · Oct 8', title:'The memorial, then first snow',
     text:'A field of stone chortens for climbers lost on the mountain, Babu Chiri Sherpa among them. Just past it, the trail turns white.',
     img:'Screenshot%202026-10-14%20at%204.18.32%20PM.jpg' },
-  { p:0.79, place:'Gorak Shep', alt:5164, day:'Day 10 · Oct 9', title:'5 AM alarm',
+  { p:0.79, place:'Gorak Shep', alt:5164, day:'Day 8 · Oct 9', title:'5 AM alarm',
     text:'A lodge at 5,164 m, a very cold and very long night, then the last push toward base camp.',
     img:null },
-  { p:0.88, place:'Everest Base Camp', alt:5364, day:'Day 10 · Oct 9', title:'5,364 m',
+  { p:0.88, place:'Everest Base Camp', alt:5364, day:'Day 8 · Oct 9', title:'5,364 m',
     text:'A painted boulder: EVEREST BASE CAMP. Climbing on top, overwhelmed. The first in the bloodline to stand here.',
     img:'IMG_0282.jpg' },
-  { p:0.945, place:'Pheriche → Lukla', alt:4371, day:'Day 11 · Oct 10', title:'Snow, a horse, a helicopter',
+  { p:0.945, place:'Pheriche → Lukla', alt:4371, day:'Day 9 · Oct 10', title:'Snow, a horse, a helicopter',
     text:'Overnight snowfall. A horse slips on the ice. A severe headache at Pheriche, then a first helicopter ride down.',
     img:'Screenshot%202026-10-14%20at%204.23.52%20PM.jpg' },
-  { p:0.975, place:'Lukla', alt:2860, day:'Day 12 · Oct 11', noCard:true },
-  { p:1.00, place:'Kathmandu', alt:1300, day:'Day 12–13 · Oct 11–12', noCard:true },
+  { p:0.975, place:'Lukla', alt:2860, day:'Day 10 · Oct 11', noCard:true },
+  { p:1.00, place:'Kathmandu', alt:1300, day:'Oct 11–12', noCard:true },
 ];
 const altKeys = stops.map(s => [s.p, s.alt]);
 
