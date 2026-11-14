@@ -269,7 +269,11 @@ function townAt(x,z){
   if (!g || x<g.x0 || x>g.x1 || z<g.z0 || z>g.z1) return;
   let best = 1e9, bi = 0;
   for (let i=0;i<g.n;i++){ const dx=g.x[i]-x, dz=g.z[i]-z, d=dx*dx+dz*dz; if (d<best){ best=d; bi=i; } }
-  TW = 1 - sstep(18, 48, Math.sqrt(best)); TY = g.y[bi];     // level close to the street, easing back into the hillside
+  TW = 1 - sstep(18, 48, Math.sqrt(best));     // level close to the street, easing back into the hillside
+  // height: blend between the two nearest street samples by position along the street, so the ground (and the camera walking on it) climbs smoothly
+  const j = bi === 0 ? 1 : bi === g.n-1 ? g.n-2 : ((g.x[bi-1]-x)**2+(g.z[bi-1]-z)**2 < (g.x[bi+1]-x)**2+(g.z[bi+1]-z)**2 ? bi-1 : bi+1);
+  const ex=g.x[j]-g.x[bi], ez=g.z[j]-g.z[bi], t = clamp(((x-g.x[bi])*ex + (z-g.z[bi])*ez)/(ex*ex+ez*ez || 1), 0, 1);
+  TY = lerp(g.y[bi], g.y[j], t);
 }
 const terrainH = (x,z) => { const h = yOf(elevAt(x,z)); townAt(x,z); return TW > 0 ? lerp(h, TY, TW) : h; };
 
@@ -326,6 +330,7 @@ const streetDir = s => streetPt(s+.5).sub(streetPt(s-.5)).setY(0).normalize();
 { // Lukla sits on a ridge: level the ground across its street (and the airstrip beside it) so nothing hangs off a steep slope
   const xs=[], zs=[], ys=[];
   for (let s=-26; s<=TOWN_LEN+26; s+=1){ const p = streetPt(s); xs.push(p.x); zs.push(p.z); ys.push(p.y-.6); }
+  for (let pass=0; pass<2; pass++){ const c = ys.slice(); for (let i=0;i<ys.length;i++){ let a=0,n=0; for (let k=-3;k<=3;k++){ const v=c[i+k]; if (v!==undefined){ a+=v; n++; } } ys[i]=a/n; } }   // iron out the bumps
   townGrid = { x:xs, z:zs, y:ys, n:xs.length, x0:Math.min(...xs)-50, x1:Math.max(...xs)+50, z0:Math.min(...zs)-50, z1:Math.max(...zs)+50 };
 }
 const townPts = []; for (let s=-16; s<=TOWN_LEN+18; s+=5){ const p = streetPt(s); townPts.push([p.x,p.z]); }
@@ -347,6 +352,7 @@ const sun = new THREE.DirectionalLight(0xffffff, 1.3);
 scene.add(hemi, sun);
 
 // terrain, straight from the elevation grid
+let meshY = terrainH;     // the height of the drawn terrain mesh (set below), so things placed on it really sit on it
 {
   const SX=LOW?262:523, SZ=LOW?412:823, Wd=DW*PXU, Hd=DH*PXU;
   const g = new THREE.PlaneGeometry(Wd, Hd, SX, SZ);
@@ -359,6 +365,12 @@ scene.add(hemi, sun);
     townAt(x,z);
     const detail=((fbm(x*.12,z*.12,4)-.5)*2.4 + (fbm(x*.4,z*.4,2)-.5)*.6)*(.12+s)*(1-TW*.6);   // calmer ground on the town terrace
     pos.setY(i, terrainH(x,z)+detail);
+  }
+  { const gx0=(DW/2-ORG.x)*PXU - Wd/2, gz0=(DH/2-ORG.y)*PXU - Hd/2, dx=Wd/SX, dz=Hd/SZ, arr=pos.array;
+    meshY = (x,z) => {
+      const fx=clamp((x-gx0)/dx,0,SX-.001), fz=clamp((z-gz0)/dz,0,SZ-.001), i=Math.floor(fx), j=Math.floor(fz), u=fx-i, v=fz-j, k=(j*(SX+1)+i)*3+1, r=(SX+1)*3;
+      return lerp(lerp(arr[k],arr[k+3],u), lerp(arr[k+r],arr[k+r+3],u), v);
+    };
   }
   g.computeVertexNormals();
   const nrm = g.attributes.normal, col = new Float32Array(pos.count*3);
@@ -467,8 +479,9 @@ const snowMat=new THREE.PointsMaterial({ color:0xffffff, size:.9, map:dotTex, tr
     if (nearTown(x,z)) continue;
     if (e<2400 || e>3900 || Math.random()>sstep(3900,3100,e)+.15) continue;
     if (Math.abs(elevAt(x+3,z)-e)>70 || Math.abs(elevAt(x,z+3)-e)>70) continue;
-    const s=.22+Math.random()*.3;
-    m.compose(new THREE.Vector3(x,yOf(e)-.1,z), q, new THREE.Vector3(s,s*(.9+Math.random()*.5),s));
+    const s=.22+Math.random()*.3, h=meshY(x,z), r=1.7*s;
+    const slope=Math.max(Math.abs(meshY(x+r,z)-h), Math.abs(meshY(x-r,z)-h), Math.abs(meshY(x,z+r)-h), Math.abs(meshY(x,z-r)-h));   // how far the ground drops away under the trunk's edge
+    m.compose(new THREE.Vector3(x,h-.25-slope,z), q, new THREE.Vector3(s,s*(.9+Math.random()*.5),s));
     trees.setMatrixAt(n,m);
     trees.setColorAt(n, c.setHSL(.30+Math.random()*.05,.45,.14+Math.random()*.08)); n++;
   }
@@ -516,22 +529,6 @@ const snowMat=new THREE.PointsMaterial({ color:0xffffff, size:.9, map:dotTex, tr
   const HALF = 1.7;                                                       // half the width of the main lane
   ribbon(0, HALF, .55, new THREE.MeshStandardMaterial({ color:0x8d857a, roughness:1, side:THREE.DoubleSide }), -14, TOWN_LEN+14, 1);
 
-  // signs painted on a small canvas each
-  const signTex = (text, bg, fg) => {
-    const c = document.createElement('canvas'); c.width = 512; c.height = 128; const g = c.getContext('2d');
-    g.fillStyle = bg; g.fillRect(0,0,512,128); g.strokeStyle = fg; g.lineWidth = 6; g.strokeRect(8,8,496,112);
-    g.fillStyle = fg; g.font = 'bold 54px -apple-system,Segoe UI,Roboto,sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    let size = 54; while (g.measureText(text).width > 450 && size > 22){ size -= 4; g.font = 'bold '+size+'px -apple-system,Segoe UI,Roboto,sans-serif'; }
-    g.fillText(text, 256, 68);
-    const t = new THREE.CanvasTexture(c); t.anisotropy = 4; return t;
-  };
-  const signs = [
-    ['HOTEL NUMBAR','#1f4f8f','#ffffff'], ['EVEREST BAKERY','#f0b429','#3a2410'], ['NAMASTE LODGE','#2f8f4e','#ffffff'], ['SHERPA GEAR','#c2392b','#ffffff'],
-    ['YAK CAFE','#f5efe0','#8a2b1c'], ['TREKKERS INN','#2aa3a0','#ffffff'], ['LUKLA MARKET','#d98a2b','#ffffff'], ['MOUNTAIN STORE','#1f4f8f','#f0b429'],
-    ['HIMALAYAN JAVA','#3a2410','#f5efe0'], ['TARA AIR','#ffffff','#c2392b'],
-  ];
-  let signIdx = 0;
-
   const placed = [];
   const taken = (x,z,r) => placed.some(q => (q.x-x)**2 + (q.z-z)**2 < (q.r+r)**2*.62);
   const corners = (cx,cz,w,d,yaw) => { const c=Math.cos(yaw), s=Math.sin(yaw), out=[]; for (const [lx,lz] of [[-1,-1],[1,-1],[-1,1],[1,1],[0,0]]){ const a=lx*w/2, b=lz*d/2; out.push([cx+a*c+b*s, cz-a*s+b*c]); } return out; };
@@ -560,12 +557,6 @@ const snowMat=new THREE.PointsMaterial({ color:0xffffff, size:.9, map:dotTex, tr
     if (shop){
       const [x,y,z] = L(0, .12, face); put(dark, x,y,z, yaw, w*.62, 1.0, .1);           // the open shop front
       const [ax,ay,az] = L(0, 1.18, d/2+.45); put(awns, ax,ay,az, yaw, w*.72, .07, .95, pick(awnCols));
-      if (signIdx < signs.length && w > 2.3){
-        const [t,bg,fg] = signs[signIdx++];
-        const [sx,sy,sz] = L(0, 1.55, face+.04);
-        const sign = new THREE.Mesh(new THREE.PlaneGeometry(Math.min(w*.8,2.1), .5), new THREE.MeshBasicMaterial({ map:signTex(t,bg,fg), fog:true }));
-        sign.position.set(sx,sy,sz); sign.rotation.y = yaw; scene.add(sign);
-      }
     } else {
       const [x,y,z] = L(w*.18, 0, face); put(dark, x,y,z, yaw, .5,.95,.08);
     }
@@ -590,14 +581,17 @@ const snowMat=new THREE.PointsMaterial({ color:0xffffff, size:.9, map:dotTex, tr
     }
   }
 
-  // prayer flags strung across the lane
+  // prayer flags strung across the lane, from two poles standing at the lane edges
   const flagCols2 = [0x2f7de1,0xf4f4f4,0xe23b3b,0x2fae5a,0xf2c230];
-  for (const s of [3, 11, 19, 27]){
+  const poleM = new THREE.MeshStandardMaterial({ color:0x7a634a, roughness:1, flatShading:true }), stringM = new THREE.LineBasicMaterial({ color:0x3b3128 });
+  for (const s of [8, 15, 22, 30]){
     const C = streetPt(s), T = streetDir(s), n = new THREE.Vector3(-T.z,0,T.x);
-    const a = C.clone().addScaledVector(n,-HALF-.3), b = C.clone().addScaledVector(n,HALF+.3);
-    a.y = terrainH(a.x,a.z)+5.4; b.y = terrainH(b.x,b.z)+5.4;     // overhead: the camera walks underneath
-    const poleM = new THREE.MeshBasicMaterial({ color:0x6b5a45 });
-    for (const q of [a,b]){ const pole = new THREE.Mesh(new THREE.CylinderGeometry(.07,.09,5.9,6), poleM); pole.position.set(q.x, q.y-2.8, q.z); scene.add(pole); }
+    const a = C.clone().addScaledVector(n,-HALF+.25), b = C.clone().addScaledVector(n,HALF-.25);
+    const g0 = Math.min(terrainH(a.x,a.z), terrainH(b.x,b.z));
+    a.y = b.y = g0 + 5.4;                                        // overhead: the camera walks underneath
+    for (const q of [a,b]){ const pole = new THREE.Mesh(new THREE.CylinderGeometry(.055,.075,7,6), poleM); pole.position.set(q.x, g0 + 2.6, q.z); scene.add(pole); }   // sunk into the lane, tops just above the string
+    const pts = [], N = 14; for (let i=0;i<=N;i++){ const f=i/N, sag=Math.sin(f*Math.PI)*.45; pts.push(new THREE.Vector3(lerp(a.x,b.x,f), a.y-sag, lerp(a.z,b.z,f))); }
+    scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), stringM));
     const rot0 = Math.atan2(-n.z, n.x);
     for (let i=0;i<9;i++){
       const f = (i+.5)/9, sag = Math.sin(f*Math.PI)*.45;
@@ -657,7 +651,18 @@ const snowMat=new THREE.PointsMaterial({ color:0xffffff, size:.9, map:dotTex, tr
     const stripe = new THREE.Mesh(new THREE.CylinderGeometry(.305,.245,.28,10), red); stripe.rotation.x = Math.PI/2; stripe.position.set(0,.62,.25); g.add(stripe);
     for (const sx of [-.85,.85]){ const eng = new THREE.Mesh(new THREE.CylinderGeometry(.14,.13,.7,8), grey); eng.rotation.x = Math.PI/2; eng.position.set(sx,.9,.5); g.add(eng); }
     for (const sx of [-.3,.3]){ const wheel = new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.1,8), grey); wheel.rotation.z = Math.PI/2; wheel.position.set(sx,.12,.5); g.add(wheel); }
-    g.position.set(x, y, z); g.rotation.y = Math.atan2(T.x, T.z) + .2; g.scale.setScalar(1.15); scene.add(g);
+    g.scale.setScalar(1.15); g.rotation.order = 'YXZ'; scene.add(g);
+    // lands on scroll: comes in over the far end of the strip, touches down, rolls to the terminal and stops (and flies back out if you scroll back)
+    const S_FAR = 30, S_STOP = -4, TOUCH = .45;
+    scene.userData.planeAt = q => {
+      const k = sstep(0, .045, q), e = 1 - Math.pow(1 - k, 2.2);          // slows as it rolls out
+      const sp = lerp(S_FAR, S_STOP, e), air = Math.max(0, 1 - k / TOUCH);   // 1 high on approach, 0 on the ground
+      const Cp = streetPt(sp), Tp = streetDir(sp), px = Cp.x - Tp.z*RUN, pz = Cp.z + Tp.x*RUN;
+      g.position.set(px, terrainH(px,pz) + .55 + air*air*9, pz);
+      g.rotation.y = Math.atan2(-Tp.x, -Tp.z);
+      g.rotation.x = air * .1;                                             // nose slightly down on the glide
+    };
+    scene.userData.planeAt(0);
   }
 
   for (const m of [walls, roofs, dark, awns]) m.count = m.userData.used;
@@ -726,7 +731,7 @@ function update(p, q, time, dt){
   const cruiseY = Math.max(camY(tt)+9, terrainH(P.x,P.z)+8), walkY = terrainH(P.x,P.z) + 3.3;
   camPos.set(P.x + 3*sway*(1-townF*.9)*Math.sin(p*70), lerp(cruiseY, walkY, townF) + .8*sway*(1-townF)*Math.sin(p*110), P.z);
   look.set(A.x, lerp(camY(tt+.02)+1, A.y + 1.7, townF), A.z);
-  const glance = townF * (1 - sstep(0, .03, q));       // at the very start, glance across the airstrip, then settle on the street
+  const glance = townF * (1 - sstep(0, .05, q));       // at the very start, glance across the airstrip, then settle on the street
   if (glance > 0) look.lerp(apron, glance * .42);
   const w = Math.exp(-Math.pow((p-stopP('Syangboche'))/.04,2))*.7 + sstep(stopP('Gorak Shep')-.01,TREK_END,p)*.35;
   look.lerp(ev, w);
@@ -780,6 +785,7 @@ function update(p, q, time, dt){
     l.el.style.opacity = vis ? o*(1-l.occ) : 0;
     l.el.style.transform = 'translate(-50%,-100%) translate('+sx+'px,'+sy+'px)';
   }
+  scene.userData.planeAt?.(q);
   // flags
   const fl = scene.userData.flags||[];
   for (const f of fl) f.rotation.y = f.userData.rot0 + (REDUCED ? 0 : .35)*Math.sin(time*2.2 + f.userData.ph*.8);
