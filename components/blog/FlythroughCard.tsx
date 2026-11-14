@@ -6,7 +6,10 @@ import type { Flythrough } from '@/lib/blog-extras'
 export default function FlythroughCard({ fly, compact = false }: { fly: Flythrough; compact?: boolean }) {
   return (
     <Link href={fly.href} className={`fn-fly${compact ? ' fn-fly--end' : ''}`} prefetch={false}>
-      <span className="fn-fly-ico" aria-hidden="true"><Mountain size={22} /></span>
+      {fly.image && !compact
+        // eslint-disable-next-line @next/next/no-img-element
+        ? <img className="fn-fly-pic" src={fly.image} alt="" width={132} height={82} loading="lazy" decoding="async" />
+        : <span className="fn-fly-ico" aria-hidden="true"><Mountain size={22} /></span>}
       <span className="fn-fly-txt">
         <small>Interactive</small>
         <b>{fly.title}</b>

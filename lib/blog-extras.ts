@@ -4,6 +4,7 @@ export interface Flythrough {
   title: string
   blurb: string
   cta:   string
+  image?: string  // a preview picture for the card
 }
 
 export const FLYTHROUGHS: Record<string, Flythrough> = {
@@ -12,5 +13,6 @@ export const FLYTHROUGHS: Record<string, Flythrough> = {
     title: 'Fly the route',
     blurb: 'Scroll through the trek in 3D: 13 days, from Lukla to the painted rock at Base Camp.',
     cta:   'Start the flythrough',
+    image: '/flythrough/ebc-preview.jpg',
   },
 }

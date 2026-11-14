@@ -179,6 +179,7 @@
 .fn-fly:hover { background: rgba(var(--fn-accent-rgb), .14); border-color: rgba(var(--fn-accent-rgb), .7); }
 .fn-fly:focus-visible { outline: 2px solid var(--fn-lime); outline-offset: 3px; }
 .fn-fly-ico { flex: none; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; color: var(--fn-on-accent); background: var(--fn-lime); }
+.fn-fly-pic { flex: none; width: 132px; height: 82px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(var(--fn-accent-rgb), .35); }
 .fn-fly-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
 .fn-fly-txt small { font: 10px var(--ff-mono); letter-spacing: .24em; text-transform: uppercase; color: var(--fn-lime); }
 .fn-fly-txt b { font: 600 20px/1.2 var(--ff-display); letter-spacing: .02em; text-transform: uppercase; }
@@ -187,6 +188,7 @@
 .fn-fly--end { margin: 40px auto 8px; }
 @media (max-width: 640px) {
   .fn-fly { flex-wrap: wrap; margin: 20px 16px; padding: 16px; }
+  .fn-fly-pic { width: 100%; height: 130px; }
   .fn-fly-cta { width: 100%; justify-content: flex-end; }
 }
 @media (prefers-reduced-motion: reduce) { .fn-fly { transition: none; } }

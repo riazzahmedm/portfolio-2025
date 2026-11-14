@@ -6,8 +6,15 @@
 <title>EBC Flythrough</title>
 <meta name="description" content="A scroll-driven 3D flythrough of my Everest Base Camp trek, Sep 30 – Oct 12, 2026.">
 <link rel="canonical" href="https://riazz.vercel.app/flythrough/ebc">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://riazz.vercel.app/flythrough/ebc">
 <meta property="og:title" content="Fly the route: Everest Base Camp">
 <meta property="og:description" content="Scroll through 13 days of the Khumbu trail in 3D, from Lukla to Base Camp.">
+<meta property="og:image" content="https://riazz.vercel.app/flythrough/ebc-preview.jpg">
+<meta property="og:image:width" content="800">
+<meta property="og:image:height" content="499">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://riazz.vercel.app/flythrough/ebc-preview.jpg">
 <meta name="theme-color" content="#0a0e1a">
 <style>
   :root{
@@ -45,6 +52,13 @@
   #intro .s{margin-top:22px;font-size:15px;color:var(--ink-dim)}
   #intro .scroll{margin-top:46px;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-dim);animation:bob 2s ease-in-out infinite}
   @keyframes bob{50%{transform:translateY(8px)}}
+  @media (prefers-reduced-motion:reduce){ #intro .scroll{animation:none} }
+  #fail{position:fixed;inset:0;z-index:9;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:32px;text-align:center;background:#0a0e1a}
+  #fail.on{display:flex}
+  #fail h2{font-weight:400;font-size:clamp(24px,5vw,34px);max-width:560px}
+  #fail p{font-size:15px;line-height:1.6;color:var(--ink-dim);max-width:460px}
+  #fail a{color:var(--ink);border:1px solid var(--line);border-radius:100px;padding:12px 22px;text-decoration:none;font-size:13px;letter-spacing:.12em;text-transform:uppercase}
+  #fail a:hover,#fail a:focus-visible{border-color:var(--accent);outline:none}
   #outro{background:radial-gradient(ellipse at center,rgba(10,14,26,.55),rgba(10,14,26,.15) 70%)}
   #outro h2{font-size:clamp(28px,4.4vw,54px);font-weight:400;max-width:18ch;line-height:1.1}
   #outro .t{margin-top:16px;max-width:46ch;color:var(--ink-dim);line-height:1.6}
@@ -76,7 +90,7 @@
 </head>
 <body>
 <div id="scroller"></div>
-<canvas id="gl"></canvas>
+<canvas id="gl" role="img" aria-label="3D flythrough of the Everest Base Camp trail. Scroll to walk the route."></canvas>
 
 <div id="vig" class="ui"></div>
 <div id="load" class="ui sans">Building the Khumbu…</div>
@@ -119,16 +133,31 @@
   <a class="sans" href="/blog/everest-base-camp-2026">Read the full story →</a>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<div id="fail" role="alert">
+  <h2>The 3D view couldn&rsquo;t start here</h2>
+  <p>This device or browser can&rsquo;t run the 3D flythrough. The whole trek, day by day, is in the story.</p>
+  <a href="/blog/everest-base-camp-2026">Read the story</a>
+</div>
+<noscript><style>#load{display:none}#fail{display:flex}</style></noscript>
+<script>
+// Shown if the scene cannot start (no WebGL, an old browser, a failed download): never leave a blank loading screen
+function ebcFail(){ var f=document.getElementById('fail'), l=document.getElementById('load'); if(l) l.style.display='none'; if(f) f.classList.add('on'); }
+window.ebcFail = ebcFail;
+</script>
+<script src="three.min.js"></script>
 <script>
 (async () => {
 'use strict';
+if (typeof THREE === 'undefined') { ebcFail(); return; }
 
 /* ------------------------------------------------------------------ data */
 const IMG = 'https://lbdclifolhxmvlzctltd.supabase.co/storage/v1/object/public/blog-images/';
 const TREK_END = 0.88;          // scroll progress at which we arrive at EBC
 const SC = 0.055;               // world units per metre of altitude (1 unit = 25 m, 1.4x vertical exaggeration)
 const ALT0 = 2400;
+// Weaker devices (phones, few cores, little memory) get a lighter scene: fewer terrain points, trees and snowflakes, and a lower pixel ratio
+const LOW = matchMedia('(max-width:640px)').matches || (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 4;
+const REDUCED = matchMedia('(prefers-reduced-motion:reduce)').matches;   // no camera sway or fluttering flags
 
 const stops = [
   { p:0.00, place:'Lukla', alt:2860, day:'Day 3 · Oct 2', noCard:true },
@@ -280,8 +309,10 @@ const trailDir = u => trailPt(u+.004).sub(trailPt(u)).setY(0).normalize();
 
 /* ------------------------------------------------------------------ renderer / scene */
 const canvas = document.getElementById('gl');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ canvas, antialias:true }); }
+catch (e) { ebcFail(); return; }
+renderer.setPixelRatio(Math.min(devicePixelRatio, LOW ? 1.5 : 2));
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0xcfe3ee, .00085);
 const camera = new THREE.PerspectiveCamera(62, 1, .5, 4500);
@@ -292,7 +323,7 @@ scene.add(hemi, sun);
 
 // terrain, straight from the elevation grid
 {
-  const SX=523, SZ=823, Wd=DW*PXU, Hd=DH*PXU;
+  const SX=LOW?262:523, SZ=LOW?412:823, Wd=DW*PXU, Hd=DH*PXU;
   const g = new THREE.PlaneGeometry(Wd, Hd, SX, SZ);
   g.rotateX(-Math.PI/2); g.translate((DW/2-ORG.x)*PXU, 0, (DH/2-ORG.y)*PXU);
   const pos = g.attributes.position;
@@ -391,7 +422,7 @@ let stars;
 }
 
 // snowfall (follows the camera)
-const SN=1800, snowPos=new Float32Array(SN*3);
+const SN=LOW?900:1800, snowPos=new Float32Array(SN*3);
 for (let i=0;i<SN;i++){ snowPos[i*3]=(Math.random()-.5)*160; snowPos[i*3+1]=Math.random()*90-20; snowPos[i*3+2]=(Math.random()-.5)*160; }
 const snowGeo=new THREE.BufferGeometry(); snowGeo.setAttribute('position', new THREE.BufferAttribute(snowPos,3));
 const snowMat=new THREE.PointsMaterial({ color:0xffffff, size:.9, map:dotTex, transparent:true, opacity:0, depthWrite:false });
@@ -399,7 +430,7 @@ const snowMat=new THREE.PointsMaterial({ color:0xffffff, size:.9, map:dotTex, tr
 // pine forest on the low slopes (Lukla to Namche and the Tengboche side)
 {
   const cone=new THREE.ConeGeometry(1.7,7,6); cone.translate(0,3.5,0);
-  const M=5000, trees=new THREE.InstancedMesh(cone,new THREE.MeshStandardMaterial({flatShading:true,roughness:1}),M);
+  const M=LOW?2500:5000, trees=new THREE.InstancedMesh(cone,new THREE.MeshStandardMaterial({flatShading:true,roughness:1}),M);
   const m=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();
   let n=0, tries=0;
   while(n<M && tries<120000){
@@ -418,7 +449,7 @@ const snowMat=new THREE.PointsMaterial({ color:0xffffff, size:.9, map:dotTex, tr
 
 // drifting valley mist
 const mist=[];
-for (let i=0;i<60;i++){
+for (let i=0;i<(LOW?30:60);i++){
   const k=Math.floor(Math.random()*NS), P=rt[k], x=P.x+(Math.random()-.5)*300, z=P.z+(Math.random()-.5)*300;
   const sp=new THREE.Sprite(new THREE.SpriteMaterial({ map:cloudTex, color:0xffffff, transparent:true, opacity:.16+Math.random()*.14, depthWrite:false }));
   const s=90+Math.random()*130; sp.scale.set(s*1.8,s*.5,1);
@@ -472,7 +503,8 @@ function moodAt(p){
 function update(p, time, dt){
   const tt = uOfP(p), e = sstep(0,1,clamp((p-TREK_END)/(1-TREK_END),0,1));
   const P = trailPt(tt), A = trailPt(tt+.02);
-  camPos.set(P.x + 3*Math.sin(p*70), Math.max(camY(tt)+9, terrainH(P.x,P.z)+8) + .8*Math.sin(p*110), P.z);
+  const sway = REDUCED ? 0 : 1;
+  camPos.set(P.x + 3*sway*Math.sin(p*70), Math.max(camY(tt)+9, terrainH(P.x,P.z)+8) + .8*sway*Math.sin(p*110), P.z);
   look.set(A.x, camY(tt+.02)+1, A.z);
   const w = Math.exp(-Math.pow((p-stopP('Syangboche'))/.04,2))*.7 + sstep(stopP('Gorak Shep')-.01,TREK_END,p)*.35;
   look.lerp(ev, w);
@@ -528,7 +560,7 @@ function update(p, time, dt){
   }
   // flags
   const fl = scene.userData.flags||[];
-  for (const f of fl) f.rotation.y = f.userData.rot0 + .35*Math.sin(time*2.2 + f.userData.ph*.8);
+  for (const f of fl) f.rotation.y = f.userData.rot0 + (REDUCED ? 0 : .35)*Math.sin(time*2.2 + f.userData.ph*.8);
 
   // HUD
   const alt = Math.round(altAtP(p)/10)*10;
@@ -580,7 +612,7 @@ function frame(now){
 }
 requestAnimationFrame(frame);
 window.__ebc = { setP:p=>{ scrollTo(0, p*maxScroll()); target=shown=p; } };   // debug hook
-})();
+})().catch(err => { console.error(err); ebcFail(); });
 </script>
 </body>
 </html>
