@@ -23,7 +23,7 @@
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{background:#0a0e1a;color:var(--ink);font-family:Georgia,"Times New Roman",serif}
-  #scroller{height:1660vh}
+  #scroller{height:1900vh}
   canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
   .ui{position:fixed;pointer-events:none;z-index:2}
   .sans{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
@@ -59,13 +59,19 @@
   #fail p{font-size:15px;line-height:1.6;color:var(--ink-dim);max-width:460px}
   #fail a{color:var(--ink);border:1px solid var(--line);border-radius:100px;padding:12px 22px;text-decoration:none;font-size:13px;letter-spacing:.12em;text-transform:uppercase}
   #fail a:hover,#fail a:focus-visible{border-color:var(--accent);outline:none}
-  #outro{background:radial-gradient(ellipse at center,rgba(10,14,26,.55),rgba(10,14,26,.15) 70%)}
-  #outro h2{font-size:clamp(28px,4.4vw,54px);font-weight:400;max-width:18ch;line-height:1.1}
-  #outro .t{margin-top:16px;max-width:46ch;color:var(--ink-dim);line-height:1.6}
-  #outro .stats{display:flex;gap:clamp(16px,4vw,44px);margin-top:30px;flex-wrap:wrap;justify-content:center}
-  #outro .stats div{font-size:clamp(26px,3.6vw,42px)}
-  #outro .stats span{display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-dim);margin-top:4px}
-  #outro a{pointer-events:auto;margin-top:34px;color:var(--ink);border:1px solid var(--line);padding:12px 22px;border-radius:999px;text-decoration:none;font-size:13px;letter-spacing:.08em;background:var(--glass)}
+  #credits{inset:0;visibility:hidden;opacity:0;overflow:hidden;-webkit-mask-image:linear-gradient(transparent,#000 14%,#000 90%,transparent);mask-image:linear-gradient(transparent,#000 14%,#000 90%,transparent);background:radial-gradient(ellipse 60% 100% at 50% 50%,rgba(8,10,22,.5),rgba(8,10,22,0) 100%)}
+  #credRoll{position:absolute;left:0;right:0;top:0;display:flex;flex-direction:column;align-items:center;text-align:center;gap:clamp(40px,8vh,72px);padding:0 24px;will-change:transform;text-shadow:0 2px 22px rgba(0,0,0,.7)}
+  #credRoll h2{font-size:clamp(40px,7vw,92px);font-weight:400;line-height:1;letter-spacing:-.01em}
+  #credRoll h3{font-size:11px;font-weight:400;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+  #credRoll p{max-width:40ch;font-size:clamp(17px,2vw,22px);line-height:1.5}
+  #credRoll .dim{color:var(--ink-dim)}
+  #credRoll ul{list-style:none;display:flex;flex-direction:column;gap:6px;font-size:clamp(16px,1.9vw,20px)}
+  #credRoll ul span{color:var(--ink-dim);font-variant-numeric:tabular-nums}
+  #credRoll .stats{display:flex;gap:clamp(16px,4vw,44px);flex-wrap:wrap;justify-content:center;margin-top:22px}
+  #credRoll .stats div{font-size:clamp(26px,3.6vw,42px)}
+  #credRoll .stats span{display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-dim);margin-top:4px}
+  #credRoll a{pointer-events:auto;color:var(--ink);border:1px solid var(--line);padding:12px 22px;border-radius:999px;text-decoration:none;font-size:13px;letter-spacing:.08em;background:var(--glass);text-shadow:none}
+  #credRoll a:hover,#credRoll a:focus-visible{border-color:var(--accent);outline:none}
 
   .peak{position:fixed;left:0;top:0;z-index:2;pointer-events:none;opacity:0;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);text-shadow:0 1px 10px rgba(0,0,0,.6);padding-bottom:14px;transition:opacity .4s}
   .peak b{display:block;font-weight:600}
@@ -120,17 +126,28 @@
   </div>
 </div>
 
-<div id="outro" class="ui center" style="opacity:0">
-  <div class="k sans">Back in Kathmandu · Oct 11 – 12</div>
-  <h2>Headache gone. Hot bath. Gratitude.</h2>
-  <p class="t sans">Boudhanath at dawn, the ghats of Pashupatinath at dusk, and a new respect for the ordinary comforts. The mountain doesn't care about ego, and the Sherpas were the real strength of this trip.</p>
-  <div class="stats">
-    <div>13<span class="sans">days</span></div>
-    <div>~100<span class="sans">km walked</span></div>
-    <div>5,364<span class="sans">metres</span></div>
-    <div>0<span class="sans">Diamox</span></div>
+<div id="credits" class="ui" aria-label="End credits">
+  <div id="credRoll">
+    <section>
+      <h2>Mount Everest</h2>
+      <p class="dim sans" style="margin-top:14px">Sagarmatha in Nepali, Chomolungma in Tibetan</p>
+      <p style="margin-top:22px">8,849 m, the highest point on Earth</p>
+    </section>
+    <section class="sans"><h3>First climbed</h3><p>29 May 1953, by Edmund Hillary and Tenzing Norgay, from the south</p></section>
+    <section class="sans"><h3>The way up from Base Camp</h3><p>Khumbu Icefall, Western Cwm, South Col, summit</p></section>
+    <section class="sans"><h3>The Sherpas</h3><p>They fix the ropes, carry the loads and open the route every season. The mountain doesn't care about ego, and they were the real strength of this trip.</p></section>
+    <section class="sans"><h3>The trail</h3><ul id="credTrail"></ul></section>
+    <section class="sans"><h3>Walked by</h3><p>Riaz Ahmed, Oct 2 – 12, 2026. The first in the bloodline to stand at Base Camp.</p>
+      <div class="stats">
+        <div>13<span>days</span></div>
+        <div>~100<span>km walked</span></div>
+        <div>5,364<span>metres</span></div>
+        <div>0<span>Diamox</span></div>
+      </div>
+    </section>
+    <section class="sans"><h3>Made with</h3><p class="dim">SRTM elevation data from AWS Terrain Tiles, three.js, and photographs from the trail</p></section>
+    <a class="sans" href="/blog/everest-base-camp-2026">Read the full story →</a>
   </div>
-  <a class="sans" href="/blog/everest-base-camp-2026">Read the full story →</a>
 </div>
 
 <div id="fail" role="alert">
@@ -188,11 +205,11 @@ const stops = [
   { p:0.88, place:'Everest Base Camp', alt:5364, day:'Day 8 · Oct 9', title:'5,364 m',
     text:'A painted boulder: EVEREST BASE CAMP. Climbing on top, overwhelmed. The first in the bloodline to stand here.',
     img:'IMG_0282.jpg' },
-  { p:0.945, place:'Pheriche → Lukla', alt:4371, day:'Day 9 · Oct 10', title:'Snow, a horse, a helicopter',
+  { p:0.925, place:'Pheriche → Lukla', alt:4371, day:'Day 9 · Oct 10', title:'Snow, a horse, a helicopter',
     text:'Overnight snowfall. A horse slips on the ice. A severe headache at Pheriche, then a first helicopter ride down.',
     img:'Screenshot%202026-10-14%20at%204.23.52%20PM.jpg' },
-  { p:0.975, place:'Lukla', alt:2860, day:'Day 10 · Oct 11', noCard:true },
-  { p:1.00, place:'Kathmandu', alt:1300, day:'Oct 11–12', noCard:true },
+  { p:0.96, place:'Chomolungma', alt:8849, day:'Sagarmatha', noCard:true },
+  { p:1.00, place:'Chomolungma', alt:8849, day:'Sagarmatha', noCard:true },
 ];
 const altKeys = stops.map(s => [s.p, s.alt]);
 
@@ -207,8 +224,8 @@ const moods = [
   { p:0.72, top:'#7d93ad', bot:'#d8e2ea', sun:'#e8eef5', si:.8,  el:.4,  stars:0,  snow:.35, fog:.0013 },
   { p:0.82, top:'#8fa3b8', bot:'#dfe6ec', sun:'#eef3f8', si:.8,  el:.4,  stars:0,  snow:.4,  fog:.0013 },
   { p:0.88, top:'#2c5fa8', bot:'#ffd9a8', sun:'#ffd9a0', si:1.45,el:.3,  stars:0,  snow:.05, fog:.0007 },
-  { p:0.95, top:'#6f88b0', bot:'#e8e2da', sun:'#f5f0e8', si:.9, el:.45,  stars:0,  snow:.45, fog:.0011 },
-  { p:1.00, top:'#3b2a5a', bot:'#ff9a6b', sun:'#ffb070', si:1.0, el:.1,  stars:.35,snow:0,   fog:.0009 },
+  { p:0.95, top:'#3d5a96', bot:'#f2b98a', sun:'#ffc98a', si:1.3, el:.2,  stars:0,  snow:.04, fog:.0008 },
+  { p:1.00, top:'#2a2250', bot:'#ff9a6b', sun:'#ffb070', si:1.0, el:.1,  stars:.45,snow:0,   fog:.0008 },
 ].map(m => ({ ...m, top:new THREE.Color(m.top), bot:new THREE.Color(m.bot), sun:new THREE.Color(m.sun) }));
 
 /* ------------------------------------------------------------------ utils */
@@ -293,6 +310,7 @@ const rt = curve.getSpacedPoints(NS);                                    // even
 const curveLen = curve.getLength();
 const TOWN_LEN = 36;                    // the street through Lukla, in world units (about 900 m)
 const townU = TOWN_LEN / curveLen;      // how far along the trail the town ends
+const QE = 0.915;                       // the trek and the Everest orbit end here; the rest of the scroll rolls the credits
 const PRO = 0.095;                      // the first part of the scroll is spent walking through Lukla
 const ground = rt.map(v => terrainH(v.x,v.z)+.6);
 const camYs = ground.map((_,i)=>{ let s=0,c=0; for(let k=-14;k<=14;k++){ s+=ground[clamp(i+k,0,NS)]; c++; } return s/c; });
@@ -371,6 +389,14 @@ let meshY = terrainH;     // the height of the drawn terrain mesh (set below), s
       const fx=clamp((x-gx0)/dx,0,SX-.001), fz=clamp((z-gz0)/dz,0,SZ-.001), i=Math.floor(fx), j=Math.floor(fz), u=fx-i, v=fz-j, k=(j*(SX+1)+i)*3+1, r=(SX+1)*3;
       return lerp(lerp(arr[k],arr[k+3],u), lerp(arr[k+r],arr[k+r+3],u), v);
     };
+  }
+  { // skirt: a curtain around the map edge, coloured to the haze (updated per frame), so the world fades out instead of ending in a cut
+    const arr = pos.array, sk = [], si = []; let k = 0;
+    const edge = ids => { const s0 = k; for (const id of ids){ sk.push(arr[id*3],arr[id*3+1],arr[id*3+2], arr[id*3],-260,arr[id*3+2]); k += 2; } for (let t=0;t<ids.length-1;t++){ const a=s0+t*2; si.push(a,a+1,a+2, a+1,a+3,a+2); } };
+    const seq = (n,f) => Array.from({length:n}, (_,i)=>f(i));
+    edge(seq(SX+1, i=>i)); edge(seq(SX+1, i=>SZ*(SX+1)+i)); edge(seq(SZ+1, j=>j*(SX+1))); edge(seq(SZ+1, j=>j*(SX+1)+SX));
+    const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.Float32BufferAttribute(sk,3)); sg.setIndex(si);
+    const sm = new THREE.Mesh(sg, new THREE.MeshBasicMaterial({ color:0xcfe3ee, side:THREE.DoubleSide, fog:false })); sm.frustumCulled = false; scene.add(sm); scene.userData.skirt = sm;
   }
   g.computeVertexNormals();
   const nrm = g.attributes.normal, col = new Float32Array(pos.count*3);
@@ -503,12 +529,13 @@ const snowMat=new THREE.PointsMaterial({ color:0xffffff, size:.9, map:dotTex, tr
   })();
   // Keep the full capacity while building (the colour buffer is sized from the count when the first colour is set), then trim to what was used
   const mk = (geo, mat, n) => { const m = new THREE.InstancedMesh(geo, mat, n); m.userData.used = 0; m.frustumCulled = false; scene.add(m); return m; };
-  const walls = mk(unitBox, new THREE.MeshStandardMaterial({ roughness:1, flatShading:true, emissive:0x2a2721 }), 160);
-  const roofs = mk(gable,   new THREE.MeshStandardMaterial({ roughness:.8, flatShading:true, side:THREE.DoubleSide, emissive:0x1a1a1a }), 160);
-  const dark  = mk(unitBox, new THREE.MeshStandardMaterial({ color:0x1b2430, roughness:.55 }), 900);
-  const awns  = mk(unitBox, new THREE.MeshStandardMaterial({ roughness:1 }), 100);
+  const walls = mk(unitBox, new THREE.MeshStandardMaterial({ roughness:1, flatShading:true, emissive:0x2a2721 }), 240);
+  const roofs = mk(gable,   new THREE.MeshStandardMaterial({ roughness:.8, flatShading:true, side:THREE.DoubleSide, emissive:0x1a1a1a }), 240);
+  const dark  = mk(unitBox, new THREE.MeshStandardMaterial({ color:0x1b2430, roughness:.55 }), 1600);
+  const awns  = mk(unitBox, new THREE.MeshStandardMaterial({ roughness:1 }), 160);
   const M4 = new THREE.Matrix4(), Q = new THREE.Quaternion(), V = new THREE.Vector3(), S = new THREE.Vector3(), UP = new THREE.Vector3(0,1,0);
   const put = (mesh, x,y,z, yaw, sx,sy,sz, color) => {
+    if (mesh.userData.used >= mesh.instanceMatrix.count){ if (!mesh.userData.warned){ mesh.userData.warned = 1; console.warn('instance capacity reached', mesh.instanceMatrix.count); } return; }   // never write past the buffer
     const i = mesh.userData.used++; M4.compose(V.set(x,y,z), Q.setFromAxisAngle(UP, yaw), S.set(sx,sy,sz)); mesh.setMatrixAt(i, M4);
     if (color) mesh.setColorAt(i, color);
   };
@@ -685,9 +712,9 @@ const snowPts=new THREE.Points(snowGeo, snowMat); snowPts.frustumCulled=false; s
 /* ------------------------------------------------------------------ DOM */
 const $ = id => document.getElementById(id);
 const el = { alt:$('alt'), where:$('where'), card:$('card'), img:$('cImg'), day:$('cDay'), title:$('cTitle'), text:$('cText'),
-  intro:$('intro'), outro:$('outro'), rail:$('rail'), dot:$('railDot'), play:$('play'), load:$('load') };
+  intro:$('intro'), credits:$('credits'), roll:$('credRoll'), rail:$('rail'), dot:$('railDot'), play:$('play'), load:$('load') };
 for (const s of stops){
-  const t=document.createElement('i'); t.style.top=((PRO + s.p*(1-PRO))*100)+'%'; el.rail.appendChild(t);
+  const t=document.createElement('i'); t.style.top=((PRO + s.p*(QE-PRO))*100)+'%'; el.rail.appendChild(t);
 }
 const peaks=[
   { t:'Everest · 8,849 m', ll:[27.9881,86.9250], e:8849, win:[[.2,.4],[.74,1]] },
@@ -713,6 +740,13 @@ el.img.onerror = () => el.img.classList.add('hide');
 const tmpA=new THREE.Color(), tmpB=new THREE.Color();
 const sunDir=new THREE.Vector3();
 const camPos=new THREE.Vector3(), look=new THREE.Vector3(), ev=new THREE.Vector3(labels[0].pos.x, labels[0].pos.y-14, labels[0].pos.z);
+const evLook=new THREE.Vector3(ev.x, ev.y-6, ev.z);          // the middle of the peak, so it sits in the upper half of the frame
+const ORB0=.905, ORB1=.985, ORB_R=150, ORB_H=105;               // the camera pulls in from Base Camp, circles Everest once, then drifts on under the credits
+const ORB_TH0=Math.atan2(trailPt(1).z-ev.z, trailPt(1).x-ev.x);   // start the circle on the Base Camp side
+const trailList=document.getElementById('credTrail');
+for (const s of stops){ if (s.p>TREK_END+.001) continue; const li=document.createElement('li'); li.textContent=s.day.split(' · ')[0]+' · '+s.place+' '; const sp=document.createElement('span'); sp.textContent=s.alt.toLocaleString('en-US')+' m'; li.appendChild(sp); trailList.appendChild(li); }
+let credH=0; const measureCredits=()=>{ credH=el.roll.offsetHeight; };
+if (document.fonts?.ready) document.fonts.ready.then(measureCredits);
 let bank=0;
 let curMood={ top:new THREE.Color(), bot:new THREE.Color(), sun:new THREE.Color(), si:1, el:.5, stars:0, snow:0, fog:.001 };
 
@@ -724,7 +758,7 @@ function moodAt(p){
 }
 
 function update(p, q, time, dt){
-  const tt = q < PRO ? (q/PRO)*townU : uOfP(p), e = sstep(0,1,clamp((p-TREK_END)/(1-TREK_END),0,1));
+  const tt = q < PRO ? (q/PRO)*townU : uOfP(p), e = sstep(0,1,clamp((p-TREK_END)/(ORB0-TREK_END),0,1));     // 0 on the trail, 1 once we are circling Everest
   const townF = 1 - sstep(townU*.82, townU*1.4, tt);              // 1 in the streets of Lukla, 0 once we have climbed out
   const P = trailPt(tt), A = trailPt(tt + lerp(.02, .0035, townF));
   const sway = REDUCED ? 0 : 1;
@@ -736,15 +770,17 @@ function update(p, q, time, dt){
   const w = Math.exp(-Math.pow((p-stopP('Syangboche'))/.04,2))*.7 + sstep(stopP('Gorak Shep')-.01,TREK_END,p)*.35;
   look.lerp(ev, w);
   if (e>0){
-    camPos.y += e*240; camPos.z += e*170;
-    look.lerp(ev, e*.85); look.y += e*60;
+    const turn = sstep(0,1,clamp((p-ORB0)/(ORB1-ORB0),0,1))*Math.PI*2 + clamp((q-QE)/(1-QE),0,1)*1.1, th = ORB_TH0 + turn;
+    const ox = ev.x + Math.cos(th)*ORB_R, oz = ev.z + Math.sin(th)*ORB_R, oy = Math.max(ev.y + ORB_H, terrainH(ox,oz) + 30);
+    camPos.x = lerp(camPos.x, ox, e); camPos.z = lerp(camPos.z, oz, e); camPos.y = lerp(camPos.y, oy, 1-(1-e)*(1-e));   // climb first, then close in
+    look.lerp(evLook, e);
   }
   camera.position.copy(camPos); camera.lookAt(look);
   const T0=trailDir(tt), T1=trailDir(Math.min(1,tt+.03));
   bank += (clamp((T0.x*T1.z-T0.z*T1.x)*7,-.14,.14)*(1-e) - bank)*(1-Math.exp(-dt*2.5));
   camera.rotateZ(bank);
   let focus=0; for (const s of stops) if (!s.noCard) focus=Math.max(focus, Math.exp(-Math.pow((p-s.p)/.012,2)));
-  camera.fov = 62 - 6*focus + 10*e + 7*townF; camera.updateProjectionMatrix(); camera.updateMatrixWorld();
+  camera.fov = 62 - 6*focus - 4*e + 7*townF; camera.updateProjectionMatrix(); camera.updateMatrixWorld();
 
   moodAt(p);
   skyU.top.value.copy(curMood.top); skyU.bot.value.copy(curMood.bot); skyU.sunCol.value.copy(curMood.sun);
@@ -752,6 +788,7 @@ function update(p, q, time, dt){
   sun.position.copy(sunDir).multiplyScalar(100); sun.color.copy(curMood.sun); sun.intensity=curMood.si;
   hemi.color.copy(curMood.top).lerp(tmpA.set(0xffffff),.35); hemi.groundColor.set(0x4a4036); hemi.intensity=.35+.45*curMood.si;
   scene.fog.color.copy(curMood.bot); scene.fog.density=curMood.fog;
+  scene.userData.skirt?.material.color.copy(curMood.bot);
   sky.position.copy(camera.position); stars.position.copy(camera.position);
   starMat.opacity=curMood.stars;
 
@@ -797,7 +834,9 @@ function update(p, q, time, dt){
   el.where.textContent = cur.day.split(' · ')[0] + ' · ' + cur.place;
   el.dot.style.top = (q*100)+'%';
   el.intro.style.opacity = 1 - sstep(.012,.05,q);
-  const outroO = sstep(.965,.995,p); el.outro.style.opacity = outroO;
+  const cp = clamp((q-(QE-.02))/(1-(QE-.02)),0,1), outroO = sstep(0,.08,cp);     // credits: scroll-driven, rising from below the frame
+  el.credits.style.opacity = outroO; el.credits.style.visibility = cp>0 ? 'visible' : 'hidden';
+  el.roll.style.transform = 'translateY('+lerp(innerHeight*.98, innerHeight*.74-credH, cp).toFixed(1)+'px)';
   let near=null, nd=9;
   for (const s of stops){ if (s.noCard) continue; const d=Math.abs(p-s.p); if (d<nd){nd=d;near=s;} }
   const showCard = near && nd<.028 && outroO<.2;
@@ -819,7 +858,7 @@ el.play.addEventListener('click', e => {
   playing=true; el.play.textContent='❚❚ Pause';
 });
 function resize(){
-  renderer.setSize(innerWidth, innerHeight, false);
+  renderer.setSize(innerWidth, innerHeight, false); measureCredits();
   camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
 }
 addEventListener('resize', resize); resize(); onScroll();
@@ -829,17 +868,17 @@ let last=performance.now(), first=true;
 function frame(now){
   const dt=Math.min(.05,(now-last)/1000); last=now;
   if (playing){
-    scrollBy(0, maxScroll()/130*dt);
+    scrollBy(0, maxScroll()/150*dt);
     if (scrollY >= maxScroll()-1) stopPlay();
   }
   shown += (target-shown)*(1-Math.exp(-dt*3.5));
-  update(shown < PRO ? 0 : (shown-PRO)/(1-PRO), shown, now/1000, dt);   // the first stretch of scroll is the walk through town
+  update(shown < PRO ? 0 : Math.min(1,(shown-PRO)/(QE-PRO)), shown, now/1000, dt);   // the first stretch of scroll is the walk through town
   renderer.render(scene, camera);
   if (first){ first=false; el.load.style.opacity=0; setTimeout(()=>el.load.remove(),900); }
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
-window.__ebc = { setQ:q=>{ scrollTo(0, q*maxScroll()); target=shown=q; }, setP:p=>{ const q=PRO+p*(1-PRO); scrollTo(0, q*maxScroll()); target=shown=q; } };   // debug hook
+window.__ebc = { setQ:q=>{ scrollTo(0, q*maxScroll()); target=shown=q; }, setP:p=>{ const q=PRO+p*(QE-PRO); scrollTo(0, q*maxScroll()); target=shown=q; } };   // debug hook
 })().catch(err => { console.error(err); ebcFail(); });
 </script>
 </body>
