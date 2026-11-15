@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useLayoutEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 
 // The intro card is a first-visit moment, not a toll booth: once a visitor has
@@ -10,7 +10,7 @@ export default function Loader({ onComplete }: { onComplete: () => void }) {
   const [phase, setPhase] = useState<'enter' | 'hold' | 'exit'>('enter')
   const started = useRef(false)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (started.current) return
     started.current = true
 
