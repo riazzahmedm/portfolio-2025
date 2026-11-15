@@ -1,41 +1,14 @@
 'use client'
-import { useState, useLayoutEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-
-// The intro card is a first-visit moment, not a toll booth: once a visitor has
-// seen it in this tab, later page loads skip straight to the content.
-const SEEN_KEY = 'intro-seen'
 
 export default function Loader({ onComplete }: { onComplete: () => void }) {
   const [phase, setPhase] = useState<'enter' | 'hold' | 'exit'>('enter')
-  const started = useRef(false)
-
-  useLayoutEffect(() => {
-    if (started.current) return
-    started.current = true
-
-    try {
-      // Already seen in this tab: hand control back immediately. The parent drops
-      // the overlay, so no need to hold state here.
-      if (sessionStorage.getItem(SEEN_KEY)) {
-        onComplete()
-        return
-      }
-    } catch {
-      /* private mode / storage disabled — just play the intro */
-    }
-
-    // 400ms of card + 200ms exit fade = 600ms on screen, first visit only
+  useEffect(() => {
+    // 400ms of card + 200ms exit fade = 600ms on every visit
     const t1 = setTimeout(() => setPhase('hold'), 150)
     const t2 = setTimeout(() => setPhase('exit'), 280)
-    const t3 = setTimeout(() => {
-      try {
-        sessionStorage.setItem(SEEN_KEY, '1')
-      } catch {
-        /* ignore */
-      }
-      onComplete()
-    }, 400)
+    const t3 = setTimeout(onComplete, 400)
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
   }, [onComplete])
 
