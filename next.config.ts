@@ -9,6 +9,14 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
+  // The dev server is opened inside a cross-origin preview frame. Without these the browser gets a 403 for every
+  // /_next/* dev resource, no JavaScript loads, and the page stays on the intro loader forever. Development only.
+  allowedDevOrigins: [
+    '127.0.0.1',
+    'localhost',
+    '0.0.0.0',
+    ...(process.env.NEXT_DEV_ORIGINS?.split(',').map(origin => origin.trim()).filter(Boolean) ?? []),
+  ],
   async redirects() {
     // Likely mistyped or legacy URLs go to the real section instead of a 404
     return [
@@ -25,7 +33,12 @@ const nextConfig: NextConfig = {
     return [{ source: '/flythrough/ebc', destination: '/flythrough/ebc.html' }]
   },
   async headers() {
-    return [{ source: '/:path*', headers: securityHeaders }]
+    // In development the app is embedded in a cross-origin preview frame, so SAMEORIGIN would render it blank.
+    // Production keeps the full set.
+    const headers = process.env.NODE_ENV === 'production'
+      ? securityHeaders
+      : securityHeaders.filter(h => h.key !== 'X-Frame-Options')
+    return [{ source: '/:path*', headers }]
   },
   images: {
     remotePatterns: [

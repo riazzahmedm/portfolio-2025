@@ -147,6 +147,11 @@ export const EXPERIENCE = [
 
 // ── Projects ──────────────────────────────────────────────────────────────────
 
+/** URL-safe slug for a project name — the one place the scheme is defined. */
+export function workSlug(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+}
+
 export const PROJECTS = [
   {
     name: 'Oodle Finance',

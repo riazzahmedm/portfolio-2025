@@ -1,10 +1,11 @@
 'use client'
 import { useRef, useEffect, useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import SectionTag from '@/components/ui/SectionTag'
 import SectionFooter from '@/components/layout/SectionFooter'
-import { PROJECTS } from '@/lib/data'
+import { PROJECTS, workSlug } from '@/lib/data'
 
 // ─── Mockup screen visual ─────────────────────────────────────────────────────
 function MockupScreen({ gradient, accent, type, image }: { gradient: string; accent: string; type: string; image?: string }) {
@@ -108,7 +109,7 @@ const SPELLS = [
 
 // ─── Shared card body ─────────────────────────────────────────────────────────
 function ProjectCard({ project, i }: { project: typeof PROJECTS[number]; i: number }) {
-  const slug = project.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+  const slug = workSlug(project.name)
   return (
     <div
       className="project-card-h group rounded-xl overflow-hidden flex flex-col"
@@ -130,9 +131,13 @@ function ProjectCard({ project, i }: { project: typeof PROJECTS[number]; i: numb
             <div className="text-[11px] tracking-[0.22em] uppercase mb-1" style={{ color: project.mockupAccent, fontFamily: 'var(--ff-mono)' }}>
               {project.year}
             </div>
-            <div className="text-[17px] font-bold tracking-tight uppercase" style={{ color: 'var(--text-primary)', fontFamily: 'var(--ff-display)' }}>
+            <Link
+              href={`/work/${slug}`}
+              className="text-[17px] font-bold tracking-tight uppercase hover:opacity-80 transition-opacity"
+              style={{ color: 'var(--text-primary)', fontFamily: 'var(--ff-display)', textDecoration: 'none' }}
+            >
               {project.name}
-            </div>
+            </Link>
           </div>
           {project.link && (
             <a
@@ -163,8 +168,11 @@ function ProjectCard({ project, i }: { project: typeof PROJECTS[number]; i: numb
             </span>
           ))}
         </div>
-        <div className="text-[11px] tracking-[0.14em] pt-2" style={{ color: '#e8ff00', fontFamily: 'var(--ff-mono)', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.08)' }}>
-          {SPELLS[i % SPELLS.length]} {slug}
+        <div className="flex items-center justify-between gap-3 pt-2 text-[11px] tracking-[0.14em]" style={{ fontFamily: 'var(--ff-mono)', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.08)' }}>
+          <span style={{ color: '#e8ff00' }}>{SPELLS[i % SPELLS.length]} {slug}</span>
+          <Link href={`/work/${slug}`} className="hover:opacity-100 opacity-60 transition-opacity whitespace-nowrap" style={{ color: project.mockupAccent, textDecoration: 'none' }}>
+            Case study →
+          </Link>
         </div>
       </div>
     </div>
@@ -320,7 +328,7 @@ function ProjectsDesktop() {
               style={{ x, left: '4rem', paddingRight: '4rem' }}
             >
               {PROJECTS.map((project, i) => {
-                const slug = project.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+                const slug = workSlug(project.name)
                 return (
                   <motion.div
                     key={project.name}
@@ -349,9 +357,13 @@ function ProjectsDesktop() {
                           <div className="text-[11px] tracking-[0.22em] uppercase mb-1" style={{ color: project.mockupAccent, fontFamily: 'var(--ff-mono)' }}>
                             {project.year}
                           </div>
-                          <div className="text-[17px] font-bold tracking-tight uppercase" style={{ color: 'var(--text-primary)', fontFamily: 'var(--ff-display)' }}>
+                          <Link
+                            href={`/work/${slug}`}
+                            className="text-[17px] font-bold tracking-tight uppercase hover:opacity-80 transition-opacity"
+                            style={{ color: 'var(--text-primary)', fontFamily: 'var(--ff-display)', textDecoration: 'none' }}
+                          >
                             {project.name}
-                          </div>
+                          </Link>
                         </div>
                         {project.link && (
                           <div className="relative group/link">
@@ -393,8 +405,11 @@ function ProjectsDesktop() {
                           </span>
                         ))}
                       </div>
-                      <div className="text-[11px] tracking-[0.14em] pt-2" style={{ color: '#e8ff00', fontFamily: 'var(--ff-mono)', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.08)' }}>
-                        {SPELLS[i % SPELLS.length]} {slug}
+                      <div className="flex items-center justify-between gap-3 pt-2 text-[11px] tracking-[0.14em]" style={{ fontFamily: 'var(--ff-mono)', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.08)' }}>
+                        <span style={{ color: '#e8ff00' }}>{SPELLS[i % SPELLS.length]} {slug}</span>
+                        <Link href={`/work/${slug}`} className="hover:opacity-100 opacity-60 transition-opacity whitespace-nowrap" style={{ color: project.mockupAccent, textDecoration: 'none' }}>
+                          Case study →
+                        </Link>
                       </div>
                     </div>
                   </motion.div>

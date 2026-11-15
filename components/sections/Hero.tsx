@@ -109,25 +109,6 @@ export default function Hero() {
         </span>
       </motion.div>
 
-      {/* Bottom letterbox bar — mobile only */}
-      <motion.div
-        className="md:hidden absolute bottom-0 left-0 right-0 z-[30] px-5 pb-40 pt-6 flex flex-col items-center gap-3 pointer-events-none"
-        style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 100%)' }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.2, duration: 1.0 }}
-      >
-        <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '8px', letterSpacing: '0.4em', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', textAlign: 'center' }}>
-          THIS EXPERIENCE WAS ENGINEERED FOR
-        </div>
-        <div style={{ fontFamily: 'var(--ff-display)', fontSize: '28px', fontWeight: 800, letterSpacing: '0.12em', color: '#ffffff', textTransform: 'uppercase', lineHeight: 1 }}>
-          LARGE SCREENS
-        </div>
-        <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '8px', letterSpacing: '0.32em', color: 'rgba(255,255,255,0.22)', textTransform: 'uppercase', textAlign: 'center' }}>
-          FOR FULL IMAX EXPERIENCE · OPEN ON DESKTOP
-        </div>
-      </motion.div>
-
       {/* Status + footer — always on top */}
       <div className="relative z-[35] h-full flex flex-col pointer-events-none">
         <div className="flex-1" />

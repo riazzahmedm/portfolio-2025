@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { getPublishedPosts } from '@/lib/blog.server'
 import { SITE_URL } from '@/lib/site'
+import { CASE_STUDIES } from '@/lib/work'
 
 export const revalidate = 3600
 
@@ -32,5 +33,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority:         0.6,
   }))
 
-  return [...staticRoutes, ...postRoutes]
+  const workRoutes: MetadataRoute.Sitemap = CASE_STUDIES.map(study => ({
+    url:              `${SITE_URL}/work/${study.slug}`,
+    lastModified:     now,
+    changeFrequency:  'yearly',
+    priority:         0.6,
+  }))
+
+  return [...staticRoutes, ...workRoutes, ...postRoutes]
 }
