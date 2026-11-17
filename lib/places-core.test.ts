@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  timingForHour, sanitizeVisit, mergeTimeline, pageAfter, groupByMonth, placeStats, theatreStats, canWishlist, visitsNotReady,
+  timingForHour, sanitizeVisit, mergeTimeline, pageAfter, groupByMonth, placeStats, theatreStats, canWishlist, visitsNotReady, matchesQuery,
   type TimelineEntry,
 } from './places-core.ts'
 
@@ -134,4 +134,23 @@ test('visitsNotReady spots a missing table or column only', () => {
   assert.equal(visitsNotReady({ message: "Could not find the 'theatre_vibe' column of 'logs' in the schema cache" }), true)
   assert.equal(visitsNotReady({ code: '42703', message: 'column "theatre_timing" of relation "logs" does not exist' }), true)
   assert.equal(visitsNotReady(undefined), false)
+})
+
+test('matchesQuery finds a visit by place, area, kind, note or dish, case-insensitively', () => {
+  const e = entry('a', '2026-05-01', { place: { ...place, name: 'Pista House', area: 'Gachibowli', kind: 'restaurant' }, note: 'Best haleem', mustOrder: ['Zafrani Mutton Biryani'] })
+  for (const q of ['pista', 'GACHI', 'restaurant', 'haleem', 'biryani', 'hyderabad']) assert.equal(matchesQuery(e, q), true, q)
+  assert.equal(matchesQuery(e, 'sushi'), false)
+})
+
+test('matchesQuery needs every word, in any order, and an empty query matches everything', () => {
+  const e = entry('a', '2026-05-01', { place: { ...place, name: 'Pista House', area: 'Gachibowli', kind: 'restaurant' } })
+  assert.equal(matchesQuery(e, 'gachibowli pista'), true)
+  assert.equal(matchesQuery(e, 'pista kukatpally'), false)
+  assert.equal(matchesQuery(e, '   '), true)
+})
+
+test('matchesQuery finds a theatre visit by its movie title', () => {
+  const e = entry('t', '2026-05-01', { source: 'theatre', place: { ...place, kind: 'theatre', name: 'AAA Cinemas' }, movie: { id: 'm', title: 'The Odyssey', posterUrl: null, format: 'imax' } })
+  assert.equal(matchesQuery(e, 'odyssey'), true)
+  assert.equal(matchesQuery(e, 'aaa'), true)
 })

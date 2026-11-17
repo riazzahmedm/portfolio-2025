@@ -113,6 +113,15 @@ export function mergeTimeline(visits: TimelineEntry[], theatre: TimelineEntry[])
   return [...visits, ...theatre.filter(t => t.place?.id)].sort(byNewest)
 }
 
+/** Every word of the query must appear somewhere in the visit: the place, where it is, its kind, the movie, the note or a must-order dish. */
+export function matchesQuery(e: TimelineEntry, query: string): boolean {
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean)
+  if (words.length === 0) return true
+  const kind = PLACE_KINDS.find(k => k.key === e.place.kind)?.label ?? e.place.kind
+  const hay = [e.place.name, e.place.area, e.place.city, kind, e.movie?.title, e.note, ...e.mustOrder].filter(Boolean).join(' ').toLowerCase()
+  return words.every(w => hay.includes(w))
+}
+
 const cursorOf = (e: TimelineEntry) => `${e.source}:${e.id}`
 
 /** One page of an already-sorted timeline. The cursor is the last item of the previous page; an unknown cursor starts over. */

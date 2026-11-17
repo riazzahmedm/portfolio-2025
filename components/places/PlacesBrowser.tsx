@@ -2,10 +2,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { Plus, Check, ExternalLink } from 'lucide-react'
+import { Plus, Check, ExternalLink, Search, X, SlidersHorizontal, Bookmark } from 'lucide-react'
 import ScrollNav from '@/components/ui/ScrollNav'
 import ConfirmModal from '@/components/ui/ConfirmModal'
-import { navIcon } from '@/components/ui/nav-icon'
+import { navIcon, navBadge } from '@/components/ui/nav-icon'
 import { PLACE_KINDS, TIMINGS, THEATRE_KIND, type TimelineEntry } from '@/lib/places-core'
 import type { Place } from '@/lib/places'
 import Timeline from './Timeline'
@@ -18,13 +18,16 @@ import NavBack from '@/components/ui/NavBack'
 import PageHeader from '@/components/ui/PageHeader'
 
 type Groups = { month: string; label: string; entries: TimelineEntry[] }[]
-const KIND_CHIPS = [{ key: '', label: 'All' }, ...PLACE_KINDS, { key: THEATRE_KIND, label: 'Theatre' }]
+const KIND_CHIPS = [...PLACE_KINDS, { key: THEATRE_KIND, label: 'Theatre' }]
 
-const smallChip = (on: boolean, dashed = false): React.CSSProperties => ({ ...chip(on), padding: '5px 12px', fontSize: '12px', borderStyle: dashed && !on ? 'dashed' : 'solid', flex: 'none' })
+const smallChip = (on: boolean): React.CSSProperties => ({ ...chip(on), padding: '5px 12px', fontSize: '12px', flex: 'none' })
 
 export default function PlacesBrowser() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [tab,     setTab]     = useState<'visited' | 'wishlist'>('visited')
+  const [search,  setSearch]  = useState('')
+  const [q,       setQ]       = useState('')
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [kind,    setKind]    = useState('')
   const [timing,  setTiming]  = useState('')
   const [groups,  setGroups]  = useState<Groups>([])
@@ -46,6 +49,7 @@ export default function PlacesBrowser() {
     const qs = new URLSearchParams()
     if (kind) qs.set('kind', kind)
     if (timing) qs.set('timing', timing)
+    if (q) qs.set('q', q)
     if (cursor) qs.set('cursor', cursor)
     if (size) qs.set('limit', String(size))
     try {
@@ -69,12 +73,20 @@ export default function PlacesBrowser() {
         return merged
       })
     } catch { setFailed(true) } finally { setLoading(false) }
-  }, [kind, timing])
+  }, [kind, timing, q])
   useEffect(() => { load(null) }, [load])   // eslint-disable-line react-hooks/set-state-in-effect -- loads data from the API; state is only set after the fetch
 
   // After an edit or delete, reload everything that was on screen (up to the API's page cap) so "Load more" pages are not lost
   const reload = () => { setLoading(true); load(null, Math.min(100, Math.max(40, groups.reduce((n, g) => n + g.entries.length, 0)))) }
   const changeFilter = (apply: () => void) => { apply(); setLoading(true) }
+  // Search as you type, a moment after you stop
+  useEffect(() => {
+    const t = setTimeout(() => { const next = search.trim(); if (next !== q) { setLoading(true); setQ(next) } }, 250)
+    return () => clearTimeout(t)
+  }, [search, q])
+  const needle = search.trim().toLowerCase()
+  const shownWish = wish.filter(p => (!kind || p.kind === kind) && (!needle || [p.name, p.area, p.city, kindLabel(p.kind)].filter(Boolean).join(' ').toLowerCase().includes(needle)))
+  const activeFilterCount = (kind ? 1 : 0) + (timing && tab === 'visited' ? 1 : 0)
 
   async function confirmDelete() {
     const e = deleting; setDeleting(null)
@@ -83,7 +95,7 @@ export default function PlacesBrowser() {
     if (res.ok) { toast.success('Visit deleted', { description: e.place.name }); reload() } else toast.error('Could not delete — try again')
   }
 
-  const filtered = Boolean(kind || timing)
+  const filtered = Boolean(kind || timing || q)
   const empty = !loading && !failed && groups.length === 0
 
   return (
@@ -91,7 +103,15 @@ export default function PlacesBrowser() {
       <ScrollNav>
         <div style={{ maxWidth: '720px', margin: '0 auto', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px' }}>
           <NavBack />
-          {isAdmin && <Link href="/admin?tab=places" title="Log a place" aria-label="Log a place" style={{ ...navIcon, color: '#b8a0ff' }}><Plus size={22} /></Link>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexShrink: 0 }}>
+            <button type="button" title={tab === 'wishlist' ? 'Back to visits' : 'Wishlist'} aria-label={tab === 'wishlist' ? 'Back to visits' : 'Wishlist'} aria-pressed={tab === 'wishlist'}
+              onClick={() => setTab(t => t === 'wishlist' ? 'visited' : 'wishlist')}
+              style={{ ...navIcon, color: tab === 'wishlist' ? '#b8a0ff' : 'var(--text-primary)' }}>
+              <Bookmark size={22} fill={tab === 'wishlist' ? 'currentColor' : 'none'} />
+              {wish.length > 0 && <span style={navBadge}>{wish.length > 99 ? '99+' : wish.length}</span>}
+            </button>
+            {isAdmin && <Link href="/admin?tab=places" title="Log a place" aria-label="Log a place" style={{ ...navIcon, color: '#b8a0ff' }}><Plus size={22} /></Link>}
+          </div>
         </div>
       </ScrollNav>
 
@@ -99,31 +119,58 @@ export default function PlacesBrowser() {
         <PageHeader title="Been there" tagline="Cafes, food and outings, in the order they happened." />
         <div style={{ height: '18px' }} />
 
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
-          <button type="button" style={chip(tab === 'visited')} onClick={() => setTab('visited')}>Visited{!filtered && total ? ` · ${total}` : ''}</button>
-          <button type="button" style={chip(tab === 'wishlist')} onClick={() => setTab('wishlist')}>Wishlist{wish.length ? ` · ${wish.length}` : ''}</button>
+        {/* Search + filter button, as on the Watchlog */}
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'stretch', marginBottom: filtersOpen ? '12px' : '20px' }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
+            <Search size={14} style={{ position: 'absolute', left: '13px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.28)', pointerEvents: 'none' }} />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder={tab === 'wishlist' ? 'Search the wishlist…' : 'Search places, dishes, films…'} aria-label="Search" style={{
+              width: '100%', padding: '10px 38px', background: 'rgba(255,255,255,0.04)', border: `1px solid ${search ? 'rgba(184,160,255,0.35)' : 'rgba(255,255,255,0.1)'}`,
+              borderRadius: '12px', color: '#fff', fontSize: '14px', fontFamily: 'var(--ff-body)', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s',
+            }} />
+            {search && (
+              <button type="button" onClick={() => setSearch('')} aria-label="Clear search" style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', padding: '4px', display: 'flex' }}><X size={13} /></button>
+            )}
+          </div>
+          <button type="button" aria-label="Filters" aria-expanded={filtersOpen} aria-controls="places-filter-panel" title="Filters" onClick={() => setFiltersOpen(o => !o)} style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '0 16px', borderRadius: '12px', cursor: 'pointer', flexShrink: 0,
+            border: `1px solid ${filtersOpen || activeFilterCount ? 'rgba(184,160,255,0.45)' : 'rgba(255,255,255,0.1)'}`,
+            background: filtersOpen || activeFilterCount ? 'rgba(184,160,255,0.12)' : 'rgba(255,255,255,0.04)',
+            color: filtersOpen || activeFilterCount ? '#b8a0ff' : 'rgba(255,255,255,0.5)', transition: 'all 0.18s',
+          }}>
+            <SlidersHorizontal size={15} />
+            {activeFilterCount > 0 && <span style={{ fontSize: '10px', fontFamily: 'var(--ff-mono)', background: 'rgba(184,160,255,0.25)', borderRadius: '100px', padding: '1px 7px', lineHeight: 1.6 }}>{activeFilterCount}</span>}
+          </button>
         </div>
+
+        {filtersOpen && (
+          <div id="places-filter-panel" className="pl-filter-panel" style={{ marginBottom: '20px', padding: '18px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.025)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <style>{`.pl-filter-panel { animation: pl-panel-in 0.2s ease-out; } @keyframes pl-panel-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } } @media (prefers-reduced-motion: reduce) { .pl-filter-panel { animation: none; } } @media (max-width: 640px) { .pl-filter-panel { padding: 14px !important; } }`}</style>
+            <FilterGroup label="Kind">
+              {KIND_CHIPS.map(k => <button key={k.key} type="button" aria-pressed={kind === k.key} style={smallChip(kind === k.key)} onClick={() => changeFilter(() => setKind(kind === k.key ? '' : k.key))}>{k.label}</button>)}
+            </FilterGroup>
+            {tab === 'visited' && (
+              <FilterGroup label="When">
+                {TIMINGS.map(t => <button key={t.key} type="button" aria-pressed={timing === t.key} style={smallChip(timing === t.key)} onClick={() => changeFilter(() => setTiming(timing === t.key ? '' : t.key))}>{t.label}</button>)}
+              </FilterGroup>
+            )}
+          </div>
+        )}
 
         {tab === 'visited' ? (
           <>
-            <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '8px' }}>
-              {KIND_CHIPS.map(k => <button key={k.key || 'all'} type="button" style={smallChip(kind === k.key)} onClick={() => changeFilter(() => setKind(k.key))}>{k.label}</button>)}
-            </div>
-            <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
-              {TIMINGS.map(t => <button key={t.key} type="button" style={smallChip(timing === t.key, true)} onClick={() => changeFilter(() => setTiming(timing === t.key ? '' : t.key))}>{t.label}</button>)}
-            </div>
-
+            {!loading && !failed && total > 0 && <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '11px', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '4px' }}>{total} {total === 1 ? 'visit' : 'visits'}{filtered ? ' found' : ''}</div>}
             <Timeline groups={groups} isAdmin={isAdmin} onEdit={setEditing} onDelete={setDeleting} />
 
             {loading && <p style={{ textAlign: 'center', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)', fontSize: '12px', padding: '28px 0' }}>Loading…</p>}
             {failed && <p style={{ textAlign: 'center', color: '#ff8585', fontFamily: 'var(--ff-mono)', fontSize: '12px', padding: '28px 0' }}>Could not load. <button type="button" onClick={() => { setLoading(true); load(next) }} style={{ ...smallChip(false), marginLeft: '8px' }}>Retry</button></p>}
-            {empty && <p style={{ textAlign: 'center', color: 'var(--text-dim)', fontFamily: 'var(--ff-body)', fontSize: '14px', padding: '36px 0' }}>{kind === THEATRE_KIND && timing ? 'Only theatre visits with a time of day match a timing filter.' : filtered ? 'Nothing matches those filters.' : 'Nothing logged yet.'}</p>}
+            {empty && <p style={{ textAlign: 'center', color: 'var(--text-dim)', fontFamily: 'var(--ff-body)', fontSize: '14px', padding: '36px 0' }}>{kind === THEATRE_KIND && timing ? 'Only theatre visits with a time of day match a timing filter.' : filtered ? 'Nothing matches that search.' : 'Nothing logged yet.'}</p>}
             {next && !loading && <div style={{ textAlign: 'center', paddingTop: '18px' }}><button type="button" style={chip(false)} onClick={() => { setLoading(true); load(next) }}>Load more</button></div>}
           </>
         ) : (
           <ul style={{ margin: 0, padding: 0 }}>
-            {wish.length === 0 && <li style={{ listStyle: 'none', textAlign: 'center', color: 'var(--text-dim)', fontFamily: 'var(--ff-body)', fontSize: '14px', padding: '36px 0' }}>Nothing on the wishlist yet.</li>}
-            {wish.map(p => (
+            {shownWish.length > 0 && <li style={{ listStyle: 'none', fontFamily: 'var(--ff-mono)', fontSize: '11px', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '4px' }}>{shownWish.length} {shownWish.length === 1 ? 'place' : 'places'} saved</li>}
+            {shownWish.length === 0 && <li style={{ listStyle: 'none', textAlign: 'center', color: 'var(--text-dim)', fontFamily: 'var(--ff-body)', fontSize: '14px', padding: '36px 0' }}>{wish.length === 0 ? 'Nothing on the wishlist yet.' : 'Nothing on the wishlist matches.'}</li>}
+            {shownWish.map(p => (
               <li key={p.id} style={{ listStyle: 'none', display: 'flex', gap: '12px', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--border-card)' }}>
                 <Link href={`/places/${p.id}`} style={{ display: 'flex', gap: '12px', alignItems: 'center', minWidth: 0, flex: 1, textDecoration: 'none', color: 'inherit' }}>
                   <Thumb name={p.name} />
@@ -148,6 +195,16 @@ export default function PlacesBrowser() {
         </EditSheet>
       )}
       {deleting && <ConfirmModal title="Delete visit?" description={`Your visit to "${deleting.place.name}" will be removed.`} confirmLabel="Delete" onConfirm={confirmDelete} onCancel={() => setDeleting(null)} />}
+    </div>
+  )
+}
+
+/** A labelled group of chips inside the filter panel (same look as the Watchlog's). */
+function FilterGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: 0 }}>
+      <div style={{ fontSize: '9px', letterSpacing: '0.24em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--ff-mono)' }}>{label}</div>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>{children}</div>
     </div>
   )
 }

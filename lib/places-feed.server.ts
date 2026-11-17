@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { LOGS_WITH_PLACE, placesNotReady } from '@/lib/movies-select'
 import type { Place } from '@/lib/places'
 import {
-  mergeTimeline, pageAfter, groupByMonth, placeStats, theatreStats, visitsNotReady, THEATRE_KIND, PLACE_VIBES, TIMINGS,
+  mergeTimeline, pageAfter, groupByMonth, matchesQuery, placeStats, theatreStats, visitsNotReady, THEATRE_KIND, PLACE_VIBES, TIMINGS,
   type TimelineEntry, type PlaceVibeKey, type TimingKey,
 } from '@/lib/places-core'
 
@@ -55,11 +55,12 @@ async function loadTheatreLogs(placeId?: string): Promise<{ entries: TimelineEnt
   return { entries: rows.map(theatreEntry), rows }
 }
 
-export async function getTimeline(opts: { kind?: string; timing?: string; cursor?: string | null; limit?: number }) {
+export async function getTimeline(opts: { kind?: string; timing?: string; q?: string; cursor?: string | null; limit?: number }) {
   const [visits, theatre] = await Promise.all([loadVisits(), loadTheatreLogs()])
   let sorted = mergeTimeline(visits, theatre.entries)
   if (opts.kind)   sorted = sorted.filter(e => e.place.kind === opts.kind)
   if (opts.timing) sorted = sorted.filter(e => e.timing === opts.timing)   // theatre rows have no timing, so they drop out
+  if (opts.q)      sorted = sorted.filter(e => matchesQuery(e, opts.q!))
   const { items, next } = pageAfter(sorted, opts.cursor ?? null, Math.min(Math.max(opts.limit ?? 40, 1), 100))
   return { groups: groupByMonth(items), next, total: sorted.length }
 }
