@@ -31,7 +31,7 @@ export default function PlaceRow({ entry, isAdmin, onEdit, onDelete }: {
         {d.toLocaleDateString('en-US', { weekday: 'short' })}
       </time>
 
-      <Link href={href} style={{ display: 'flex', gap: '12px', alignItems: 'center', minWidth: 0, flex: 1, textDecoration: 'none', color: 'inherit' }}>
+      <Link href={href} style={{ display: 'flex', gap: '12px', alignItems: 'center', minWidth: 0, flex: 1, textDecoration: 'none', color: 'inherit', paddingRight: canEdit && showing ? '82px' : 0, transition: 'padding-right 0.18s' }}>
         <Thumb src={isTheatre ? entry.movie!.posterUrl : entry.photos[0]} name={isTheatre ? entry.movie!.title : title} />
         <div style={{ minWidth: 0 }}>
           <div style={{ fontFamily: 'var(--ff-body)', fontWeight: 600, fontSize: '14px', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</div>
