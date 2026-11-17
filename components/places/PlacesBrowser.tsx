@@ -15,6 +15,7 @@ import EditSheet from './EditSheet'
 import { Thumb, kindLabel } from './shared'
 import { chip } from './form-styles'
 import NavBack from '@/components/ui/NavBack'
+import PageHeader from '@/components/ui/PageHeader'
 
 type Groups = { month: string; label: string; entries: TimelineEntry[] }[]
 const KIND_CHIPS = [{ key: '', label: 'All' }, ...PLACE_KINDS, { key: THEATRE_KIND, label: 'Theatre' }]
@@ -95,8 +96,8 @@ export default function PlacesBrowser() {
       </ScrollNav>
 
       <main style={{ maxWidth: '720px', margin: '0 auto', padding: '8px 20px 80px' }}>
-        <h1 style={{ margin: '0 0 4px', fontFamily: 'var(--ff-display)', fontSize: '34px', letterSpacing: '0.02em', textTransform: 'uppercase', fontWeight: 600 }}>Been there</h1>
-        <p style={{ margin: '0 0 18px', fontFamily: 'var(--ff-body)', fontSize: '14px', color: 'var(--text-dim)' }}>Cafes, food and outings, in the order they happened.</p>
+        <PageHeader title="Been there" tagline="Cafes, food and outings, in the order they happened." />
+        <div style={{ height: '18px' }} />
 
         <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
           <button type="button" style={chip(tab === 'visited')} onClick={() => setTab('visited')}>Visited{!filtered && total ? ` · ${total}` : ''}</button>
