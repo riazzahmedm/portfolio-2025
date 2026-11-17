@@ -35,7 +35,7 @@ export default function PlaceRow({ entry, isAdmin, onEdit, onDelete }: {
         <Thumb src={isTheatre ? entry.movie!.posterUrl : entry.photos[0]} name={isTheatre ? entry.movie!.title : title} />
         <div style={{ minWidth: 0 }}>
           <div style={{ fontFamily: 'var(--ff-body)', fontWeight: 600, fontSize: '14px', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</div>
-          <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '10.5px', color: 'var(--text-dim)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '2px' }}>{where}</div>
+          <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '10.5px', color: 'var(--text-dim)', marginTop: '2px', overflowWrap: 'anywhere', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{where}</div>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center', fontFamily: 'var(--ff-mono)', fontSize: '10.5px', marginTop: '3px', flexWrap: 'wrap' }}>
             {vibe && <span style={{ color: vibe.color }}>{vibe.emoji} {vibe.label}</span>}
             {entry.spend !== null && <span style={{ color: 'var(--text-primary)' }}>₹{entry.spend}</span>}
@@ -45,7 +45,7 @@ export default function PlaceRow({ entry, isAdmin, onEdit, onDelete }: {
       </Link>
 
       {canEdit && (
-        <div style={{ display: 'flex', gap: '6px', flex: 'none', opacity: showing ? 1 : 0, pointerEvents: showing ? 'auto' : 'none', transition: 'opacity 0.18s' }}>
+        <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', display: 'flex', gap: '6px', opacity: showing ? 1 : 0, pointerEvents: showing ? 'auto' : 'none', transition: 'opacity 0.18s' }}>
           <button type="button" className="gc-btn" title="Edit" aria-label="Edit visit" onClick={() => onEdit?.(entry)} style={{ color: '#d6c8ff' }}><Pencil size={13} /></button>
           {!isTheatre && <button type="button" className="gc-btn" title="Delete" aria-label="Delete visit" onClick={() => onDelete?.(entry)} style={{ color: '#ff8585' }}><Trash2 size={13} /></button>}
         </div>
