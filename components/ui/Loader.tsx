@@ -4,11 +4,11 @@ import { motion } from 'framer-motion'
 
 export default function Loader({ onComplete }: { onComplete: () => void }) {
   const [phase, setPhase] = useState<'enter' | 'hold' | 'exit'>('enter')
+
   useEffect(() => {
-    // 400ms of card + 200ms exit fade = 600ms on every visit
-    const t1 = setTimeout(() => setPhase('hold'), 150)
-    const t2 = setTimeout(() => setPhase('exit'), 280)
-    const t3 = setTimeout(onComplete, 400)
+    const t1 = setTimeout(() => setPhase('hold'), 850)
+    const t2 = setTimeout(() => setPhase('exit'), 1650)
+    const t3 = setTimeout(onComplete, 2150)
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
   }, [onComplete])
 
@@ -26,7 +26,7 @@ export default function Loader({ onComplete }: { onComplete: () => void }) {
   return (
     <motion.div
       initial={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeInOut' } }}
+      exit={{ opacity: 0, transition: { duration: 0.45, ease: 'easeInOut' } }}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
         background: '#050505',
@@ -41,8 +41,8 @@ export default function Loader({ onComplete }: { onComplete: () => void }) {
           initial={{ x: '-80vw', opacity: 0 }}
           animate={entering ? { x: 0, opacity: 1 } : { x: '-80vw', opacity: 0 }}
           transition={entering
-            ? { duration: 0.3, ease: [0.22, 1, 0.36, 1] }
-            : { duration: 0.18, ease: [0.76, 0, 0.24, 1] }}
+            ? { duration: 0.85, ease: [0.22, 1, 0.36, 1] }
+            : { duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
           style={{ ...nameStyle, color: '#ffffff' }}
         >
           RIAZ
@@ -51,8 +51,8 @@ export default function Loader({ onComplete }: { onComplete: () => void }) {
           initial={{ x: '80vw', opacity: 0 }}
           animate={entering ? { x: 0, opacity: 1 } : { x: '80vw', opacity: 0 }}
           transition={entering
-            ? { duration: 0.3, ease: [0.22, 1, 0.36, 1] }
-            : { duration: 0.18, ease: [0.76, 0, 0.24, 1] }}
+            ? { duration: 0.85, ease: [0.22, 1, 0.36, 1] }
+            : { duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
           style={{ ...nameStyle, color: 'rgba(255,255,255,0.25)' }}
         >
           AHMED
@@ -64,7 +64,7 @@ export default function Loader({ onComplete }: { onComplete: () => void }) {
         <motion.div
           initial={{ scaleX: 0, originX: 0 }}
           animate={{ scaleX: entering ? 1 : 0, originX: entering ? 0 : 1 }}
-          transition={{ duration: 0.4, ease: 'linear' }}
+          transition={{ duration: 1.55, ease: 'linear' }}
           style={{
             position: 'absolute', inset: 0,
             background: 'linear-gradient(90deg, var(--lime), var(--lavender))',
