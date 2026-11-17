@@ -6,12 +6,13 @@ import { Plus, Check, ExternalLink, Search, X, SlidersHorizontal, Bookmark } fro
 import ScrollNav from '@/components/ui/ScrollNav'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import { navIcon, navBadge } from '@/components/ui/nav-icon'
-import { PLACE_KINDS, TIMINGS, THEATRE_KIND, type TimelineEntry } from '@/lib/places-core'
+import { PLACE_KINDS, PLACE_VIBES, TIMINGS, THEATRE_KIND, type TimelineEntry, type PlaceRank } from '@/lib/places-core'
 import type { Place } from '@/lib/places'
 import Timeline from './Timeline'
 import PlaceForm from './PlaceForm'
 import TheatreVisitForm from './TheatreVisitForm'
 import EditSheet from './EditSheet'
+import OnThisDay from './OnThisDay'
 import { Thumb, kindLabel } from './shared'
 import { chip } from './form-styles'
 import NavBack from '@/components/ui/NavBack'
@@ -28,6 +29,11 @@ export default function PlacesBrowser() {
   const [search,  setSearch]  = useState('')
   const [q,       setQ]       = useState('')
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [vibe,    setVibe]    = useState('')
+  const [city,    setCity]    = useState('')
+  const [view,    setView]    = useState<'timeline' | 'places'>('timeline')
+  const [cities,  setCities]  = useState<string[]>([])
+  const [ranks,   setRanks]   = useState<PlaceRank[]>([])
   const [kind,    setKind]    = useState('')
   const [timing,  setTiming]  = useState('')
   const [groups,  setGroups]  = useState<Groups>([])
@@ -49,14 +55,23 @@ export default function PlacesBrowser() {
     const qs = new URLSearchParams()
     if (kind) qs.set('kind', kind)
     if (timing) qs.set('timing', timing)
+    if (vibe) qs.set('vibe', vibe)
+    if (city) qs.set('city', city)
     if (q) qs.set('q', q)
-    if (cursor) qs.set('cursor', cursor)
-    if (size) qs.set('limit', String(size))
     try {
+      if (view === 'places') {
+        const res = await fetch(`/api/places/ranking?${qs}`)
+        if (!res.ok) throw new Error()
+        const d = await res.json() as { places: PlaceRank[]; total: number; cities: string[] }
+        setFailed(false); setRanks(d.places); setTotal(d.total); setCities(d.cities); setNext(null)
+        return
+      }
+      if (cursor) qs.set('cursor', cursor)
+      if (size) qs.set('limit', String(size))
       const res = await fetch(`/api/places/timeline?${qs}`)
       if (!res.ok) throw new Error()
-      const d = await res.json() as { groups: Groups; next: string | null; total: number }
-      setFailed(false); setNext(d.next); setTotal(d.total)
+      const d = await res.json() as { groups: Groups; next: string | null; total: number; cities: string[] }
+      setFailed(false); setNext(d.next); setTotal(d.total); setCities(d.cities)
       setGroups(prev => {
         if (!cursor) return d.groups
         // a month can continue across pages: merge into the last group instead of repeating its heading, and
@@ -73,7 +88,7 @@ export default function PlacesBrowser() {
         return merged
       })
     } catch { setFailed(true) } finally { setLoading(false) }
-  }, [kind, timing, q])
+  }, [kind, timing, vibe, city, q, view])
   useEffect(() => { load(null) }, [load])   // eslint-disable-line react-hooks/set-state-in-effect -- loads data from the API; state is only set after the fetch
 
   // After an edit or delete, reload everything that was on screen (up to the API's page cap) so "Load more" pages are not lost
@@ -86,7 +101,7 @@ export default function PlacesBrowser() {
   }, [search, q])
   const needle = search.trim().toLowerCase()
   const shownWish = wish.filter(p => (!kind || p.kind === kind) && (!needle || [p.name, p.area, p.city, kindLabel(p.kind)].filter(Boolean).join(' ').toLowerCase().includes(needle)))
-  const activeFilterCount = (kind ? 1 : 0) + (timing && tab === 'visited' ? 1 : 0)
+  const activeFilterCount = (kind ? 1 : 0) + (tab === 'visited' ? (timing ? 1 : 0) + (vibe ? 1 : 0) + (city ? 1 : 0) : 0)
 
   async function confirmDelete() {
     const e = deleting; setDeleting(null)
@@ -95,8 +110,8 @@ export default function PlacesBrowser() {
     if (res.ok) { toast.success('Visit deleted', { description: e.place.name }); reload() } else toast.error('Could not delete — try again')
   }
 
-  const filtered = Boolean(kind || timing || q)
-  const empty = !loading && !failed && groups.length === 0
+  const filtered = Boolean(kind || timing || vibe || city || q)
+  const empty = !loading && !failed && (view === 'places' ? ranks.length === 0 : groups.length === 0)
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg)', color: 'var(--text-primary)' }}>
@@ -149,17 +164,38 @@ export default function PlacesBrowser() {
               {KIND_CHIPS.map(k => <button key={k.key} type="button" aria-pressed={kind === k.key} style={smallChip(kind === k.key)} onClick={() => changeFilter(() => setKind(kind === k.key ? '' : k.key))}>{k.label}</button>)}
             </FilterGroup>
             {tab === 'visited' && (
-              <FilterGroup label="When">
-                {TIMINGS.map(t => <button key={t.key} type="button" aria-pressed={timing === t.key} style={smallChip(timing === t.key)} onClick={() => changeFilter(() => setTiming(timing === t.key ? '' : t.key))}>{t.label}</button>)}
-              </FilterGroup>
+              <>
+                <FilterGroup label="When">
+                  {TIMINGS.map(t => <button key={t.key} type="button" aria-pressed={timing === t.key} style={smallChip(timing === t.key)} onClick={() => changeFilter(() => setTiming(timing === t.key ? '' : t.key))}>{t.label}</button>)}
+                </FilterGroup>
+                <FilterGroup label="How was it">
+                  {PLACE_VIBES.map(v => <button key={v.key} type="button" aria-pressed={vibe === v.key} style={smallChip(vibe === v.key)} onClick={() => changeFilter(() => setVibe(vibe === v.key ? '' : v.key))}><span aria-hidden>{v.emoji}</span> {v.label}</button>)}
+                </FilterGroup>
+                {cities.length > 1 && (
+                  <FilterGroup label="City">
+                    {cities.map(c => <button key={c} type="button" aria-pressed={city === c} style={smallChip(city === c)} onClick={() => changeFilter(() => setCity(city === c ? '' : c))}>{c}</button>)}
+                  </FilterGroup>
+                )}
+                <FilterGroup label="View">
+                  <div style={{ display: 'flex', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', alignSelf: 'flex-start' }}>
+                    {([{ key: 'timeline' as const, label: 'Timeline' }, { key: 'places' as const, label: 'By place' }]).map(v => (
+                      <button key={v.key} type="button" aria-pressed={view === v.key} onClick={() => changeFilter(() => setView(v.key))}
+                        style={{ padding: '8px 16px', cursor: 'pointer', border: 'none', background: view === v.key ? 'rgba(184,160,255,0.12)' : 'transparent', color: view === v.key ? '#b8a0ff' : 'rgba(255,255,255,0.45)', fontSize: '12px', fontFamily: 'var(--ff-body)', transition: 'all 0.18s' }}>{v.label}</button>
+                    ))}
+                  </div>
+                </FilterGroup>
+              </>
             )}
           </div>
         )}
 
         {tab === 'visited' ? (
           <>
-            {!loading && !failed && total > 0 && <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '11px', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '4px' }}>{total} {total === 1 ? 'visit' : 'visits'}{filtered ? ' found' : ''}</div>}
-            <Timeline groups={groups} isAdmin={isAdmin} onEdit={setEditing} onDelete={setDeleting} />
+            {!filtered && view === 'timeline' && <OnThisDay />}
+            {!loading && !failed && total > 0 && <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '11px', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '4px' }}>{view === 'places' ? `${total} ${total === 1 ? 'place' : 'places'}` : `${total} ${total === 1 ? 'visit' : 'visits'}`}{filtered ? ' found' : ''}</div>}
+            {view === 'places'
+              ? <PlaceRanking ranks={ranks} />
+              : <Timeline groups={groups} isAdmin={isAdmin} onEdit={setEditing} onDelete={setDeleting} />}
 
             {loading && <p style={{ textAlign: 'center', color: 'var(--text-dim)', fontFamily: 'var(--ff-mono)', fontSize: '12px', padding: '28px 0' }}>Loading…</p>}
             {failed && <p style={{ textAlign: 'center', color: '#ff8585', fontFamily: 'var(--ff-mono)', fontSize: '12px', padding: '28px 0' }}>Could not load. <button type="button" onClick={() => { setLoading(true); load(next) }} style={{ ...smallChip(false), marginLeft: '8px' }}>Retry</button></p>}
@@ -206,5 +242,33 @@ function FilterGroup({ label, children }: { label: string; children: React.React
       <div style={{ fontSize: '9px', letterSpacing: '0.24em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--ff-mono)' }}>{label}</div>
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>{children}</div>
     </div>
+  )
+}
+
+/** One row per place, most visited first. */
+function PlaceRanking({ ranks }: { ranks: PlaceRank[] }) {
+  return (
+    <ul style={{ margin: 0, padding: 0 }}>
+      {ranks.map((r, i) => {
+        const vibe = PLACE_VIBES.find(v => v.key === r.usualVibe)
+        return (
+          <li key={r.place.id} style={{ listStyle: 'none', borderBottom: '1px solid var(--border-card)' }}>
+            <Link href={`/places/${r.place.id}`} style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '10px 0', textDecoration: 'none', color: 'inherit' }}>
+              <span aria-hidden style={{ width: '22px', flex: 'none', textAlign: 'right', fontFamily: 'var(--ff-mono)', fontSize: '11px', color: 'var(--text-dim)' }}>{i + 1}</span>
+              <Thumb src={r.photo} name={r.place.name} />
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ fontFamily: 'var(--ff-body)', fontWeight: 600, fontSize: '14px', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.place.name}</div>
+                <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '10.5px', color: 'var(--text-dim)', marginTop: '2px', overflowWrap: 'anywhere' }}>{[kindLabel(r.place.kind), r.place.area].filter(Boolean).join(' · ')}</div>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', fontFamily: 'var(--ff-mono)', fontSize: '10.5px', marginTop: '3px' }}>
+                  <span style={{ color: '#cdbcff' }}>{r.visits} {r.visits === 1 ? 'visit' : 'visits'}</span>
+                  {r.avgSpend !== null && <span style={{ color: 'var(--text-primary)' }}>₹{r.avgSpend} avg</span>}
+                  {vibe && <span style={{ color: vibe.color }}>{vibe.emoji} {vibe.label}</span>}
+                </div>
+              </div>
+            </Link>
+          </li>
+        )
+      })}
+    </ul>
   )
 }

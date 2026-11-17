@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { LOGS_WITH_PLACE, placesNotReady } from '@/lib/movies-select'
 import type { Place } from '@/lib/places'
 import {
-  mergeTimeline, pageAfter, groupByMonth, matchesQuery, placeStats, theatreStats, visitsNotReady, THEATRE_KIND, PLACE_VIBES, TIMINGS,
+  mergeTimeline, pageAfter, groupByMonth, matchesQuery, rankPlaces, onThisDay, isVibeKey, placeStats, theatreStats, visitsNotReady, THEATRE_KIND, PLACE_VIBES, TIMINGS,
   type TimelineEntry, type PlaceVibeKey, type TimingKey,
 } from '@/lib/places-core'
 
@@ -55,14 +55,42 @@ async function loadTheatreLogs(placeId?: string): Promise<{ entries: TimelineEnt
   return { entries: rows.map(theatreEntry), rows }
 }
 
-export async function getTimeline(opts: { kind?: string; timing?: string; q?: string; cursor?: string | null; limit?: number }) {
+type Filters = { kind?: string; timing?: string; vibe?: string; city?: string; q?: string }
+
+async function loadAll() {
   const [visits, theatre] = await Promise.all([loadVisits(), loadTheatreLogs()])
-  let sorted = mergeTimeline(visits, theatre.entries)
+  return mergeTimeline(visits, theatre.entries)
+}
+
+function applyFilters(all: TimelineEntry[], opts: Filters) {
+  let sorted = all
   if (opts.kind)   sorted = sorted.filter(e => e.place.kind === opts.kind)
   if (opts.timing) sorted = sorted.filter(e => e.timing === opts.timing)   // theatre rows have no timing, so they drop out
+  if (opts.vibe && isVibeKey(opts.vibe)) sorted = sorted.filter(e => e.vibe === opts.vibe)
+  if (opts.city)   sorted = sorted.filter(e => e.place.city === opts.city)
   if (opts.q)      sorted = sorted.filter(e => matchesQuery(e, opts.q!))
+  return sorted
+}
+
+/** The cities that have visits, for the City filter (taken before any filter is applied, so the choices do not shrink as you filter). */
+const citiesOf = (all: TimelineEntry[]) => [...new Set(all.map(e => e.place.city).filter((c): c is string => Boolean(c)))].sort()
+
+export async function getTimeline(opts: Filters & { cursor?: string | null; limit?: number }) {
+  const all = await loadAll()
+  const sorted = applyFilters(all, opts)
   const { items, next } = pageAfter(sorted, opts.cursor ?? null, Math.min(Math.max(opts.limit ?? 40, 1), 100))
-  return { groups: groupByMonth(items), next, total: sorted.length }
+  return { groups: groupByMonth(items), next, total: sorted.length, cities: citiesOf(all) }
+}
+
+/** The same filters, but one row per place, most visited first. */
+export async function getRanking(opts: Filters) {
+  const all = await loadAll()
+  const places = rankPlaces(applyFilters(all, opts))
+  return { places, total: places.length, cities: citiesOf(all) }
+}
+
+export async function getOnThisDay(monthDay: string, thisYear: number) {
+  return onThisDay(await loadAll(), monthDay, thisYear)
 }
 
 export async function getWishlist(): Promise<Place[]> {

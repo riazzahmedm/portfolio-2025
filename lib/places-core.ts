@@ -29,6 +29,7 @@ export const PLACE_VIBES = [
 export type TimingKey    = typeof TIMINGS[number]['key']
 export type PlaceVibeKey = typeof PLACE_VIBES[number]['key']
 
+export const isVibeKey = (v: string) => PLACE_VIBES.some(x => x.key === v)
 const TIMING_KEYS = new Set<string>(TIMINGS.map(t => t.key))
 const VIBE_KEYS   = new Set<string>(PLACE_VIBES.map(v => v.key))
 const KIND_KEYS   = new Set<string>(PLACE_KINDS.map(k => k.key))
@@ -175,6 +176,35 @@ export function theatreStats(logs: { screen_format: string | null; theatre_vibe:
     usualFormat: mostCommon(logs.map(l => l.screen_format)),
     usualVibe:   mostCommon(logs.map(l => (l.theatre_vibe && VIBE_KEYS.has(l.theatre_vibe) ? (l.theatre_vibe as PlaceVibeKey) : null))),
   }
+}
+
+// ── By place, and on this day ────────────────────────────────────────────────
+
+export interface PlaceRank {
+  place: TimelineEntry['place']; visits: number; lastDate: string; avgSpend: number | null; usualVibe: PlaceVibeKey | null; photo: string | null
+}
+
+/** One row per place, most visited first; places with equally many visits go by who was visited most recently. */
+export function rankPlaces(entries: TimelineEntry[]): PlaceRank[] {
+  const byPlace = new Map<string, TimelineEntry[]>()
+  for (const e of entries) byPlace.set(e.place.id, [...(byPlace.get(e.place.id) ?? []), e])
+  const ranks = [...byPlace.values()].map(list => {
+    const newest = [...list].sort((a, b) => b.date.localeCompare(a.date))
+    const stats = placeStats(list)
+    return {
+      place: newest[0].place, visits: stats.visits, lastDate: newest[0].date, avgSpend: stats.avgSpend, usualVibe: stats.usualVibe,
+      photo: newest.find(e => e.photos.length > 0)?.photos[0] ?? newest.find(e => e.movie?.posterUrl)?.movie?.posterUrl ?? null,
+    }
+  })
+  return ranks.sort((a, b) => b.visits - a.visits || b.lastDate.localeCompare(a.lastDate) || a.place.name.localeCompare(b.place.name))
+}
+
+/** Visits made on `monthDay` (MM-DD) in an earlier year than `thisYear`, the most recent year first. */
+export function onThisDay(entries: TimelineEntry[], monthDay: string, thisYear: number): (TimelineEntry & { yearsAgo: number })[] {
+  return entries
+    .filter(e => e.date.slice(5) === monthDay && Number(e.date.slice(0, 4)) < thisYear)
+    .map(e => ({ ...e, yearsAgo: thisYear - Number(e.date.slice(0, 4)) }))
+    .sort((a, b) => a.yearsAgo - b.yearsAgo || a.place.name.localeCompare(b.place.name))
 }
 
 // ── Wishlist and rollout ─────────────────────────────────────────────────────

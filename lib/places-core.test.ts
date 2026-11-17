@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  timingForHour, sanitizeVisit, mergeTimeline, pageAfter, groupByMonth, placeStats, theatreStats, canWishlist, visitsNotReady, matchesQuery,
+  timingForHour, sanitizeVisit, mergeTimeline, pageAfter, groupByMonth, placeStats, theatreStats, canWishlist, visitsNotReady, matchesQuery, rankPlaces, onThisDay,
   type TimelineEntry,
 } from './places-core.ts'
 
@@ -153,4 +153,23 @@ test('matchesQuery finds a theatre visit by its movie title', () => {
   const e = entry('t', '2026-05-01', { source: 'theatre', place: { ...place, kind: 'theatre', name: 'AAA Cinemas' }, movie: { id: 'm', title: 'The Odyssey', posterUrl: null, format: 'imax' } })
   assert.equal(matchesQuery(e, 'odyssey'), true)
   assert.equal(matchesQuery(e, 'aaa'), true)
+})
+
+test('rankPlaces ranks by visits, then by the most recent visit, and summarises each place', () => {
+  const a = { ...place, id: 'a', name: 'Alpha' }, b = { ...place, id: 'b', name: 'Beta' }, c = { ...place, id: 'c', name: 'Gamma' }
+  const ranks = rankPlaces([
+    entry('1', '2026-01-01', { place: a, spend: 100, vibe: 'loved' }), entry('2', '2026-03-01', { place: a, spend: 300, vibe: 'loved' }),
+    entry('3', '2026-02-01', { place: b }), entry('4', '2026-04-01', { place: c, photos: ['http://x/p.jpg'] }),
+  ])
+  assert.deepEqual(ranks.map(r => [r.place.name, r.visits]), [['Alpha', 2], ['Gamma', 1], ['Beta', 1]])
+  assert.equal(ranks[0].avgSpend, 200)
+  assert.equal(ranks[0].usualVibe, 'loved')
+  assert.equal(ranks[0].lastDate, '2026-03-01')
+  assert.equal(ranks[1].photo, 'http://x/p.jpg')
+})
+
+test('onThisDay finds earlier years on the same day, newest year first, and never this year', () => {
+  const rows = [entry('1', '2025-11-17'), entry('2', '2024-11-17'), entry('3', '2026-11-17'), entry('4', '2025-11-18')]
+  assert.deepEqual(onThisDay(rows, '11-17', 2026).map(r => [r.id, r.yearsAgo]), [['1', 1], ['2', 2]])
+  assert.deepEqual(onThisDay(rows, '01-01', 2026), [])
 })
