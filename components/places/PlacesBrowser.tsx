@@ -17,6 +17,7 @@ import { Thumb, kindLabel } from './shared'
 import { chip } from './form-styles'
 import NavBack from '@/components/ui/NavBack'
 import PageHeader from '@/components/ui/PageHeader'
+import NoisyGradient from '@/components/ui/NoisyGradient'
 
 type Groups = { month: string; label: string; entries: TimelineEntry[] }[]
 const KIND_CHIPS = [...PLACE_KINDS, { key: THEATRE_KIND, label: 'Theatre' }]
@@ -114,7 +115,8 @@ export default function PlacesBrowser() {
   const empty = !loading && !failed && (view === 'places' ? ranks.length === 0 : groups.length === 0)
 
   return (
-    <div style={{ minHeight: '100dvh', background: 'var(--bg)', color: 'var(--text-primary)' }}>
+    <div style={{ minHeight: '100dvh', background: 'var(--bg)', color: 'var(--text-primary)', position: 'relative', isolation: 'isolate' }}>
+      <NoisyGradient />
       <ScrollNav>
         <div style={{ maxWidth: '720px', margin: '0 auto', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px' }}>
           <NavBack />
