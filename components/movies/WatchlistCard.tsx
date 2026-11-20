@@ -1,10 +1,11 @@
 'use client'
 import { useState } from 'react'
-import { Trash2, PlayCircle, Eye } from 'lucide-react'
+import { Trash2, PlayCircle, Eye, Share2 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { WatchlistItem, TMDBResult, WatchProvidersLite } from '@/lib/movies.types'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import TMDBPreviewModal from '@/components/movies/TMDBPreviewModal'
+import StoryCardModal from '@/components/movies/StoryCardModal'
 import { tiltProps, gyroRef } from '@/lib/tilt'
 import { useTapReveal } from './useTapReveal'
 
@@ -61,6 +62,7 @@ export default function WatchlistCard({
   const [deleting,    setDeleting]    = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [preview,     setPreview]     = useState(false)
+  const [sharing,     setSharing]     = useState(false)
 
   async function confirmRemove() {
     setConfirmOpen(false)
@@ -120,6 +122,10 @@ export default function WatchlistCard({
             <Eye size={13} />
           </button>
         )}
+        {/* The "I'm super hyped" story card — for everyone, like sharing a log */}
+        <button className="gc-btn" onClick={() => setSharing(true)} title="Share as a story" aria-label="Share as a story" style={{ color: '#ff9a3d' }}>
+          <Share2 size={13} />
+        </button>
         {isAdmin && (
           <button className="gc-btn" onClick={() => onLog(item)} title="Log it now" style={{ color: '#82ff1f' }}>
             <PlayCircle size={14} />
@@ -148,6 +154,8 @@ export default function WatchlistCard({
         </div>
       </div>
     </div>
+
+    {sharing && <StoryCardModal imageUrl={`/api/hype-card/${item.id}`} name={`${item.title} hype`} onClose={() => setSharing(false)} />}
 
     {confirmOpen && (
       <ConfirmModal

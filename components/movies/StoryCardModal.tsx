@@ -3,23 +3,29 @@ import { X, Download, Share2 } from 'lucide-react'
 import { useState } from 'react'
 import type { MovieLog } from '@/lib/movies.types'
 
+/** The share sheet for a story card: a log's card by default, or any card image (pass `imageUrl` and `name`, as the Watch Later hype card does). */
 export default function StoryCardModal({
   log,
+  imageUrl: imageUrlProp,
+  name,
   onClose,
 }: {
-  log:     MovieLog
-  onClose: () => void
+  log?:      MovieLog
+  imageUrl?: string
+  name?:     string
+  onClose:   () => void
 }) {
   const [loading, setLoading] = useState(true)
 
-  const imageUrl = `/api/story-card/${log.id}`
+  const imageUrl = imageUrlProp ?? `/api/story-card/${log?.id}`
+  const title    = name ?? log?.title ?? 'story'
 
   async function download() {
     const res  = await fetch(imageUrl)
     const blob = await res.blob()
     const a    = document.createElement('a')
     a.href     = URL.createObjectURL(blob)
-    a.download = `${log.title.replace(/\s+/g, '-')}-story.png`
+    a.download = `${title.replace(/\s+/g, '-')}-story.png`
     a.click()
   }
 
