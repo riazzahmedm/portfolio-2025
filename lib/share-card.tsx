@@ -52,8 +52,8 @@ export function ShareCard({ theme, poster, headline, kicker, title, footer = 'WA
   theme: CardTheme; poster: string | null; headline: string; kicker: string; title: string; footer?: string
 }) {
   const len = title.length
-  const titleSize = len > 34 ? 40 : len > 22 ? 48 : 58
-  const headSize = headline.length > 18 ? 68 : headline.length > 15 ? 76 : 86
+  const titleSize = len > 34 ? 36 : len > 22 ? 42 : 50
+  const headSize = headline.length > 18 ? 58 : headline.length > 15 ? 66 : 74
   return (
     <div style={{ width: '1080px', height: '1920px', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', background: '#050404', overflow: 'hidden', fontFamily: 'Montserrat, sans-serif' }}>
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '760px', display: 'flex', background: `radial-gradient(ellipse 90% 100% at 50% 0%, rgba(${theme.glow},0.75), rgba(5,4,4,0) 100%)` }} />
@@ -77,12 +77,12 @@ export function ShareCard({ theme, poster, headline, kicker, title, footer = 'WA
       </div>
 
       <div style={{ position: 'absolute', top: '1470px', left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div style={{ display: 'flex', fontSize: '28px', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.78)', marginBottom: '14px' }}>{kicker}</div>
+        <div style={{ display: 'flex', fontSize: '25px', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.78)', marginBottom: '12px' }}>{kicker}</div>
         <div style={{ display: 'flex', fontSize: `${titleSize}px`, fontWeight: 700, color: '#ffffff', textAlign: 'center', lineHeight: 1.12, maxWidth: '740px', justifyContent: 'center' }}>{title}</div>
       </div>
 
       <div style={{ position: 'absolute', bottom: '100px', left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
-        <div style={{ display: 'flex', fontFamily: 'SpaceMono, monospace', fontSize: '30px', letterSpacing: '0.32em', color: 'rgba(255,255,255,0.6)' }}>{footer}</div>
+        <div style={{ display: 'flex', fontFamily: 'SpaceMono, monospace', fontSize: '26px', letterSpacing: '0.32em', color: 'rgba(255,255,255,0.6)' }}>{footer}</div>
       </div>
     </div>
   )
