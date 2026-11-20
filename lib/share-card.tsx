@@ -47,6 +47,15 @@ function sparkList(colors: CardTheme['sparks']) {
   }))
 }
 
+/** A title too wide for one line is split at the space nearest its middle, so the second line is never a stray word. */
+function balanced(title: string, size: number): string[] {
+  if (title.length * size * 0.56 <= 700) return [title]
+  const mid = title.length / 2
+  let best = -1
+  for (let i = 0; i < title.length; i++) if (title[i] === ' ' && (best < 0 || Math.abs(i - mid) < Math.abs(best - mid))) best = i
+  return best < 0 ? [title] : [title.slice(0, best), title.slice(best + 1)]
+}
+
 /** The whole card: ember glow, sparks, the tilted poster, a headline, a two-line caption and a footer line. */
 export function ShareCard({ theme, poster, headline, kicker, title, footer = 'WATCHLOG' }: {
   theme: CardTheme; poster: string | null; headline: string; kicker: string; title: string; footer?: string
@@ -78,7 +87,9 @@ export function ShareCard({ theme, poster, headline, kicker, title, footer = 'WA
 
       <div style={{ position: 'absolute', top: '1470px', left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ display: 'flex', fontSize: '25px', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.78)', marginBottom: '12px' }}>{kicker}</div>
-        <div style={{ display: 'flex', fontSize: `${titleSize}px`, fontWeight: 700, color: '#ffffff', textAlign: 'center', lineHeight: 1.12, maxWidth: '740px', justifyContent: 'center' }}>{title}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', fontSize: `${titleSize}px`, fontWeight: 700, color: '#ffffff', textAlign: 'center', lineHeight: 1.12 }}>
+          {balanced(title, titleSize).map(line => <div key={line} style={{ display: 'flex', justifyContent: 'center' }}>{line}</div>)}
+        </div>
       </div>
 
       <div style={{ position: 'absolute', bottom: '100px', left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
