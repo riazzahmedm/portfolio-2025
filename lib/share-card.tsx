@@ -17,15 +17,14 @@ async function loadGoogleFont(family: string): Promise<ArrayBuffer | null> {
   } catch { return null }
 }
 
-/** Montserrat Black and Bold, Bebas Neue and Space Mono; a font that cannot be fetched is skipped and the card falls back to a system face. */
+/** Montserrat Black and Bold and Space Mono; a font that cannot be fetched is skipped and the card falls back to a system face. */
 export async function loadCardFonts(): Promise<FontEntry[]> {
-  const [heavy, bold, bebas, space] = await Promise.all([
-    loadGoogleFont('Montserrat:wght@900'), loadGoogleFont('Montserrat:wght@700'), loadGoogleFont('Bebas+Neue'), loadGoogleFont('Space+Mono'),
+  const [heavy, bold, space] = await Promise.all([
+    loadGoogleFont('Montserrat:wght@900'), loadGoogleFont('Montserrat:wght@700'), loadGoogleFont('Space+Mono'),
   ])
   const fonts: FontEntry[] = []
   if (heavy) fonts.push({ name: 'Montserrat', data: heavy, weight: 900, style: 'normal' })
   if (bold)  fonts.push({ name: 'Montserrat', data: bold,  weight: 700, style: 'normal' })
-  if (bebas) fonts.push({ name: 'Bebas',      data: bebas, weight: 400, style: 'normal' })
   if (space) fonts.push({ name: 'SpaceMono',  data: space, weight: 400, style: 'normal' })
   return fonts
 }
@@ -107,7 +106,7 @@ export function Face({ size, mood }: { size: number; mood: 'flat' | 'blank' | 'd
   )
 }
 
-/** The whole card: ember glow, sparks, the tilted poster with a sticker on its corner, a headline, a two-line caption and the Riaz mark. */
+/** The whole card: ember glow, sparks, the tilted poster with a sticker on its corner, a headline, a two-line caption and a footer line. */
 export function ShareCard({ theme, poster, sticker, headline, kicker, title, footer = 'WATCHLOG' }: {
   theme: CardTheme; poster: string | null; sticker: ReactNode; headline: string; kicker: string; title: string; footer?: string
 }) {
@@ -142,9 +141,8 @@ export function ShareCard({ theme, poster, sticker, headline, kicker, title, foo
         <div style={{ display: 'flex', fontSize: `${titleSize}px`, fontWeight: 700, color: '#ffffff', textAlign: 'center', lineHeight: 1.12, maxWidth: '860px', justifyContent: 'center' }}>{title}</div>
       </div>
 
-      <div style={{ position: 'absolute', bottom: '92px', left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div style={{ display: 'flex', fontFamily: 'Bebas, sans-serif', fontSize: '76px', letterSpacing: '0.2em', color: '#ffffff' }}>RIAZ</div>
-        <div style={{ display: 'flex', fontFamily: 'SpaceMono, monospace', fontSize: '24px', letterSpacing: '0.24em', color: 'rgba(255,255,255,0.45)', marginTop: '6px' }}>{footer}</div>
+      <div style={{ position: 'absolute', bottom: '100px', left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', fontFamily: 'SpaceMono, monospace', fontSize: '30px', letterSpacing: '0.32em', color: 'rgba(255,255,255,0.6)' }}>{footer}</div>
       </div>
     </div>
   )
