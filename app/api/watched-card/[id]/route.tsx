@@ -1,13 +1,13 @@
 import { ImageResponse } from 'next/og'
 import { supabase } from '@/lib/supabase'
-import { ShareCard, FlameHeart, Trophy, Face, bigPoster, loadCardFonts, type CardTheme } from '@/lib/share-card'
+import { ShareCard, Heart, Trophy, Face, bigPoster, loadCardFonts, type CardTheme } from '@/lib/share-card'
 
 export const runtime = 'nodejs'
 
 /** How it felt decides the headline, the colours and the sticker on the poster's corner. */
 const LOOKS: Record<string, { theme: CardTheme; headline: string; sticker: React.ReactNode }> = {
   masterpiece: { theme: { glow: '120,84,0',  gradient: ['#ffb300', '#fff0a0'], sparks: ['#ffc933', '#fff0a0', '#b8860b'] }, headline: 'THIS IS CINEMA',  sticker: <Trophy size={250} /> },
-  loved:       { theme: { glow: '84,48,196', gradient: ['#b8a0ff', '#efe6ff'], sparks: ['#b8a0ff', '#d9c9ff', '#6d28d9'] }, headline: 'ABSOLUTELY LOVED IT', sticker: <FlameHeart size={240} tone="violet" /> },
+  loved:       { theme: { glow: '84,48,196', gradient: ['#b8a0ff', '#efe6ff'], sparks: ['#b8a0ff', '#d9c9ff', '#6d28d9'] }, headline: 'ABSOLUTELY LOVED IT', sticker: <Heart size={230} /> },
   solid:       { theme: { glow: '24,80,52',  gradient: ['#4ade80', '#d9f99d'], sparks: ['#4ade80', '#a3e635', '#166534'] }, headline: 'IT WAS MID',      sticker: <Face size={220} mood="flat" /> },
   fine:        { theme: { glow: '40,52,72',  gradient: ['#94a3b8', '#e2e8f0'], sparks: ['#94a3b8', '#cbd5e1', '#475569'] }, headline: 'SO BORING',       sticker: <Face size={220} mood="blank" /> },
   painful:     { theme: { glow: '110,6,6',   gradient: ['#ff3b30', '#ff9a8a'], sparks: ['#ff3b30', '#ff8a7a', '#7a0c0c'] }, headline: 'ABSOLUTE PAIN',   sticker: <Face size={220} mood="dead" /> },

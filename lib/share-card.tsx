@@ -49,23 +49,30 @@ function sparkList(colors: CardTheme['sparks']) {
   }))
 }
 
-const HEART_TONES = {
-  fire:   { flame: ['#ffd23f', '#ff7a1a', '#e11d1d'], heart: ['#ff5a4d', '#c4161c'], shine: '#ff8f6b' },
-  violet: { flame: ['#f3e8ff', '#b79bff', '#6d28d9'], heart: ['#f0abfc', '#a21caf'], shine: '#fdf4ff' },
-} as const
-
 /** A heart wrapped in flames, drawn by hand so it never depends on an emoji font. */
-export function FlameHeart({ size, tone = 'fire' }: { size: number; tone?: keyof typeof HEART_TONES }) {
-  const t = HEART_TONES[tone]
+export function FlameHeart({ size }: { size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100">
       <defs>
-        <linearGradient id="fh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={t.flame[0]} /><stop offset="0.45" stopColor={t.flame[1]} /><stop offset="1" stopColor={t.flame[2]} /></linearGradient>
-        <linearGradient id="hh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={t.heart[0]} /><stop offset="1" stopColor={t.heart[1]} /></linearGradient>
+        <linearGradient id="fh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ffd23f" /><stop offset="0.45" stopColor="#ff7a1a" /><stop offset="1" stopColor="#e11d1d" /></linearGradient>
+        <linearGradient id="hh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ff5a4d" /><stop offset="1" stopColor="#c4161c" /></linearGradient>
       </defs>
       <path d="M50 4 C58 18 72 22 70 38 C80 30 82 20 80 12 C94 28 98 48 90 64 C84 80 68 94 50 96 C32 94 16 80 10 64 C2 48 8 30 22 14 C20 24 24 32 30 38 C28 22 42 18 50 4 Z" fill="url(#fh)" />
       <path d="M50 86 C30 72 18 60 18 46 C18 36 26 30 34 30 C42 30 47 35 50 41 C53 35 58 30 66 30 C74 30 82 36 82 46 C82 60 70 72 50 86 Z" fill="url(#hh)" />
-      <path d="M50 70 C42 62 38 56 38 50 C38 46 41 44 44 44 C47 44 49 46 50 48 C51 46 53 44 56 44 C59 44 62 46 62 50 C62 56 58 62 50 70 Z" fill={t.shine} opacity="0.55" />
+      <path d="M50 70 C42 62 38 56 38 50 C38 46 41 44 44 44 C47 44 49 46 50 48 C51 46 53 44 56 44 C59 44 62 46 62 50 C62 56 58 62 50 70 Z" fill="#ff8f6b" opacity="0.55" />
+    </svg>
+  )
+}
+
+/** A plain glossy violet heart, the same 💜 the app uses for "Loved it". */
+export function Heart({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100">
+      <defs>
+        <linearGradient id="vh" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#d9c4ff" /><stop offset="0.5" stopColor="#9b6dff" /><stop offset="1" stopColor="#5b21b6" /></linearGradient>
+      </defs>
+      <path d="M50 90 C22 70 8 52 8 34 C8 20 19 10 32 10 C40 10 47 14 50 21 C53 14 60 10 68 10 C81 10 92 20 92 34 C92 52 78 70 50 90 Z" fill="url(#vh)" />
+      <path d="M22 30 C22 22 28 18 35 19" fill="none" stroke="#ffffff" strokeWidth="6" strokeLinecap="round" opacity="0.65" />
     </svg>
   )
 }
