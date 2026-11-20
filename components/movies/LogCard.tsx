@@ -242,7 +242,7 @@ export default function LogCard({
         </div>
       </div>
 
-      {showStory && <StoryCardModal log={log} onClose={() => setShowStory(false)} />}
+      {showStory && <StoryCardModal log={log} variants={[{ label: 'Classic', url: `/api/story-card/${log.id}` }, { label: 'Poster', url: `/api/watched-card/${log.id}` }]} onClose={() => setShowStory(false)} />}
 
       {showPreview && tmdbResult && (
         <TMDBPreviewModal

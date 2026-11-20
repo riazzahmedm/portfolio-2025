@@ -7,18 +7,23 @@ import type { MovieLog } from '@/lib/movies.types'
 export default function StoryCardModal({
   log,
   imageUrl: imageUrlProp,
+  variants,
   name,
   onClose,
 }: {
   log?:      MovieLog
   imageUrl?: string
+  /** Two or more looks for the same card: a switch above the preview picks one. */
+  variants?: { label: string; url: string }[]
   name?:     string
   onClose:   () => void
 }) {
   const [loading, setLoading] = useState(true)
+  const [pick, setPick] = useState(0)
 
-  const imageUrl = imageUrlProp ?? `/api/story-card/${log?.id}`
+  const imageUrl = variants?.[pick]?.url ?? imageUrlProp ?? `/api/story-card/${log?.id}`
   const title    = name ?? log?.title ?? 'story'
+  const choose   = (i: number) => { if (i !== pick) { setLoading(true); setPick(i) } }
 
   async function download() {
     const res  = await fetch(imageUrl)
@@ -115,6 +120,15 @@ export default function StoryCardModal({
             Instagram Story
           </p>
 
+          {variants && variants.length > 1 && (
+            <div role="group" aria-label="Card style" style={{ display: 'flex', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', alignSelf: 'stretch' }}>
+              {variants.map((v, i) => (
+                <button key={v.label} type="button" aria-pressed={pick === i} onClick={() => choose(i)}
+                  style={{ flex: 1, padding: '9px 14px', cursor: 'pointer', border: 'none', background: pick === i ? 'rgba(184,160,255,0.14)' : 'transparent', color: pick === i ? '#cdbcff' : 'rgba(255,255,255,0.45)', fontSize: '12px', fontFamily: 'var(--ff-body)', transition: 'all 0.18s' }}>{v.label}</button>
+              ))}
+            </div>
+          )}
+
           {/* Preview */}
           <div
             className="scm-preview"
@@ -125,6 +139,7 @@ export default function StoryCardModal({
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
+              key={imageUrl}
               src={imageUrl}
               alt="Story card preview"
               onLoad={() => setLoading(false)}
